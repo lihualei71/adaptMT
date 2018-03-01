@@ -1,24 +1,25 @@
-################################################################
-## Compute E-step for the mixture model.
-##
-## Required Input:
-##    x: covariate.
-##    pvals: p-values.
-##    plow: lower threshold, i.e. s(x) in AdaPT.
-##    phigh: upper threshold, i.e. 1 - s(x) in AdaPT.
-##    pix: pi(x) in last step.
-##    mux: mu(x) in last step.
-##    dist: distribution family for p-values in "exp_family" class.
-## Output:
-##    Hhat: conditional expectation of labels.
-##    yhat: imputed y-values.
-##    phat: g^{-1}(yhat).
-################################################################
+#===============================================================
+# Compute E-step for the mixture model.
+#
+# Required Input:
+#    x: covariate.
+#    pvals: p-values.
+#    plow: lower threshold, i.e. s(x) in AdaPT.
+#    phigh: upper threshold, i.e. 1 - s(x) in AdaPT.
+#    pix: pi(x) in last step.
+#    mux: mu(x) in last step.
+#    dist: distribution family for p-values in "exp_family" class.
+# Output:
+#    Hhat: conditional expectation of labels.
+#    yhat: imputed y-values.
+#    phat: g^{-1}(yhat).
+#===============================================================
 
-Estep.mix <- function(x, pvals, plow, phigh, dist,
+#' @export
+Estep_mix <- function(x, pvals, plow, phigh, dist,
                       pix, mux){
-    fp <- dist$f(pvals, mux)
-    fp.mirror <- dist$f(1 - pvals, mux)
+    fp <- dist$h(pvals, mux)
+    fp.mirror <- dist$h(1 - pvals, mux)
     y <- dist$g(pvals)
     y.mirror <- dist$g(1 - pvals)
     Hhat <- ifelse(

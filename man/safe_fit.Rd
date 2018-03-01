@@ -2,7 +2,7 @@
 % Please edit documentation in R/safe_model.R
 \name{safe_fit}
 \alias{safe_fit}
-\title{Securing model-fitting algorithm}
+\title{Securing model-fitting algorithm (internal function)}
 \usage{
 safe_fit(algo, data_args, algo_args, alter_args = NULL, ...)
 }

@@ -18,7 +18,7 @@
 ## process.
 ################################################################
 
-#' Securing model-fitting algorithm
+#' Securing model-fitting algorithm (internal function)
 #'
 #' A generic handle for making a fitting algorithm secure to run by adding a list of
 #' candidate arguments. When the fitting function encounters an error, it prints the
@@ -43,7 +43,6 @@
 #'    \item an error message indicating the error by running \code{algo} on \code{algo_args}, together with
 #'    an error message indicating that none of candidate arguments work.
 #'    }
-#' @examples
 safe_fit <- function(algo, data_args, algo_args,
                      alter_args = NULL,
                      ...){
@@ -121,12 +120,9 @@ safe_gam <- function(formula, data,
                      alter.formulas = NULL,
                      family = gaussian(),
                      ...){
-    ## Safe GAM
-    gam <- mgcv::gam
-
     algo <- function(formula, data, family, ...){
         if (family$link %in% c("inverse", "log")){
-            mod <- try(gam(formula = formula, data = data,
+            mod <- try(mgcv::gam(formula = formula, data = data,
                            family = family, ...),
                        silent = TRUE)
             if (class(mod)[1] != "try-error"){
@@ -135,11 +131,11 @@ safe_gam <- function(formula, data,
             tmp.mat <- model.matrix(formula, data = data)
             p <- ncol(tmp.mat) - 1
             start <- c(1, rep(0, p))
-            mod <- gam(formula = formula, data = data,
-                       family = family, start = start, ...)
+            mod <- mgcv::gam(formula = formula, data = data,
+                             family = family, start = start, ...)
         } else {
-            mod <- gam(formula = formula, data = data,
-                       family = family, ...)
+            mod <- mgcv::gam(formula = formula, data = data,
+                             family = family, ...)
         }
         return(mod)
     }
@@ -183,7 +179,7 @@ safe_glmnet <- function(x, y,
     return(list(mod = mod, fitv = fitv))
 }
 
-safe.logistic.glm <- function(formula, data,
+safe_logistic_glm <- function(formula, data,
                               alter.formulas = NULL,
                               ...){
     safe.glm(formula, data, alter.formulas,
@@ -191,7 +187,7 @@ safe.logistic.glm <- function(formula, data,
              ...)
 }
 
-safe.logistic.gam <- function(formula, data,
+safe_logistic_gam <- function(formula, data,
                               alter.formulas = NULL,
                               ...){
     safe_gam(formula, data, alter.formulas,
@@ -199,22 +195,22 @@ safe.logistic.gam <- function(formula, data,
              ...)
 }
 
-safe.logistic.glmnet <- function(x, y,
+safe_logistic_glmnet <- function(x, y,
                                  ...){
-    safe.glmnet(x, y,
+    safe_glmnet(x, y,
                 family = "binomial",
                 ...)
 }
 
-safe.gaussian.glm <- function(formula, data,
+safe_gaussian_glm <- function(formula, data,
                               alter.formulas = NULL,
                               ...){
-    safe.glm(formula, data, alter.formulas,
+    safe_glm(formula, data, alter.formulas,
              family = gaussian(),
              ...)
 }
 
-safe.gaussian.gam <- function(formula, data,
+safe_gaussian_gam <- function(formula, data,
                               alter.formulas = NULL,
                               ...){
     safe_gam(formula, data, alter.formulas,
@@ -222,22 +218,22 @@ safe.gaussian.gam <- function(formula, data,
              ...)
 }
 
-safe.gaussian.glmnet <- function(x, y,
+safe_gaussian_glmnet <- function(x, y,
                                  ...){
-    safe.glmnet(x, y,
+    safe_glmnet(x, y,
                 family = "gaussian",
                 ...)
 }
 
-safe_gamma.glm <- function(formula, data,
+safe_gamma_glm <- function(formula, data,
                            alter.formulas = NULL,
                            ...){
-    safe.glm(formula, data, alter.formulas,
+    safe_glm(formula, data, alter.formulas,
              family = Gamma(),
              ...)
 }
 
-safe_gamma.gam <- function(formula, data,
+safe_gamma_gam <- function(formula, data,
                            alter.formulas = NULL,
                            ...){
     safe_gam(formula, data, alter.formulas,
@@ -245,9 +241,9 @@ safe_gamma.gam <- function(formula, data,
              ...)
 }
 
-safe_gamma.glmnet <- function(x, y,
+safe_gamma_glmnet <- function(x, y,
                               ...){
-    safe.glmnet(x, y,
+    safe_glmnet(x, y,
                 family = "Gamma",
                 ...)
 }

@@ -1,20 +1,8 @@
-################################################################
-## A class for distributions of p-values:
-## log f(p; mu) = g(p)(eta(mu) - eta(mu*)) - (A(mu) - A(mu*)).
-## See Section 4.
-## Used for deriving the E-step and estimating local FDR.
-##
-## Attributes:
-##    g: transformation of p-value.
-##    g.inv: inverse function of g.
-##    eta: name of link function. Support all link functions in glm. See ?family for details.
-##    mustar: the parameter value for U([0, 1]).
-##    A: log-partition function.
-##    name (optional): name of the instance.
-##    family (optional): the exponential family used for GLM/GAM. The family for which eta is the canonical link is recommended.
-################################################################
+#===============================================================
+# exp_family class
+#===============================================================
 
-#' An S3generic to define an exponential family
+#' Exp_family Objects for Exponential Families
 #'
 #' An object containing all required information in an exponential
 #' family to perform the E-step. The exponential function is encoded by
@@ -24,6 +12,10 @@
 #' and \eqn{A(\mu)} is the partition function. The extra redundant
 #' parameter \eqn{\mu^{*}}{\mu*} is to guarantee that \eqn{U([0, 1])}
 #' belongs to the class.
+#'
+#' Beta family (\code{beta_family()}): modelling p-values as Beta-distributed random variables, i.e. \eqn{g(p) = -log(p)}, \eqn{\eta(\mu) = -1 / \mu}, \eqn{\mu* = 1}, \eqn{A(\mu) = log(\mu)}, name = "beta" and family = Gamma(). Beta-family is highly recommended for general problems and used as default in \code{\link{AdaPT}}.
+#'
+#' Inverse-gaussian family (\code{inv_gaussian_family()}): modelling p-values as transformed z-scores, i.e. \eqn{g(p) = \Phi^{-1}(p) (\Phi is the c.d.f. of a standard normal random variable)}, \eqn{\eta(\mu) = \mu}, \eqn{\mu* = 0}, \eqn{A(\mu) = \mu^2 / 2}, name = "inv_gaussian" and family = gaussian().
 #' 
 #' @param g function. An transformation of p-values
 #' @param ginv function. The inverse function of \code{g}
@@ -31,13 +23,8 @@
 #' @param mustar scalar. The mean parameter that gives \eqn{U([0, 1])}
 #' @param A function. The partition function
 #' @param name character. A name for the family. NULL by default
-#' @param family object of S3 class "\code{\link[stats]{gaussian}}" from \code{stats} package. The family used for model fitting in \code{glm}, \code{gam}, \code{glmnet}, etc..
-#' @return an object of S3 class "exp_family". This includes all inputs and  \item{h }{function. The density function computed}
-#' @family aggregate functions
-#' @seealso \code{\link{prod}} for products, \code{\link{cumsum}} for cumulative
-#'    sums, and \code{\link{colSums}}/\code{\link{rowSums}} marginal sums over
-#'    high-dimensional arrays.
-#' 
+#' @param family object of S3 class "\code{\link[stats]{family}}" from \code{stats} package. The family used for model fitting in \code{\link[stats]{glm}}, \code{\link[mgcv]{gam}}, \code{\link[glmnet]{glmnet}}, etc..
+#' @return an object of S3 class "exp_family". This includes all inputs and  \item{h }{bivariate function of p and \code{mu}. The density function computed}
 #'
 #' @export
 #' 

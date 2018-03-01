@@ -1,36 +1,37 @@
 #===============================================================
 # Compute E-step for the mixture model.
-#
-# Required Input:
-#    x: covariate.
-#    pvals: p-values.
-#    plow: lower threshold, i.e. s(x) in AdaPT.
-#    phigh: upper threshold, i.e. 1 - s(x) in AdaPT.
-#    pix: pi(x) in last step.
-#    mux: mu(x) in last step.
-#    dist: distribution family for p-values in "exp_family" class.
-# Output:
-#    Hhat: conditional expectation of labels.
-#    yhat: imputed y-values.
-#    phat: g^{-1}(yhat).
 #===============================================================
 
-#' @export
-Estep_mix <- function(x, pvals, plow, phigh, dist,
-                      pix, mux){
-    fp <- dist$h(pvals, mux)
-    fp.mirror <- dist$h(1 - pvals, mux)
+#' Computing E-step for Mixture Models
+#'
+#' Estep_mix computes the E-step, namely imputation of missing values, including the p-values and indicators of null/non-null hypotheses.
+#'
+#' The p-values are assumed to be generated from an covariate-varying mixture model
+#' \deqn{H_{i}\sim Ber(\pi(x_{i})), p_{i} \mid (H_{i} = 0) \sim U([0, 1]), p_{i} \mid (H_{i} = 1) \sim h(\cdot; \mu(x_{i}))}{Hi ~ Ber(\pi(xi)), pi | (Hi = 0) ~ U([0, 1]), pi | (Hi = 1) ~ h(p; \mu(xi))}
+#' where \eqn{h(p; \mu)} is the density of an exponential family (see \code{\link{exp_family}}). Given a threshold curve s(x), the partially i-th masked p-value is defined as \eqn{p_{i}}{pi} if \eqn{p_{i}\in [s(x_{i}), 1-s(x_{i})]}{pi in [s(xi), 1-s(xi)]}. The E-step computes the expectation of \eqn{H_{i}}{Hi} and \eqn{g(p_{i})H_{i}}{g(pi)Hi} given the parameters \eqn{\pi(x_{i})}{\pi(xi)} and \eqn{\mu(x_{i})}{\mu(xi)}, based on which computes the imputed values for \eqn{H_{i}}{Hi} and \eqn{p_{i}}{pi}. See ...
+#'
+#' @param pvals vector of values in [0, 1]. P-values
+#' @param s vector of values in [0, 1]. Threshold curve
+#' @param dist object of "\code{\link{exp_family}}" family
+#' @param pix vector of values in [0, 1]. \eqn{\pi(x_{i})}{\pi(xi)}
+#' @param mux vector of values. \eqn{\mu(x_{i})}{\mu(xi)}
+#' @return Imputed values, including
+#' \item{Hhat}{vector of binary values. imputed values for \eqn{H_{i}}{Hi}'s}
+#' \item{phat}{vector of values in [0, 1]. imputed values for \eqn{p_{i}}{pi}'s}
+Estep_mix <- function(pvals, s, dist, pix, mux){
+    hp <- dist$h(pvals, mux)
+    hp_mir <- dist$h(1 - pvals, mux)
     y <- dist$g(pvals)
-    y.mirror <- dist$g(1 - pvals)
+    y_mir <- dist$g(1 - pvals)
     Hhat <- ifelse(
-        pvals < plow | pvals > phigh,
-        1 / (1 + 2 * (1 - pix) / pix / (fp + fp.mirror)),
-        1 / (1 + (1 - pix) / pix / fp))
+        pvals < s | pvals > 1 - s,
+        1 / (1 + 2 * (1 - pix) / pix / (hp + hp_mir)),
+        1 / (1 + (1 - pix) / pix / hp))
     yhat <- ifelse(
-        pvals < plow | pvals > phigh,
-        (y * fp + y.mirror * fp.mirror) / (fp + fp.mirror),
+        pvals < s | pvals > 1 - s,
+        (y * hp + y_mir * hp_mir) / (hp + hp_mir),
         y)
-    phat <- dist$g.inv(yhat)
+    phat <- dist$ginv(yhat)
 
     if (any(is.na(Hhat))){
         stop("Hhat in the E-step has NA values!")

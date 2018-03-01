@@ -18,7 +18,18 @@ fdp.hat <- function(pvals, s) {
     return((1 + A) / max(R, 1))
 }
 
-find.newname <- function(names.vec){
+func_input_type <- function(fun){
+    argnames <- formalArgs(fun)
+    if ("formula" %in% argnames){
+        return("formula")
+    } else if ("x" %in% argnames){
+        return("xy")
+    } else if ("X" %in% argnames){
+        return("Xy")
+    }
+}
+
+find_newname <- function(names.vec){
     name <- "aaa"
     while (name %in% names.vec){
         name <- paste0(name, "a")
@@ -26,7 +37,7 @@ find.newname <- function(names.vec){
     return(name)
 }
 
-complete.formulas <- function(params, response.name){
+complete_formulas <- function(params, response.name){
     if (!is.null(params[["formula"]])){
         completed.formula <- as.formula(
             paste(response.name, "~", params[["formula"]]))

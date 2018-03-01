@@ -17,7 +17,7 @@
 ##    params: fitted parameters including pix and mux.
 ################################################################
 
-EM.loglik <- function(dist, params, Hhat, phat){
+EM_loglik <- function(dist, params, Hhat, phat){
     pix <- params$pix
     mux <- params$mux
     loglik1 <- sum(Hhat * log(pix) + (1 - Hhat) * log(1 - pix))
@@ -25,7 +25,7 @@ EM.loglik <- function(dist, params, Hhat, phat){
     return(loglik1 + loglik2)
 }
 
-EM.mix <- function(x, pvals, plow, phigh, dist,
+EM_mix <- function(x, pvals, s, dist,
                    algo = NULL,
                    params0 = list(pix = NULL, mux = NULL),
                    num.steps = 10, tol = 1e-4,
@@ -65,8 +65,7 @@ EM.mix <- function(x, pvals, plow, phigh, dist,
     
     for (step in 1:num.steps){
         result.Estep <-
-            Estep.mix(x = x, pvals = pvals,
-                      plow = plow, phigh = phigh,
+            Estep_mix(pvals = pvals, s = s,
                       dist = dist, pix = pix, mux = mux)
         cur.Mstep.args <- c(list(x = x, dist = dist,
                                  Hhat = result.Estep$Hhat,
@@ -91,7 +90,7 @@ EM.mix <- function(x, pvals, plow, phigh, dist,
         cat("\n")
     }
     params <- list(pix = pix, mux = mux)
-    loglik <- EM.loglik(dist, params,
+    loglik <- EM_loglik(dist, params,
                         result.Estep$Hhat, result.Estep$phat)
 
     df.vec <- sapply(other.info.list, function(info){info$df})
@@ -116,7 +115,7 @@ EM.mix <- function(x, pvals, plow, phigh, dist,
     return(list(params = params, loglik = loglik, other = other))
 }
 
-EM.mix.glm <- function(x, pvals, plow, phigh, dist,
+EM_mix_glm <- function(x, pvals, s, dist,
                        pi.formula, mu.formula,
                        pi.alter.formulas = NULL,
                        mu.alter.formulas = NULL,
@@ -129,13 +128,13 @@ EM.mix.glm <- function(x, pvals, plow, phigh, dist,
                           mu.alter.formulas = mu.alter.formulas,
                           ...)
 
-    EM.mix(x = x, pvals = pvals, plow = plow, phigh = phigh,
+    EM_mix(x = x, pvals = pvals, plow = plow, phigh = phigh,
            dist = dist,
            algo = algo, params0 = params0,
            num.steps = num.steps, tol = tol)
 }
 
-EM.mix.gam <- function(x, pvals, plow, phigh, dist,
+EM_mix_gam <- function(x, pvals, s, dist,
                        pi.formula, mu.formula,
                        pi.alter.formulas = NULL,
                        mu.alter.formulas = NULL,
@@ -148,19 +147,19 @@ EM.mix.gam <- function(x, pvals, plow, phigh, dist,
                           mu.alter.formulas = mu.alter.formulas,
                           ...)
 
-    EM.mix(x = x, pvals = pvals, plow = plow, phigh = phigh,
+    EM_mix(x = x, pvals = pvals, plow = plow, phigh = phigh,
            dist = dist,
            algo = algo, params0 = params0,
            num.steps = num.steps, tol = tol)
 }
 
-EM.mix.glmnet <- function(x, pvals, plow, phigh, dist,
+EM_mix_glmnet <- function(x, pvals, s, dist,
                           params0 = list(pix = NULL, mux = NULL),
                           num.steps = 10, tol = 1e-4,
                           ...){
     algo <- gen.AdaPT.glmnet(...)
 
-    EM.mix(x = x, pvals = pvals, plow = plow, phigh = phigh,
+    EM_mix(x = x, pvals = pvals, plow = plow, phigh = phigh,
            dist = dist,
            algo = algo, params0 = params0,
            num.steps = num.steps, tol = tol)

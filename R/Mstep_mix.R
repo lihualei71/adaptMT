@@ -1,51 +1,46 @@
-################################################################
-## Mstep for the mixture model.
-## 
-## Required Input:
-##    x: covariate.
-##    Hhat, phat: output of the E-step.
-##    dist: distribution family for p-values in "exp_family" class.
-##    pi.fit.fun: a function to fit initial pix using \tilde{J_i}.
-##    pi.fit.args: other arguments passed into pi.fit.fun.
-##    mu.fit.fun: a model to fit initial mux using (x,min(p,1-p)).
-##    mu.fit.args: other arguments passed into mu.fit.fun.       
-## Output:
-##    pix, mux
-################################################################
+#===============================================================
+# Compute M-step for the mixture model.
+#===============================================================
 
-Mstep.mix <- function(x, Hhat, phat, dist,
-                      input.type = c("formula", "xy"),
-                      pi.fit.fun = NULL,
-                      pi.fit.args = NULL,
-                      mu.fit.fun = NULL,
-                      mu.fit.args = NULL){
-    input.type <- input.type[1]
+Mstep_mix <- function(x, Hhat, phat, dist,
+                      pifun = NULL, piargs = NULL,
+                      mufun = NULL, muargs = NULL){
+    input_type_pi <- func_input_type(pifun)
+    input_type_mu <- func_input_type(mufun)
+    response_name <- find_newname(colnames(x))
 
-    if (input.type == "formula"){
-        response.name <- find.newname(colnames(x))
+    if (input_type_pi== "formula"){
         data <- cbind(data.frame(Hhat), x)
-        colnames(data)[1] <- response.name    
-        pi.fit.args <- c(list(data = data),
-                         complete.formulas(pi.fit.args,
-                                           response.name))
-
-        data <- cbind(data.frame(dist$g(phat)), x)
-        colnames(data)[1] <- response.name
-
-        mu.fit.args <- c(list(data = data),
-                         complete.formulas(mu.fit.args,
-                                           response.name))
-    } else if (input.type == "xy"){
-        pi.fit.args <- list(x = x, y = Hhat)
-        mu.fit.args <- list(x = x, y = dist$g(phat))
+        colnames(data)[1] <- response_name    
+        piargs <- c(list(data = data), complete_formulas(piargs,
+                             response_name))
+    } else if (input_type_pi == "xy"){
+        piargs <- list(x = x, y = Hhat)
+    } else if (input_type_pi == "Xy"){
+        piargs <- list(X = x, y = Hhat)
+    } else {
+        stop("pifun has irregular input types. Replace another function or writing a wrapper of pifun with regular types of input (formula = , data = ) or (x = x, y = y) or (X = x, y = y)")
     }
 
-    fit.pi <- do.call(pi.fit.fun, pi.fit.args)
-    pix <- as.numeric(fit.pi$fitv)
+    if (input_type_mu== "formula"){
+        data <- cbind(data.frame(dist$g(phat)), x)
+        colnames(data)[1] <- response_name    
+        muargs <- c(list(data = data), complete_formulas(muargs,
+                             response_name))
+    } else if (input_type_mu == "xy"){
+        muargs <- list(x = x, y = Hhat)
+    } else if (input_type_mu == "Xy"){
+        muargs <- list(X = x, y = Hhat)
+    } else {
+        stop("mufun has irregular input types. Replace another function or writing a wrapper of mufun with regular types of input (formula = , data = ) or (x = x, y = y) or (X = x, y = y)")
+    }
+
+    fit_pi <- do.call(pifun, piargs)
+    pix <- as.numeric(fit_pi$fitv)
     pix <- pmin(pmax(pix, 0), 1)
     
-    fit.mu <- do.call(mu.fit.fun, mu.fit.args)
-    mux <- as.numeric(fit.mu$fitv)
+    fit_mu <- do.call(mufun, muargs)
+    mux <- as.numeric(fit_mu$fitv)
     if (dist$family$family == "Gamma"){
         mux <- pmax(mux, 1)
     } else if (dist$family$family == "gaussian"){
@@ -59,107 +54,107 @@ Mstep.mix <- function(x, Hhat, phat, dist,
         stop("mux in M-step has NA values!")
     }
     return(list(pix = pix, mux = mux,
-                fit.pi = fit.pi$mod, fit.mu = fit.mu$mod))
+                fit_pi = fit_pi$mod, fit_mu = fit_mu$mod))
 }
 
-Mstep.mix.glm <- function(x, Hhat, phat, dist,
+Mstep_mix_glm <- function(x, Hhat, phat, dist,
                           pi.formula, mu.formula,
-                          input.type = "formula",
+                          input_type = "formula",
                           ...){
-    if (!is.null(input.type) && (input.type != "formula")){
-        input.type <- "formula"
-        warning("\"input.type\" for GLM can only be formula!")
+    if (!is.null(input_type) && (input_type != "formula")){
+        input_type <- "formula"
+        warning("\"input_type\" for GLM can only be formula!")
     }
     extra.args <- list(...)    
-    pi.fit.fun <- safe.logistic.glm
-    pi.fit.args <- c(list(formula = pi.formula), extra.args)
-    mu.fit.fun <- function(formula, data, ...){
+    pifun <- safe.logistic.glm
+    piargs <- c(list(formula = pi.formula), extra.args)
+    mufun <- function(formula, data, ...){
         safe.glm(formula, data,
                  family = dist$family, ...)
     }
-    mu.fit.args <- c(list(formula = mu.formula), extra.args)
+    muargs <- c(list(formula = mu.formula), extra.args)
     res <- Mstep.mix(x = x, Hhat = Hhat, phat = phat, dist = dist,
-                     input.type = input.type,
-                     pi.fit.fun = pi.fit.fun,
-                     pi.fit.args = pi.fit.args,
-                     mu.fit.fun = mu.fit.fun,
-                     mu.fit.args = mu.fit.args)
+                     input_type = input_type,
+                     pifun = pifun,
+                     piargs = piargs,
+                     mufun = mufun,
+                     muargs = muargs)
     pi.vi <- NA
     mu.vi <- NA
 
-    pi.df <- res$fit.pi$rank
-    mu.df <- res$fit.mu$rank
+    pi.df <- res$fit_pi$rank
+    mu.df <- res$fit_mu$rank
     df <- pi.df + mu.df
 
-    res$fit.pi <- NULL
-    res$fit.mu <- NULL
+    res$fit_pi <- NULL
+    res$fit_mu <- NULL
     res$other <- list(df = df, pi.vi = pi.vi, mu.vi = mu.vi)
     return(res)    
 }
 
-Mstep.mix.gam <- function(x, Hhat, phat, dist,
+Mstep_mix_gam <- function(x, Hhat, phat, dist,
                           pi.formula, mu.formula,
-                          input.type = "formula",
+                          input_type = "formula",
                           ...){
-    if (!is.null(input.type) && (input.type != "formula")){
-        input.type <- "formula"
-        warning("\"input.type\" for GAM can only be formula!")
+    if (!is.null(input_type) && (input_type != "formula")){
+        input_type <- "formula"
+        warning("\"input_type\" for GAM can only be formula!")
     }
     extra.args <- list(...)    
-    pi.fit.fun <- safe.logistic.gam
-    pi.fit.args <- c(list(formula = pi.formula), extra.args)
-    mu.fit.fun <- function(formula, data, ...){
+    pifun <- safe.logistic.gam
+    piargs <- c(list(formula = pi.formula), extra.args)
+    mufun <- function(formula, data, ...){
         safe.gam(formula, data,
                  family = dist$family, ...)
     }
-    mu.fit.args <- c(list(formula = mu.formula), extra.args)
+    muargs <- c(list(formula = mu.formula), extra.args)
     res <- Mstep.mix(x = x, Hhat = Hhat, phat = phat, dist = dist,
-                     input.type = input.type,
-                     pi.fit.fun = pi.fit.fun,
-                     pi.fit.args = pi.fit.args,
-                     mu.fit.fun = mu.fit.fun,
-                     mu.fit.args = mu.fit.args)
+                     input_type = input_type,
+                     pifun = pifun,
+                     piargs = piargs,
+                     mufun = mufun,
+                     muargs = muargs)
     pi.vi <- NA
     mu.vi <- NA
         
-    pi.df <- res$fit.pi$rank
-    mu.df <- res$fit.mu$rank
+    pi.df <- res$fit_pi$rank
+    mu.df <- res$fit_mu$rank
     df <- pi.df + mu.df
 
-    res$fit.pi <- NULL
-    res$fit.mu <- NULL
+    res$fit_pi <- NULL
+    res$fit_mu <- NULL
     res$other <- list(df = df, pi.vi = pi.vi, mu.vi = mu.vi)
     return(res)    
 }
 
-Mstep.mix.glmnet <- function(x, Hhat, phat, dist,
-                             input.type = "xy",
+Mstep_mix_glmnet <- function(x, Hhat, phat, dist,
+                             input_type = "xy",
                              ...){
-    if (!is.null(input.type) && (input.type != "xy")){
-        input.type <- "xy"
-        warning("\"input.type\" for glmnet can only be xy!")
+    if (!is.null(input_type) && (input_type != "xy")){
+        input_type <- "xy"
+        warning("\"input_type\" for glmnet can only be xy!")
     }
     extra.args <- list(...)    
-    pi.fit.fun <- function(x, y, ...){
+    pifun <- function(x, y, ...){
         y <- pmin(pmax(logit(y), logit(10^-15)), logit(1-10^-15))
         res <- safe.gaussian.glmnet(x = x, y = y, ...)
         res$fitv <- pmin(pmax(inv.logit(res$fitv), 10^-15), 1-10^-15)
         return(res)
     }
-    pi.fit.args <- extra.args
-    mu.fit.fun <- function(x, y, ...){
+    piargs <- extra.args
+    mufun <- function(x, y, ...){
         safe.glmnet(x, y,
                     family = dist$family, ...)
     }
-    mu.fit.args <- extra.args
+    muargs <- extra.args
     res <- Mstep.mix(x = x, Hhat = Hhat, phat = phat, dist = dist,
-                     input.type = input.type,
-                     pi.fit.fun = pi.fit.fun,
-                     pi.fit.args = pi.fit.args,
-                     mu.fit.fun = mu.fit.fun,
-                     mu.fit.args = mu.fit.args)
-    pi.coef <- coef(res$fit.pi, s = "lambda.min")
-    mu.coef <- coef(res$fit.mu, s = "lambda.min")
+                     input_type = input_type,
+                     pifun = pifun,
+                     piargs = piargs,
+                     mufun = mufun,
+                     muargs = muargs)
+    pi.coef <- coef(res$fit_pi, s = "lambda.min")
+    mu.coef <- coef(res$fit_mu, s = "lambda.min")
 
     pi.vi <- as.numeric(pi.coef != 0)[-1]
     mu.vi <- as.numeric(mu.coef != 0)[-1]
@@ -168,8 +163,8 @@ Mstep.mix.glmnet <- function(x, Hhat, phat, dist,
     mu.df <- sum(mu.vi)
     df <- pi.df + mu.df
 
-    res$fit.pi <- NULL
-    res$fit.mu <- NULL
+    res$fit_pi <- NULL
+    res$fit_mu <- NULL
     res$other <- list(df = df, pi.vi = pi.vi, mu.vi = mu.vi)    
     return(res)
 }

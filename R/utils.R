@@ -75,14 +75,14 @@ complete_args <- function(x, response, fun,
         if (is.null(args) || !"formula" %in% names(args)){
             stop("Formula is not found. Please specify a formula for the fitting function.")
         }
-        data <- cbind(data.frame(y), x)
+        data <- cbind(data.frame(response), x)
         colnames(data)[1] <- response_name
         args <-  complete_formulas(args, response_name)
         data_args <- c(list(data = data), args)
     } else if (input_type == "xy"){
-        data_args <- c(list(x = x, y = y), args)
+        data_args <- c(list(x = x, y = response), args)
     } else if (input_type == "Xy"){
-        data_args <- c(list(X = x, y = y), args)
+        data_args <- c(list(X = x, y = response), args)
     } else {
         data_args <- NULL
     }

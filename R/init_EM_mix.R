@@ -7,8 +7,10 @@ init_mix_pi <- function(x, pvals, s, fun, args){
         pvals < s | pvals > 1 - s, 1,
         2 * s / (2 * s - 1)
         )
-    J[s == 0.5] <- 0
-    
+    if (any(s >= 0.49)){
+        J[s >= 0.49] <- 0
+    }
+
     args <- complete_args(x, J, fun, args)
 
     if (is.null(args)) {
@@ -25,22 +27,23 @@ init_mix_pi <- function(x, pvals, s, fun, args){
         stop("Initialization of pix has NAs")
     }
     pix <- pminmax(pix, 0, 1)
-    
+
     return(
         list(pix = pix,
-             fit_pi = fit)
+             fit_pi = fit$mod)
         )
 }
 
 init_mix_mu <- function(x, pvals, s, dist, fun, args){
-    imputed_p <- ifelse(
+    phat <- ifelse(
         pvals < s | pvals > 1 - s,
         pmin(pvals, 1 - pvals),
         pvals
         )
-    imputed_p <- pminmax(imputed_p, 1e-15, 1-1e-15)
-    
-    args <- complete_args(x, J, fun, args)
+    phat <- pminmax(phat, 1e-15, 1-1e-15)
+    yhat <- dist$g(phat)
+
+    args <- complete_args(x, yhat, fun, args)
 
     if (is.null(args)) {
         stop("mufun_init has irregular input types. Replace another function or writing a wrapper of mufun with regular types of input (formula = , data = ) or (x = x, y = y) or (X = x, y = y)")
@@ -60,10 +63,10 @@ init_mix_mu <- function(x, pvals, s, dist, fun, args){
     } else if (dist$family$family == "gaussian"){
         mux <- pmax(mux, 0)
     }
-    
+
     return(
         list(mux = mux,
-             fit_mu = fit)
+             fit_mu = fit$mod)
         )
 }
 
@@ -84,13 +87,13 @@ init_mix_glm <- function(x, pvals, s, dist,
                          pi_formula, mu_formula,
                          piargs = NULL, muargs = NULL){
     pifun <- function(formula, data, ...){
-        safe.glm(formula, data, 
+        safe_glm(formula, data,
                  family = gaussian(), ...)
     }
     piargs <- c(list(formula = pi_formula), piargs)
 
-    mufun <- function(formula, data, weights, ...){
-        safe.glm(formula, data, weights = weights,
+    mufun <- function(formula, data, ...){
+        safe_glm(formula, data, 
                  family = dist$family, ...)
     }
     muargs <- c(list(formula = mu_formula), muargs)
@@ -98,20 +101,20 @@ init_mix_glm <- function(x, pvals, s, dist,
     res <- init_mix_root(x, pvals, s, dist,
                          pifun, mufun,
                          piargs, muargs)
-    return(res)    
+    return(res)
 }
 
 init_mix_gam <- function(x, pvals, s, dist,
                          pi_formula, mu_formula,
                          piargs = NULL, muargs = NULL){
     pifun <- function(formula, data, ...){
-        safe.gam(formula, data, 
+        safe_gam(formula, data,
                  family = gaussian(), ...)
     }
     piargs <- c(list(formula = pi_formula), piargs)
 
-    mufun <- function(formula, data, weights, ...){
-        safe.gam(formula, data, weights = weights,
+    mufun <- function(formula, data, ...){
+        safe_gam(formula, data, 
                  family = dist$family, ...)
     }
     muargs <- c(list(formula = mu_formula), muargs)
@@ -125,11 +128,11 @@ init_mix_gam <- function(x, pvals, s, dist,
 init_mix_glmnet <- function(x, pvals, s, dist,
                             piargs, muargs){
     pifun <- function(x, y, ...){
-        safe.glmnet(x, y, 
+        safe_glmnet(x, y,
                     family = "gaussian", ...)
     }
-    mufun <- function(x, y, weights, ...){
-        safe.glmnet(x, y, weights = weights,
+    mufun <- function(x, y, ...){
+        safe_glmnet(x, y, 
                     family = dist$family, ...)
     }
 
@@ -152,7 +155,7 @@ init_mix <- function(x, pvals, s, dist,
         glmnet = init_mix_glmnet,
         custom = NA)
 
-    if (!is.na(func)){
+    if (method != "custom"){
         func(x, pvals, s, dist,
              piargs = piargs, muargs = muargs,
              ...)

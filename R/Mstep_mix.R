@@ -22,7 +22,7 @@ Mstep_mix_pi <- function(x, Hhat, fun, args){
     
     return(
         list(pix = pix,
-             fit_pi = fit)
+             fit_pi = fit$mod)
         )
 }
 
@@ -56,7 +56,7 @@ Mstep_mix_mu <- function(x, Hhat, phat, dist, fun, args){
     
     return(
         list(mux = mux,
-             fit_mu = fit)
+             fit_mu = fit$mod)
         )
 }
 
@@ -147,9 +147,9 @@ Mstep_mix <- function(x, Hhat, phat, dist,
         glm = Mstep_mix_glm,
         gam = Mstep_mix_gam,
         glmnet = Mstep_mix_glmnet,
-        NA)
+        custom = NA)
 
-    if (!is.na(func)){
+    if (method != "custom"){
         func(x, Hhat, phat, dist,
              piargs = piargs, muargs = muargs,
              ...)

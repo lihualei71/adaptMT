@@ -1,24 +1,17 @@
-################################################################
-## Compute the threshold curve s(x) given a level curve of local fdr. See Section 4.2.
-##
-## Required Input:
-##    dist: distribution family for p-values in "exp_family" class.
-##    params: parameters including pix and mux.
-##    lfdr.lev: target local-fdr level.
-## Output:
-##    s: the threshold curve for a given local-fdr level.
-################################################################
+#---------------------------------------------------------------
+# Compute thresholds s(x) given a level curve of local fdr. 
+#---------------------------------------------------------------
 
-compute.threshold.mix <- function(dist, params, lfdr.lev){
+compute_threshold_mix <- function(dist, params, lfdr_lev){
     pix <- params$pix
     mux <- params$mux
-    if (lfdr.lev == 0 || lfdr.lev == 1){
-        return(rep(lfdr.lev, length(pix)))
+    if (lfdr_lev == 0 || lfdr_lev == 1){
+        return(rep(lfdr_lev, length(pix)))
     }
     
-    val1 <- dist$f(1, mux) / lfdr.lev +
-        (1 - pix) / pix * (1 - lfdr.lev) / lfdr.lev
-    val2 <- (log(val1) + dist$A(mux) - dist$A(dist$mu.star)) /
-        (dist$eta(mux) - dist$eta(dist$mu.star))
-    dist$g.inv(val2)
+    val1 <- dist$h(1, mux) / lfdr_lev +
+        (1 - pix) / pix * (1 - lfdr_lev) / lfdr_lev
+    val2 <- (log(val1) + dist$A(mux) - dist$A(dist$mustar)) /
+        (dist$eta(mux) - dist$eta(dist$mustar))
+    dist$ginv(val2)
 }

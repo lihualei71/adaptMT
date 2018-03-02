@@ -12,11 +12,10 @@ EM_loglik <- function(dist, params, Hhat, phat){
 
 EM_mix <- function(x, pvals, s, dist,
                    method = c("glm", "gam", "glmnet", "custom"),
-                   algo = NULL,
-                   algo_args = list(pi = NULL, mu = NULL),
+                   algo = NULL, piargs = NULL, muargs = NULL,
                    params0 = list(pix = NULL, mux = NULL),
                    num_steps = 10, tol = 1e-4,
-                   verbose = FALSE, ...){
+                   verbose = FALSE){
     method <- method[1]
     if (method == "custom" && is.null(algo)){
         stop("\"algo\" must be specified. The algo argument should be a list with names pifun, mufun, init_pifun, init_mufun")
@@ -31,7 +30,7 @@ EM_mix <- function(x, pvals, s, dist,
     if (is.null(params0$pix) || is.null(params0$mux)){
         init_res <- init_mix(x, pvals, s, dist, method,
                              algo$init_pifun, algo$init_mufun,
-                             algo_args$pi, algo_args$mu, ...)
+                             piargs, muargs)
         old_pix <- pix <- init_res$pix
         old_mux <- mux <- init_res$mux
     } else {
@@ -46,7 +45,7 @@ EM_mix <- function(x, pvals, s, dist,
             Mstep_mix(x, Estep_res$Hhat, Estep_res$phat,
                       dist, method,
                       algo$pifun, algo$mufun,
-                      algo_args$pi, algo_args$mu, ...)
+                      piargs, muargs)
         pix <- Mstep_res$pix
         mux <- Mstep_res$mux
         if (max(abs(mux - old_mux)) < tol &&

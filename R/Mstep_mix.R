@@ -10,7 +10,7 @@ Mstep_mix_pi <- function(x, Hhat, fun, args){
     }
 
     fit <- do.call(fun, args)
-    if (!"fitv" %in% names(fit)){
+    if (is.null(fit$fitv)){
         stop("pifun does not output fitv. Replace another function or change the name for fitted value to fitv")
     }
 
@@ -40,7 +40,7 @@ Mstep_mix_mu <- function(x, Hhat, phat, dist, fun, args){
     }
 
     fit <- do.call(fun, args)
-    if (!"fitv" %in% names(fit)){
+    if (is.null(fit$fitv)){
         stop("mufun does not output fitv. Replace another function or change the name for fitted value to fitv")
     }
 
@@ -71,25 +71,29 @@ Mstep_mix_root <- function(x, Hhat, phat, dist,
     res <- c(pi_res, mu_res)
     pi_info <- modinfo(res$fit_pi)
     mu_info <- modinfo(res$fit_mu)
-    res$info <- c(pi_info, mu_info)
+    res$info <- list(pi_df = pi_info$df, pi_vi = pi_info$vi,
+                     mu_df = mu_info$df, mu_vi = mu_info$vi)
     res$fit_pi <- res$fit_mu <- NULL
     return(res)
 }
 
 Mstep_mix_glm <- function(x, Hhat, phat, dist,
-                          pi_formula, mu_formula,
                           piargs = NULL, muargs = NULL){
     pifun <- function(formula, data, ...){
         safe_glm(formula, data,
                  family = binomial(), ...)
     }
-    piargs <- c(list(formula = pi_formula), piargs)
+    if (is.null(piargs$formula)){
+        stop("argument \"formula\" is missing. Please specify it in piargs")
+    }
 
     mufun <- function(formula, data, weights, ...){
         safe_glm(formula, data, weights = weights,
                  family = dist$family, ...)
     }
-    muargs <- c(list(formula = mu_formula), muargs)
+    if (is.null(muargs$formula)){
+        stop("argument \"formula\" is missing. Please specify it in muargs")
+    }
 
     res <- Mstep_mix_root(x, Hhat, phat, dist,
                           pifun, mufun,
@@ -98,19 +102,22 @@ Mstep_mix_glm <- function(x, Hhat, phat, dist,
 }
 
 Mstep_mix_gam <- function(x, Hhat, phat, dist,
-                          pi_formula, mu_formula,
                           piargs = NULL, muargs = NULL){
     pifun <- function(formula, data, ...){
         safe_gam(formula, data,
                  family = binomial(), ...)
     }
-    piargs <- c(list(formula = pi_formula), piargs)
+    if (is.null(piargs$formula)){
+        stop("argument \"formula\" is missing. Please specify it in piargs")
+    }
     
     mufun <- function(formula, data, weights, ...){
         safe_gam(formula, data, weights = weights,
                  family = dist$family, ...)
     }
-    muargs <- c(list(formula = mu_formula), muargs)
+    if (is.null(muargs$formula)){
+        stop("argument \"formula\" is missing. Please specify it in muargs")
+    }
 
     res <- Mstep_mix_root(x, Hhat, phat, dist,
                           pifun, mufun,
@@ -139,8 +146,7 @@ Mstep_mix_glmnet <- function(x, Hhat, phat, dist,
 Mstep_mix <- function(x, Hhat, phat, dist,
                       method = c("glm", "gam", "glmnet", "custom"),
                       pifun = NULL, mufun = NULL,
-                      piargs = NULL, muargs = NULL,
-                      ...){
+                      piargs = NULL, muargs = NULL){
     method <- method[1]
     func <- switch(
         method,
@@ -151,8 +157,7 @@ Mstep_mix <- function(x, Hhat, phat, dist,
 
     if (method != "custom"){
         func(x, Hhat, phat, dist,
-             piargs = piargs, muargs = muargs,
-             ...)
+             piargs = piargs, muargs = muargs)
     } else {
         Mstep_mix_root(x, Hhat, phat, dist,
                        pifun, mufun,

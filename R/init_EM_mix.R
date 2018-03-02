@@ -18,7 +18,7 @@ init_mix_pi <- function(x, pvals, s, fun, args){
     }
 
     fit <- do.call(fun, args)
-    if (!"fitv" %in% names(fit)){
+    if (is.null(fit$fitv)){
         stop("pifun_init does not output fitv. Replace another function or change the name for fitted value to fitv")
     }
 
@@ -50,7 +50,7 @@ init_mix_mu <- function(x, pvals, s, dist, fun, args){
     }
 
     fit <- do.call(fun, args)
-    if (!"fitv" %in% names(fit)){
+    if (is.null(fit$fitv)){
         stop("mufun_init does not output fitv. Replace another function or change the name for fitted value to fitv")
     }
 
@@ -78,25 +78,29 @@ init_mix_root <- function(x, pvals, s, dist,
     res <- c(pi_res, mu_res)
     pi_info <- modinfo(res$fit_pi)
     mu_info <- modinfo(res$fit_mu)
-    res$info <- c(pi_info, mu_info)
+    res$info <- list(pi_df = pi_info$df, pi_vi = pi_info$vi,
+                     mu_df = mu_info$df, mu_vi = mu_info$vi)
     res$fit_pi <- res$fit_mu <- NULL
     return(res)
 }
 
 init_mix_glm <- function(x, pvals, s, dist,
-                         pi_formula, mu_formula,
                          piargs = NULL, muargs = NULL){
     pifun <- function(formula, data, ...){
         safe_glm(formula, data,
                  family = gaussian(), ...)
     }
-    piargs <- c(list(formula = pi_formula), piargs)
+    if (is.null(piargs$formula)){
+        stop("argument \"formula\" is missing. Please specify it in piargs")
+    }
 
     mufun <- function(formula, data, ...){
         safe_glm(formula, data, 
                  family = dist$family, ...)
     }
-    muargs <- c(list(formula = mu_formula), muargs)
+    if (is.null(muargs$formula)){
+        stop("argument \"formula\" is missing. Please specify it in muargs")
+    }
 
     res <- init_mix_root(x, pvals, s, dist,
                          pifun, mufun,
@@ -111,13 +115,17 @@ init_mix_gam <- function(x, pvals, s, dist,
         safe_gam(formula, data,
                  family = gaussian(), ...)
     }
-    piargs <- c(list(formula = pi_formula), piargs)
+    if (is.null(piargs$formula)){
+        stop("argument \"formula\" is missing. Please specify it in piargs")
+    }
 
     mufun <- function(formula, data, ...){
         safe_gam(formula, data, 
                  family = dist$family, ...)
     }
-    muargs <- c(list(formula = mu_formula), muargs)
+    if (is.null(muargs$formula)){
+        stop("argument \"formula\" is missing. Please specify it in muargs")
+    }
 
     res <- init_mix_root(x, pvals, s, dist,
                          pifun, mufun,
@@ -126,7 +134,7 @@ init_mix_gam <- function(x, pvals, s, dist,
 }
 
 init_mix_glmnet <- function(x, pvals, s, dist,
-                            piargs, muargs){
+                            piargs = NULL, muargs = NULL){
     pifun <- function(x, y, ...){
         safe_glmnet(x, y,
                     family = "gaussian", ...)

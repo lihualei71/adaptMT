@@ -1,151 +1,164 @@
-################################################################
-## Parameter initialization for the mixture model.
-## 
-## Required Input:
-##    x: covariate.
-##    pvals: p-values.
-##    plow: lower threshold, i.e. s0(x) in AdaPT.
-##    phigh: upper threshold, i.e. 1 - s0(x) in AdaPT.
-##    dist: distribution family for p-values in "exp_family" class.
-##    pi.fit.fun: a function to fit initial pix using \tilde{J_i}.
-##    pi.fit.args: other arguments passed into pi.fit.fun.
-##    mu.fit.fun: a model to fit initial mux using (x,min(p,1-p)).
-##    mu.fit.args: other arguments passed into mu.fit.fun.
-## Output:
-##    pix, mux: initial guess of pi(x) and mu(x).
-################################################################
+#===============================================================
+# Initialization of EM
+#===============================================================
 
-init.mix <- function(x, pvals, plow, phigh, dist,
-                     input.type = c("formula", "xy"),
-                     pi.fit.fun = NULL,
-                     pi.fit.args = NULL,
-                     mu.fit.fun = NULL,
-                     mu.fit.args = NULL){
-    input.type <- input.type[1]
+init_mix_pi <- function(x, pvals, s, fun, args){
+    J <- ifelse(
+        pvals < s | pvals > 1 - s, 1,
+        2 * s / (2 * s - 1)
+        )
+    J[s == 0.5] <- 0
+    
+    args <- complete_args(x, J, fun, args)
 
-    J <- ifelse(pvals < plow | pvals > phigh, 1,
-                (plow + 1 - phigh) / (plow - phigh))
-    imputed.p <- ifelse(pvals < plow | pvals > phigh,
-                        pmin(pvals, 1 - pvals), pvals)
-    imputed.p <- pmin(pmax(imputed.p, 1e-15), 1-1e-15)
+    if (is.null(args)) {
+        stop("pifun_init has irregular input types. Replace another function or writing a wrapper of pifun with regular types of input (formula = , data = ) or (x = x, y = y) or (X = x, y = y)")
+    }
 
-    Mstep.mix(x = x, Hhat = J, phat = imputed.p, dist = dist,
-              input.type = input.type,
-              pi.fit.fun = pi.fit.fun,
-              pi.fit.args = pi.fit.args,
-              mu.fit.fun = mu.fit.fun,
-              mu.fit.args = mu.fit.args)
+    fit <- do.call(fun, args)
+    if (!"fitv" %in% names(fit)){
+        stop("pifun_init does not output fitv. Replace another function or change the name for fitted value to fitv")
+    }
+
+    pix <- as.numeric(fit$fitv)
+    if (any(is.na(pix))){
+        stop("Initialization of pix has NAs")
+    }
+    pix <- pminmax(pix, 0, 1)
+    
+    return(
+        list(pix = pix,
+             fit_pi = fit)
+        )
 }
 
-init.mix.glm <- function(x, pvals, plow, phigh, dist,
-                         pi.formula, mu.formula,
-                         input.type = "formula",
-                         ...){
-    if (!is.null(input.type) && (input.type != "formula")){
-        input.type <- "formula"
-        warning("Warning: input.type for GLM can only be formula!")
-    }
-    extra.args <- list(...)
-    pi.fit.fun <- safe.gaussian.glm
-    pi.fit.args <- c(list(formula = pi.formula), extra.args)
-    mu.fit.fun <- function(formula, data, ...){
-        safe.glm(formula, data, 
-                 family = dist$family, ...)
-    }
-    mu.fit.args <- c(list(formula = mu.formula), extra.args)
-    res <- init.mix(x = x, pvals = pvals,
-                    plow = plow, phigh = phigh,
-                    dist = dist,
-                    input.type = input.type,
-                    pi.fit.fun = pi.fit.fun,
-                    pi.fit.args = pi.fit.args,
-                    mu.fit.fun = mu.fit.fun,
-                    mu.fit.args = mu.fit.args)
-    pi.vi <- NA
-    mu.vi <- NA
+init_mix_mu <- function(x, pvals, s, dist, fun, args){
+    imputed_p <- ifelse(
+        pvals < s | pvals > 1 - s,
+        pmin(pvals, 1 - pvals),
+        pvals
+        )
+    imputed_p <- pminmax(imputed_p, 1e-15, 1-1e-15)
+    
+    args <- complete_args(x, J, fun, args)
 
-    pi.df <- res$fit.pi$rank
-    mu.df <- res$fit.mu$rank
-    df <- pi.df + mu.df
+    if (is.null(args)) {
+        stop("mufun_init has irregular input types. Replace another function or writing a wrapper of mufun with regular types of input (formula = , data = ) or (x = x, y = y) or (X = x, y = y)")
+    }
 
-    res$fit.pi <- NULL
-    res$fit.mu <- NULL
-    res$other <- list(df = df, pi.vi = pi.vi, mu.vi = mu.vi)
-    return(res)    
+    fit <- do.call(fun, args)
+    if (!"fitv" %in% names(fit)){
+        stop("mufun_init does not output fitv. Replace another function or change the name for fitted value to fitv")
+    }
+
+    mux <- as.numeric(fit$fitv)
+    if (any(is.na(mux))){
+        stop("Initialization of mux has NAs")
+    }
+    if (dist$family$family == "Gamma"){
+        mux <- pmax(mux, 1)
+    } else if (dist$family$family == "gaussian"){
+        mux <- pmax(mux, 0)
+    }
+    
+    return(
+        list(mux = mux,
+             fit_mu = fit)
+        )
 }
 
-init.mix.gam <- function(x, pvals, plow, phigh, dist,
-                         pi.formula, mu.formula,
-                         input.type = "formula",
-                         ...){
-    if (!is.null(input.type) && (input.type != "formula")){
-        input.type <- "formula"
-        warning("Warning: input.type for GLM can only be formula!")
-    }
-    extra.args <- list(...)    
-    pi.fit.fun <- safe.gaussian.gam
-    pi.fit.args <- c(list(formula = pi.formula), extra.args)
-    mu.fit.fun <- function(formula, data, ...){
-        safe.gam(formula, data, 
-                 family = dist$family, ...)
-    }
-    mu.fit.args <- c(list(formula = mu.formula), extra.args)
-    res <- init.mix(x = x, pvals = pvals,
-                    plow = plow, phigh = phigh,
-                    dist = dist,
-                    input.type = input.type,
-                    pi.fit.fun = pi.fit.fun,
-                    pi.fit.args = pi.fit.args,
-                    mu.fit.fun = mu.fit.fun,
-                    mu.fit.args = mu.fit.args)
-    pi.vi <- NA
-    mu.vi <- NA
-        
-    pi.df <- res$fit.pi$rank
-    mu.df <- res$fit.mu$rank
-    df <- pi.df + mu.df
-
-    res$fit.pi <- NULL
-    res$fit.mu <- NULL
-    res$other <- list(df = df, pi.vi = pi.vi, mu.vi = mu.vi)
+init_mix_root <- function(x, pvals, s, dist,
+                          pifun, mufun,
+                          piargs = NULL, muargs = NULL){
+    pi_res <- init_mix_pi(x, pvals, s, pifun, piargs)
+    mu_res <- init_mix_mu(x, pvals, s, dist, mufun, muargs)
+    res <- c(pi_res, mu_res)
+    pi_info <- modinfo(res$fit_pi)
+    mu_info <- modinfo(res$fit_mu)
+    res$info <- c(pi_info, mu_info)
+    res$fit_pi <- res$fit_mu <- NULL
     return(res)
 }
 
-init.mix.glmnet <- function(x, pvals, plow, phigh, dist,
-                            input.type = "xy",
-                            ...){
-    if (!is.null(input.type) && (input.type != "xy")){
-        input.type <- "xy"
-        warning("Warning: input.type for glmnet can only be xy!")
+init_mix_glm <- function(x, pvals, s, dist,
+                         pi_formula, mu_formula,
+                         piargs = NULL, muargs = NULL){
+    pifun <- function(formula, data, ...){
+        safe.glm(formula, data, 
+                 family = gaussian(), ...)
     }
-    extra.args <- list(...)
-    pi.fit.fun <- safe.gaussian.glmnet
-    pi.fit.args <- extra.args
-    mu.fit.fun <- function(x, y, ...){
+    piargs <- c(list(formula = pi_formula), piargs)
+
+    mufun <- function(formula, data, weights, ...){
+        safe.glm(formula, data, weights = weights,
+                 family = dist$family, ...)
+    }
+    muargs <- c(list(formula = mu_formula), muargs)
+
+    res <- init_mix_root(x, pvals, s, dist,
+                         pifun, mufun,
+                         piargs, muargs)
+    return(res)    
+}
+
+init_mix_gam <- function(x, pvals, s, dist,
+                         pi_formula, mu_formula,
+                         piargs = NULL, muargs = NULL){
+    pifun <- function(formula, data, ...){
+        safe.gam(formula, data, 
+                 family = gaussian(), ...)
+    }
+    piargs <- c(list(formula = pi_formula), piargs)
+
+    mufun <- function(formula, data, weights, ...){
+        safe.gam(formula, data, weights = weights,
+                 family = dist$family, ...)
+    }
+    muargs <- c(list(formula = mu_formula), muargs)
+
+    res <- init_mix_root(x, pvals, s, dist,
+                         pifun, mufun,
+                         piargs, muargs)
+    return(res)
+}
+
+init_mix_glmnet <- function(x, pvals, s, dist,
+                            piargs, muargs){
+    pifun <- function(x, y, ...){
         safe.glmnet(x, y, 
+                    family = "gaussian", ...)
+    }
+    mufun <- function(x, y, weights, ...){
+        safe.glmnet(x, y, weights = weights,
                     family = dist$family, ...)
     }
-    mu.fit.args <- extra.args
-    res <- init.mix(x = x, pvals = pvals,
-                    plow = plow, phigh = phigh,
-                    dist = dist,
-                    input.type = input.type,
-                    pi.fit.fun = pi.fit.fun,
-                    pi.fit.args = pi.fit.args,
-                    mu.fit.fun = mu.fit.fun,
-                    mu.fit.args = mu.fit.args)
-    pi.coef <- coef(res$fit.pi, s = "lambda.min")
-    mu.coef <- coef(res$fit.mu, s = "lambda.min")
 
-    pi.vi <- as.numeric(pi.coef != 0)
-    mu.vi <- as.numeric(mu.coef != 0)
-    
-    pi.df <- sum(pi.vi)
-    mu.df <- sum(mu.vi)
-    df <- pi.df + mu.df
+    res <- init_mix_root(x, pvals, s, dist,
+                         pifun, mufun,
+                         piargs, muargs)
+    return(res)
+}
 
-    res$fit.pi <- NULL
-    res$fit.mu <- NULL
-    res$other <- list(df = df, pi.vi = pi.vi, mu.vi = mu.vi)
-    return(res)    
+init_mix <- function(x, pvals, s, dist,
+                     method = c("glm", "gam", "glmnet", "custom"),
+                     pifun = NULL, mufun = NULL,
+                     piargs = NULL, muargs = NULL,
+                     ...){
+    method <- method[1]
+    func <- switch(
+        method,
+        glm = init_mix_glm,
+        gam = init_mix_gam,
+        glmnet = init_mix_glmnet,
+        custom = NA)
+
+    if (!is.na(func)){
+        func(x, pvals, s, dist,
+             piargs = piargs, muargs = muargs,
+             ...)
+    } else {
+        init_mix_root(x, pvals, s, dist,
+                      pifun, mufun,
+                      piargs, muargs)
+    }
 }

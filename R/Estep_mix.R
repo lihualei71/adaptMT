@@ -26,18 +26,23 @@ Estep_mix <- function(pvals, s, dist, pix, mux){
     Hhat <- ifelse(
         pvals < s | pvals > 1 - s,
         1 / (1 + 2 * (1 - pix) / pix / (hp + hp_mir)),
-        1 / (1 + (1 - pix) / pix / hp))
+        1 / (1 + (1 - pix) / pix / hp)
+        )
     yhat <- ifelse(
         pvals < s | pvals > 1 - s,
         (y * hp + y_mir * hp_mir) / (hp + hp_mir),
-        y)
+        y
+        )
     phat <- dist$ginv(yhat)
 
     if (any(is.na(Hhat))){
-        stop("Hhat in the E-step has NA values!")
+        stop("Hhat in the E-step has NAs.")
     }
     if (any(is.na(phat))){
-        stop("phat in the E-step has NA values!")
+        stop("phat in the E-step has NAs.")
     }
-    return(list(Hhat = Hhat, phat = phat))
+    return(
+        list(Hhat = Hhat,
+             phat = phat)
+        )
 }

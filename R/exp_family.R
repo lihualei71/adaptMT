@@ -31,14 +31,25 @@
 exp_family <- function(g, ginv, eta, mustar, A,
                        name = NULL, family = NULL){
     h <- function(p, mu){
-        ifelse(mu == mustar, rep(1, length(p)),
-               exp(g(p) * (eta(mu) - eta(mustar)) -
-                       (A(mu) - A(mustar))))
+        ifelse(mu == mustar,
+               rep(1, length(p)),
+               exp(
+                   g(p) * (eta(mu) - eta(mustar)) -
+                       (A(mu) - A(mustar))
+                   )
+               )
     }
-    result <- list(h = h, g = g, ginv = ginv, eta = eta,
-                   mustar = mustar, A = A,
-                   name = name, family = family)
-    class(result) <- "exp_family"
+    result <- structure(
+        list(h = h,
+             g = g,
+             ginv = ginv,
+             eta = eta,
+             mustar = mustar,
+             A = A,
+             name = name,
+             family = family),
+        class = "exp_family"
+        )
     return(result)
 }
 

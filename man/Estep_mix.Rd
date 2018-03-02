@@ -2,7 +2,7 @@
 % Please edit documentation in R/Estep_mix.R
 \name{Estep_mix}
 \alias{Estep_mix}
-\title{Computing E-step for Mix Models}
+\title{Computing E-step for Mixture Models}
 \usage{
 Estep_mix(pvals, s, dist, pix, mux)
 }

@@ -162,9 +162,18 @@ safe_glmnet <- function(x, y,
         family <- family$family
     }
 
-    if (family %in% c("gaussian", "binomial", "poisson", "multinomial", "cox", "mgaussian")){
+    if (family %in% c("gaussian", "poisson", "multinomial", "cox", "mgaussian")){
         algo <- function(...)
-            glmnetUtils::cv.glmnet(..., family = family)
+            glmnet::cv.glmnet(..., family = family)
+    } else if (family == "binomial") {
+        algo <- function(x, y, ...){
+            n <- length(y)
+            newy <- c(rep(1, n), rep(0, n))
+            newx <- rbind(x, x)
+            weights <- c(y, 1 - y)
+            glmnet::cv.glmnet(newx, newy, family = "binomial",
+                              weights = weights, ...)
+        }
     } else if (family == "Gamma"){
         algo <- function(...)
             HDtweedie::cv.HDtweedie(..., p = 2)
@@ -177,73 +186,4 @@ safe_glmnet <- function(x, y,
     mod <- result$mod
     fitv <- as.numeric(predict(mod, newx = x, s = "lambda.min", type = "response"))
     return(list(mod = mod, fitv = fitv))
-}
-
-safe_logistic_glm <- function(formula, data,
-                              alter.formulas = NULL,
-                              ...){
-    safe.glm(formula, data, alter.formulas,
-             family = binomial(),
-             ...)
-}
-
-safe_logistic_gam <- function(formula, data,
-                              alter.formulas = NULL,
-                              ...){
-    safe_gam(formula, data, alter.formulas,
-             family = binomial(),
-             ...)
-}
-
-safe_logistic_glmnet <- function(x, y,
-                                 ...){
-    safe_glmnet(x, y,
-                family = "binomial",
-                ...)
-}
-
-safe_gaussian_glm <- function(formula, data,
-                              alter.formulas = NULL,
-                              ...){
-    safe_glm(formula, data, alter.formulas,
-             family = gaussian(),
-             ...)
-}
-
-safe_gaussian_gam <- function(formula, data,
-                              alter.formulas = NULL,
-                              ...){
-    safe_gam(formula, data, alter.formulas,
-             family = gaussian(),
-             ...)
-}
-
-safe_gaussian_glmnet <- function(x, y,
-                                 ...){
-    safe_glmnet(x, y,
-                family = "gaussian",
-                ...)
-}
-
-safe_gamma_glm <- function(formula, data,
-                           alter.formulas = NULL,
-                           ...){
-    safe_glm(formula, data, alter.formulas,
-             family = Gamma(),
-             ...)
-}
-
-safe_gamma_gam <- function(formula, data,
-                           alter.formulas = NULL,
-                           ...){
-    safe_gam(formula, data, alter.formulas,
-             family = Gamma(),
-             ...)
-}
-
-safe_gamma_glmnet <- function(x, y,
-                              ...){
-    safe_glmnet(x, y,
-                family = "Gamma",
-                ...)
 }

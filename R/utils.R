@@ -11,7 +11,7 @@ inv_logit <- function(x){
 }
 
 func_input_type <- function(fun){
-    argnames <- formalArgs(fun)
+    argnames <- methods::formalArgs(fun)
     if ("formula" %in% argnames){
         return("formula")
     } else if ("x" %in% argnames){
@@ -32,9 +32,9 @@ find_newname <- function(names_vec){
 complete_formulas <- function(args, response_name){
     if (!is.null(args[["formula"]])){
         formula <- as.character(args[["formula"]])
-        formula <- tail(formula, 1)
-        formula <- tail(strsplit(formula, "~")[[1]], 1)
-        completed_formula <- as.formula(
+        formula <- utils::tail(formula, 1)
+        formula <- utils::tail(strsplit(formula, "~")[[1]], 1)
+        completed_formula <- stats::as.formula(
             paste(response_name, "~", formula))
         args[["formula"]] <- completed_formula
     } else {
@@ -44,9 +44,9 @@ complete_formulas <- function(args, response_name){
         completed_alter_formulas <-
             sapply(args[["alter.formulas"]], function(formula){
                 formula <- as.character(args[["formula"]])
-                formula <- tail(formula, 1)
-                formula <- tail(strsplit(formula, "~")[[1]], 1)
-                as.formula(paste(response_name, "~", formula))
+                formula <- utils::tail(formula, 1)
+                formula <- utils::tail(strsplit(formula, "~")[[1]], 1)
+                stats::as.formula(paste(response_name, "~", formula))
             })
         args[["alter.formulas"]] <- completed_alter_formulas
     }

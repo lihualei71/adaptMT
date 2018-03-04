@@ -36,6 +36,7 @@
 #'     include list(formula = ...).
 #' @param alter_args A list of list, with each sub-list of the same lengths and keys as
 #'     \code{algo_args}, but with different values. NULL if no candidate argument.
+#' @param ... Other arguments passed to algo
 #' @return One of the following: \itemize{
 #'    \item The output of \code{algo}, when running \code{algo} on \code{algo_args} does not report an error,
 #'    \item an error message indicating the error by running \code{algo} on \code{algo_args}, and the output
@@ -81,7 +82,7 @@ safe_glm <- function(formula, data,
                      family = gaussian(),
                      ...){
     ## Safe GLM
-    glm <- stats::glm
+    glm <- glm
     algo <- function(formula, data, family, ...){
         if (family$link %in% c("inverse", "log")){
             mod <- try(glm(formula = formula, data = data,
@@ -163,8 +164,8 @@ safe_glmnet <- function(x, y,
     }
 
     if (family %in% c("gaussian", "poisson", "multinomial", "cox", "mgaussian")){
-        algo <- function(...)
-            glmnet::cv.glmnet(..., family = family)
+        algo <- function(x, y, ...)
+            glmnet::cv.glmnet(x, y, family = family, ...)
     } else if (family == "binomial") {
         algo <- function(x, y, ...){
             n <- length(y)
@@ -175,8 +176,8 @@ safe_glmnet <- function(x, y,
                               weights = weights, ...)
         }
     } else if (family == "Gamma"){
-        algo <- function(...)
-            HDtweedie::cv.HDtweedie(..., p = 2)
+        algo <- function(x, y, ...)
+            HDtweedie::cv.HDtweedie(x, y, p = 2, ...)
     }
 
     data_args <- list(x = x, y = y)

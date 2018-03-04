@@ -24,7 +24,7 @@ EM_mix <- function(x, pvals, s, dist,
     if (verbose){
         cat("Model fitting starts!\n")
         cat("Reduce num_steps if it is too time-consuming.\n")
-        pb <- txtProgressBar(min = 0, max = num_steps, style = 3, width = 50)
+        pb <- utils::txtProgressBar(min = 0, max = num_steps, style = 3, width = 50)
     }
 
     if (is.null(params0$pix) || is.null(params0$mux)){
@@ -55,7 +55,7 @@ EM_mix <- function(x, pvals, s, dist,
         old_pix <- pix
         old_mux <- mux
         if (verbose){
-            setTxtProgressBar(pb, step)
+            utils::setTxtProgressBar(pb, step)
         }        
     }
     if (verbose){    

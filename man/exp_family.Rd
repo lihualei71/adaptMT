@@ -41,7 +41,7 @@ parameter \eqn{\mu^{*}}{\mu*} is to guarantee that \eqn{U([0, 1])}
 belongs to the class.
 }
 \details{
-Beta family (\code{beta_family()}): modelling p-values as Beta-distributed random variables, i.e. \eqn{g(p) = -log(p)}, \eqn{\eta(\mu) = -1 / \mu}, \eqn{\mu* = 1}, \eqn{A(\mu) = log(\mu)}, name = "beta" and family = Gamma(). Beta-family is highly recommended for general problems and used as default in \code{\link{AdaPT}}.
+Beta family (\code{beta_family()}): modelling p-values as Beta-distributed random variables, i.e. \eqn{g(p) = -log(p)}, \eqn{\eta(\mu) = -1 / \mu}, \eqn{\mu* = 1}, \eqn{A(\mu) = log(\mu)}, name = "beta" and family = Gamma(). Beta-family is highly recommended for general problems and used as default.
 
 Inverse-gaussian family (\code{inv_gaussian_family()}): modelling p-values as transformed z-scores, i.e. \eqn{g(p) = \Phi^{-1}(p) (\Phi is the c.d.f. of a standard normal random variable)}, \eqn{\eta(\mu) = \mu}, \eqn{\mu* = 0}, \eqn{A(\mu) = \mu^2 / 2}, name = "inv_gaussian" and family = gaussian().
 }

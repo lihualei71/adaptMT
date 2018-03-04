@@ -13,10 +13,10 @@
 #' parameter \eqn{\mu^{*}}{\mu*} is to guarantee that \eqn{U([0, 1])}
 #' belongs to the class.
 #'
-#' Beta family (\code{beta_family()}): modelling p-values as Beta-distributed random variables, i.e. \eqn{g(p) = -log(p)}, \eqn{\eta(\mu) = -1 / \mu}, \eqn{\mu* = 1}, \eqn{A(\mu) = log(\mu)}, name = "beta" and family = Gamma(). Beta-family is highly recommended for general problems and used as default in \code{\link{AdaPT}}.
+#' Beta family (\code{beta_family()}): modelling p-values as Beta-distributed random variables, i.e. \eqn{g(p) = -log(p)}, \eqn{\eta(\mu) = -1 / \mu}, \eqn{\mu* = 1}, \eqn{A(\mu) = log(\mu)}, name = "beta" and family = Gamma(). Beta-family is highly recommended for general problems and used as default.
 #'
 #' Inverse-gaussian family (\code{inv_gaussian_family()}): modelling p-values as transformed z-scores, i.e. \eqn{g(p) = \Phi^{-1}(p) (\Phi is the c.d.f. of a standard normal random variable)}, \eqn{\eta(\mu) = \mu}, \eqn{\mu* = 0}, \eqn{A(\mu) = \mu^2 / 2}, name = "inv_gaussian" and family = gaussian().
-#' 
+#'
 #' @param g function. An transformation of p-values
 #' @param ginv function. The inverse function of \code{g}
 #' @param eta function. The natural parameter as a function of the mean parameter \code{mu}
@@ -27,7 +27,7 @@
 #' @return an object of S3 class "exp_family". This includes all inputs and  \item{h }{bivariate function of p and \code{mu}. The density function computed}
 #'
 #' @export
-#' 
+#'
 exp_family <- function(g, ginv, eta, mustar, A,
                        name = NULL, family = NULL){
     h <- function(p, mu){
@@ -53,10 +53,10 @@ exp_family <- function(g, ginv, eta, mustar, A,
     return(result)
 }
 
-#' @rdname exp_family 
-#' 
+#' @rdname exp_family
+#'
 #' @export
-#' 
+#'
 beta_family <- function(){
     g <- function(x){
         tmp <- -log(x)
@@ -76,10 +76,10 @@ beta_family <- function(){
     exp_family(g, ginv, eta, mustar, A, name, family)
 }
 
-#' @rdname exp_family 
-#' 
+#' @rdname exp_family
+#'
 #' @export
-#' 
+#'
 inv_gaussian_family <- function(){
     g <- function(x){
         tmp <- qnorm(1 - x)

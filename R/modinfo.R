@@ -14,7 +14,7 @@ modinfo.glm <- modinfo.gam <- function(fit){
 }
 
 modinfo.glmnet <- modinfo.HDtweedie <- function(fit){
-    beta <- coef(res$fit_pi, s = "lambda.min")
+    beta <- coef(fit$fit_pi, s = "lambda.min")
     vi <- as.numeric(beta != 0)[-1]    
     df <- sum(vi) + 1
     return(list(df = df, vi = vi))

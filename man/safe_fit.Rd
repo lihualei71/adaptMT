@@ -18,6 +18,8 @@ include list(formula = ...).}
 
 \item{alter_args}{A list of list, with each sub-list of the same lengths and keys as
 \code{algo_args}, but with different values. NULL if no candidate argument.}
+
+\item{...}{Other arguments passed to algo}
 }
 \value{
 One of the following: \itemize{

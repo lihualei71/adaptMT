@@ -3,3 +3,5 @@
 .RData
 .Ruserdata
 TODO
+inst/extdata/estrogen_test.RData
+examples/*

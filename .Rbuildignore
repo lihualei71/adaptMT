@@ -1,3 +1,6 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^TODO$
+^examples/*
+^inst/extdata/estrogen_test.RData$
+

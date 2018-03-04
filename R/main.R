@@ -9,6 +9,117 @@ fdp_hat <- function(A, R){
     (1 + A) / pmax(1, R)
 }
 
+AdaPT_preprocess <- function(methods, algos, piargs, muargs){
+    ## Check the type of methods
+    if (!class(methods) %in% c("NULL", "character", "list")){
+        stop("\"methods\" must be NULL or a string or a list of strings.")
+    } else if (class(methods) == "list" && !all(sapply(methods, is.character))){
+        stop("\"methods\" must be a list of strings.") 
+    }
+    
+    ## Check the type of algos
+    if (!class(algos) %in% c("NULL", "list", "function")){
+        stop("\"algos\" must be NULL or a function or a list of functions.")
+    } else if (class(methods) == "list" && !all(sapply(methods, is.function))){
+        stop("\"algos\" must be a list of functions.") 
+    }
+
+    ## Check the type of piargs/muargs. We allow piargs/muargs to be NULL, or a single argument list, or a list of argument lists.
+    ## An argument list is a list with names/values being the argument names/values of the target function.
+    ## When piargs/muargs is a list of argument lists, names(piargs)/names(muargs) should be NULL and
+    ## each element should have the same set of argument names
+    if (!is.null(piargs)){
+        if (!is.list(piargs)){
+            stop("\"piargs\" must be a list")
+        } else if (!is.null(names(piargs))){
+            if ("" %in% names(piargs)){
+                stop("\"piargs\" has empty argument names.")
+            } else {
+                piargs <- list(piargs)
+            }
+        } else if (!all(sapply(piargs, is.list))){
+            stop("\"piargs\" must be a list of (argument) lists")
+        }
+    }
+    if (!is.null(muargs)){
+        if (!is.list(muargs)){
+            stop("\"muargs\" must be a list")
+        } else if (!is.null(names(muargs))){
+            if ("" %in% names(muargs)){
+                stop("\"muargs\" has empty argument names.")
+            } else {
+                muargs <- list(muargs)
+            }
+        } else if (!all(sapply(muargs, is.list))){
+            stop("\"muargs\" must be a list of (argument) lists")
+        }
+    }
+    
+    ## Check if the number of piargs equal to the number of muargs
+    if (length(piargs) != length(muargs)){
+        stop("\"piargs\" and \"muargs\" must have the same number of elements")
+    }
+    
+    ## Check if either "methods" or "algos" is specified
+    if (is.null(methods) && is.null(algos)){
+        stop("Either \"methods\" or \"algos\" must be specified.")
+    }
+    
+    ## If "methods" is unspecified but "algos" is specified, set it as a vector of "custom"s
+    if (is.null(methods)){
+        methods <- rep("custom", length(algos))
+    }
+
+    ## If "methods" is a list, transform it into a vector
+    if (is.list(methods)){
+        methods <- unlist(methods)
+    }
+    
+    ## If "algos/piargs/muargs" is unspecified, set it as a list of lists
+    if (is.null(algos)){
+        algos <- lapply(1:length(methods), function(i) NULL)
+    }
+    if (is.null(piargs)){
+        piargs <- lapply(1:length(methods), function(i) list())
+    }
+    if (is.null(muargs)){
+        muargs <- lapply(1:length(methods), function(i) list())
+    }
+
+    ## When multiple methods are provided, check if the number matches that of piargs/muargs
+    if (length(methods) > 1 && length(methods) != length(piargs)){
+        stop("Number of methods, piargs and muargs should be equal.")
+    }
+    
+    ## When a single method and a single set of piargs/muargs are provided, unlist algos/piargs/muargs
+    if (length(methods) == 1 && length(piargs) == 1){
+        algos <- algos[[1]]
+        piargs <- piargs[[1]]
+        muargs <- muargs[[1]]        
+    }
+
+    ## When a single method and multiple piargs/muargs are provided, set "methods" as a vector
+    if (length(methods) == 1 && length(piargs) > 1){
+        methods <- rep(methods, length(piargs))
+    }
+
+    return(list(methods = methods, algos = algos,
+                piargs = piargs, muargs = muargs))
+}
+
+create_stamps <- function(nmasks, nfits, nms){
+    fit_stamps <- c(seq(0, nmasks, floor(nmasks / nfits)))[1:nfits]
+    stamps <- data.frame(stamp = fit_stamps, type = "fit",
+                         stringsAsFactors = FALSE)
+    if (!is.null(nms)){
+        ms_inds <- seq(1, nfits, floor(nfits / nms))[1:nms]
+        stamps[ms_inds, 2] <- "ms"
+    }
+    stamps <- rbind(stamps, data.frame(stamp = nmasks, type = "end"))
+    return(stamps)
+    
+}
+
 AdaPT <- function(x, pvals,
                   dist = beta_family(),
                   methods = NULL, algos = NULL,
@@ -26,66 +137,30 @@ AdaPT <- function(x, pvals,
         stop("\"dist\" must be of class \"exp_family\".")
     }
 
-    ## Check if either "methods" or "algos" is specified
-    if (is.null(methods) && is.null(algos)){
-        stop("Either \"methods\" or \"algos\" must be specified.")
-    }
-
-    ## If "methods" is unspecified, set it as a vector of "custom"s
-    ## If "methods" is list, transform it into a vector
-    if (is.null(methods)){
-        methods <- rep("custom", length(algos))
-    } else if (is.list(methods)){
-        methods <- unlist(methods)
-    }
-
-    ## If "algos/piargs/muargs" is unspecified, set it as a list of lists
-    if (is.null(algos)){
-        algos <- lapply(1:length(methods), function(i) list())
-    }
-    if (is.null(piargs)){
-        piargs <- lapply(1:length(methods), function(i) list())
-    }
-    if (is.null(muargs)){
-        muargs <- lapply(1:length(methods), function(i) list())
-    }
-
-    ## When a single method is provided, transform algo into a function (instead of a list of functions)
-    if (length(methods) == 1 && is.list(algos[[1]])){
-        algos <- algos[[1]]
-    }
-
-    ## When a single method and multiple piargs/muargs is provided, transform algo into a function (instead of a list of functions)
-    if (length(methods) == 1 && is.list(piargs[[1]])){
-        piargs <- piargs[[1]]
-    }
-    if (length(methods) == 1 && is.list(muargs[[1]])){
-        muargs <- muargs[[1]]
-    }
-
-    ## When multiple methods are provided, check if the number matches that of piargs/muargs
-    lens <- c(length(methods), length(piargs), length(muargs))
-    if (length(methods) > 1 && max(lens) > min(lens)){
-        stop("Number of methods, piargs and muargs should be equal.")
-    }
+    ## Clean the inputs
+    clean_inputs <- AdaPT_preprocess(methods, algos, piargs, muargs)
+    methods <- clean_inputs$methods
+    algos <- clean_inputs$algos
+    piargs <- clean_inputs$piargs
+    muargs <- clean_inputs$muargs
     
-    ## When a single method is provided, wrap the arguments "methods", "algos", "piargs" and "muargs" as "model"
+    ## When a single method is provided, wrap the arguments as "model" and set "nms" to be NULL
     if (length(methods) == 1){
         model <- list(method = methods, algo = algos,
                       piargs = piargs, muargs = muargs)
+        nms <- NULL
+    } else {
+        if (!is.integer(nms) || nms <= 0){
+            nms <- 1
+        } else if (nms > nfits){
+            warning("Model selection cannot be more frequent than model fitting. Set \"nms\" to \"nfits\"")
+            nms <- nfits
+        }
     }
     
     ## Create time stamps when model is fitted or model selection is performed
     nmasks <- sum(pvals <= s) + sum(pvals >= 1 - s)
-    fit_stamps <- c(seq(0, nmasks, floor(nmasks / nfits)))[1:nfits]
-    stamps <- data.frame(stamp = fit_stamps, type = "fit",
-                         stringsAsFactors = FALSE)
-    if (!is.null(nms) && length(methods) > 1){
-        ms_inds <- seq(1, nfits, floor(nfits / nms))[1:nms]
-        stamps[ms_inds, 2] <- "ms"
-    }
-    stamps <- rbind(stamps, data.frame(stamp = nmasks, type = "end"))
-    
+    stamps <- create_stamps(nmasks, nfits, nms)    
 
     ## Create root arguments to simplify fitting and model selection
     fit_args_root <- list(
@@ -204,7 +279,7 @@ AdaPT <- function(x, pvals,
         ## Calculate the current minimum FDPhat
         minfdp <- min(fdp)
 
-        while (alphaind > 0){
+        while (alphaind > 0){# check if lower FDR level is achieved
             alpha <- alphas[alphaind]
             if (any(fdp <= alpha)){
                 breakpoint <- which(fdp <= alpha)[1]
@@ -221,7 +296,7 @@ AdaPT <- function(x, pvals,
                 if (verbose$print){
                     cat(paste0(
                         "alpha = ", alpha, ": FDPhat ",
-                        round(fdpnew, 3), ", Number of Rej. ",
+                        round(fdpnew, 4), ", Number of Rej. ",
                         Rnew, "\n"))
                 }
 
@@ -238,6 +313,7 @@ AdaPT <- function(x, pvals,
             break
         }
 
+        ## Update s(x)
         final_lfdr_lev <- lfdr[tail(inds, 1)]
         snew <- compute_threshold_mix(dist, params, final_lfdr_lev)
         s <- pmin(s, snew)
@@ -258,100 +334,3 @@ AdaPT <- function(x, pvals,
     }
     return(res)
 }
-
-AdaPT.glm <- function(x, pvals, dist,
-                      pi.formulas, mu.formulas,
-                      glm.args = NULL,
-                      num.steps.up = 10,
-                      num.steps.ms = 30,
-                      tol = 1e-4,
-                      ...){
-    if (class(pi.formulas)[1] == "list"){
-        pi.formulas <- unlist(pi.formulas)
-    }
-    if (class(mu.formulas)[1] == "list"){
-        mu.formulas <- unlist(mu.formulas)
-    }
-    nf <- length(pi.formulas)
-    if (nf != length(mu.formulas)){
-        stop("the numbers of formulas for pi(x) and mu(x) do not match!")
-    }
-    if (nf == 1){
-        gen.algo.args <- c(list(pi.formula = pi.formulas,
-                                mu.formula = mu.formulas),
-                           glm.args)
-        algo <- do.call(gen.AdaPT.glm, gen.algo.args)
-        cand_algos <- NULL
-    } else {
-        algo <- NULL
-        cand_algos <- lapply(1:nf, function(i){
-            gen.algo.args <- c(list(pi.formula = pi.formulas[i],
-                                    mu.formula = mu.formulas[i]),
-                               glm.args)
-            do.call(gen.AdaPT.glm, gen.algo.args)
-        })
-    }
-    fit_args <- list(num.steps = num.steps.up, tol = tol)
-    ms_args <- list(num.steps = num.steps.ms, tol = tol)
-    ms.fun <- EM.mix.ms
-    AdaPT(x = x, pvals = pvals, dist = dist,
-          algo = algo, fit_args = fit_args,
-          ms.fun = ms.fun, cand_algos = cand_algos,
-          ms_args = ms_args, ...)
-}
-
-AdaPT.gam <- function(x, pvals, dist,
-                      pi.formulas, mu.formulas,
-                      gam.args = NULL,
-                      num.steps.up = 10,
-                      num.steps.ms = 30,
-                      tol = 1e-4,
-                      ...){
-    if (class(pi.formulas)[1] == "list"){
-        pi.formulas <- unlist(pi.formulas)
-    }
-    if (class(mu.formulas)[1] == "list"){
-        mu.formulas <- unlist(mu.formulas)
-    }
-    nf <- length(pi.formulas)
-    if (nf != length(mu.formulas)){
-        stop("Error: the numbers of formulas for pi(x) and mu(x) do not match!")
-    }
-    if (nf == 1){
-        gen.algo.args <- c(list(pi.formula = pi.formulas,
-                                mu.formula = mu.formulas),
-                           gam.args)
-        algo <- do.call(gen.AdaPT.gam, gen.algo.args)
-        cand_algos <- NULL
-    } else {
-        algo <- NULL
-        cand_algos <- lapply(1:m, function(i){
-            gen.algo.args <- c(list(pi.formula = pi.formulas[i],
-                                    mu.formula = mu.formulas[i]),
-                               gam.args)
-            do.call(gen.AdaPT.gam, gen.algo.args)
-        })
-    }
-    fit_args <- list(num.steps = num.steps.up, tol = tol)
-    ms_args <- list(num.steps = num.steps.ms, tol = tol)
-    ms.fun <- EM.mix.ms
-    AdaPT(x = x, pvals = pvals, dist = dist,
-          algo = algo, fit_args = fit_args,
-          ms.fun = ms.fun, cand_algos = cand_algos,
-          ms_args = ms_args, ...)
-}
-
-AdaPT.glmnet <- function(x, pvals, dist,
-                         glmnet.args = NULL,
-                         num.steps = 10,
-                         tol = 1e-4,
-                         ...){
-    algo <- do.call(gen.AdaPT.glmnet, glmnet.args)
-    cand_algos <- NULL
-    fit_args <- list(num.steps = num.steps, tol = tol)
-    ms.fun <- EM.mix.ms
-    AdaPT(x = x, pvals = pvals, dist = dist,
-          algo = algo, fit_args = fit_args,
-          ms.fun = ms.fun, cand_algos = cand_algos, ...)
-}
-

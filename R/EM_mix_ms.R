@@ -58,7 +58,8 @@ EM_mix_ms <- function(x, pvals, s, dist, cr = "BIC",
         mod <- try(
             EM_mix(x, pvals, s, dist, method, algo,
                    piargs, muargs,
-                   params0, num_steps, tol)
+                   params0, num_steps, tol),
+            silent = TRUE
             )
         if (class(mod)[1] == "try-error"){
             warning(paste0("Model ", i, " fails."))

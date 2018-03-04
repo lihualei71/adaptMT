@@ -10,18 +10,6 @@ inv_logit <- function(x){
     exp(x) / (1 + exp(x))
 }
 
-#' Function to calculate FDPhat
-#' 
-#' @param pvals: p-values
-#' @param s: threshold curve
-#' @return 
-#'    fdphat: estimated FDP
-fdp.hat <- function(pvals, s) {
-    A <- sum(pvals > 1 - s)
-    R <- sum(pvals <= s)
-    return((1 + A) / max(R, 1))
-}
-
 func_input_type <- function(fun){
     argnames <- formalArgs(fun)
     if ("formula" %in% argnames){

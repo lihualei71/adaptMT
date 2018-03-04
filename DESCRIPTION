@@ -1,9 +1,9 @@
 Package: adapt
 Type: Package
 Title: Adaptive P-value Thresholding (AdaPT) for multiple hypothesis testing with side information
-Version: 0.0.0.9000
+Version: 0.1.0.9000
 Authors@R: person("Lihua", "Lei", email = "lihua.lei@berkeley.edu", role = c("aut", "cre"))
-Maintainer: The package maintainer <yourself@somewhere.net>
+Maintainer: Lihua Lei <lihua.lei@berkeley.edu>
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
 License: MIT + file LICENSE
@@ -15,5 +15,3 @@ Imports:
     HDtweedie,
     splines
 RoxygenNote: 6.0.1
-Suggests: 
-    splines

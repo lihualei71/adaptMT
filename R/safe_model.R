@@ -51,7 +51,7 @@ safe_fit <- function(algo, data_args, algo_args,
 
     extra_args <- list(...)
     args <- c(data_args, algo_args, extra_args)
-    mod <- try(do.call(algo, args))
+    mod <- try(do.call(algo, args), silent = TRUE)
 
     if (class(mod)[1] != "try-error" || is.null(alter_args)){
         return(list(mod = mod, args = args))
@@ -63,7 +63,7 @@ safe_fit <- function(algo, data_args, algo_args,
 
     for (algo_args in alter_args){
         args <- c(data_args, algo_args, extra_args)
-        mod <- try(do.call(algo, args))
+        mod <- try(do.call(algo, args), silent = TRUE)
 
         if (class(mod)[1] != "try-error"){
             return(list(mod = mod, args = args))

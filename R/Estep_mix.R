@@ -18,6 +18,7 @@
 #' @return Imputed values, including
 #' \item{Hhat}{vector of binary values. imputed values for \eqn{H_{i}}{Hi}'s}
 #' \item{phat}{vector of values in [0, 1]. imputed values for \eqn{p_{i}}{pi}'s}
+#' @keywords internal
 Estep_mix <- function(pvals, s, dist, pix, mux){
     hp <- dist$h(pvals, mux)
     hp_mir <- dist$h(1 - pvals, mux)

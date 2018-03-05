@@ -80,19 +80,19 @@ Mstep_mix_root <- function(x, Hhat, phat, dist,
 Mstep_mix_glm <- function(x, Hhat, phat, dist,
                           piargs = NULL, muargs = NULL){
     pifun <- function(formula, data, ...){
-        safe_glm(formula, data,
+        adapt_glm(formula, data,
                  family = binomial(), ...)
     }
     if (is.null(piargs$formula)){
-        stop("argument \"formula\" is missing. Please specify it in piargs")
+        stop("argument \"formula\" is missing. Please specify it in \"piargs\"")
     }
 
     mufun <- function(formula, data, weights, ...){
-        safe_glm(formula, data, weights = weights,
+        adapt_glm(formula, data, weights = weights,
                  family = dist$family, ...)
     }
     if (is.null(muargs$formula)){
-        stop("argument \"formula\" is missing. Please specify it in muargs")
+        stop("argument \"formula\" is missing. Please specify it in \"muargs\"")
     }
 
     res <- Mstep_mix_root(x, Hhat, phat, dist,
@@ -104,19 +104,19 @@ Mstep_mix_glm <- function(x, Hhat, phat, dist,
 Mstep_mix_gam <- function(x, Hhat, phat, dist,
                           piargs = NULL, muargs = NULL){
     pifun <- function(formula, data, ...){
-        safe_gam(formula, data,
+        adapt_gam(formula, data,
                  family = binomial(), ...)
     }
     if (is.null(piargs$formula)){
-        stop("argument \"formula\" is missing. Please specify it in piargs")
+        stop("argument \"formula\" is missing. Please specify it in \"piargs\"")
     }
     
     mufun <- function(formula, data, weights, ...){
-        safe_gam(formula, data, weights = weights,
+        adapt_gam(formula, data, weights = weights,
                  family = dist$family, ...)
     }
     if (is.null(muargs$formula)){
-        stop("argument \"formula\" is missing. Please specify it in muargs")
+        stop("argument \"formula\" is missing. Please specify it in \"muargs\"")
     }
 
     res <- Mstep_mix_root(x, Hhat, phat, dist,
@@ -128,12 +128,12 @@ Mstep_mix_gam <- function(x, Hhat, phat, dist,
 Mstep_mix_glmnet <- function(x, Hhat, phat, dist,
                              piargs = NULL, muargs = NULL){
     pifun <- function(x, y, ...){
-        safe_glmnet(x, y,
+        adapt_glmnet(x, y,
                     family = "binomial", ...)
     }
 
     mufun <- function(x, y, weights, ...){
-        safe_glmnet(x, y, weights = weights,
+        adapt_glmnet(x, y, weights = weights,
                     family = dist$family, ...)
     }
 

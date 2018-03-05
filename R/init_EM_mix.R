@@ -14,17 +14,17 @@ init_mix_pi <- function(x, pvals, s, fun, args){
     args <- complete_args(x, J, fun, args)
 
     if (is.null(args)) {
-        stop("pifun_init has irregular input types. Replace another function or writing a wrapper of pifun with regular types of input (formula = , data = ) or (x = x, y = y) or (X = x, y = y)")
+        stop("\"pifun_init\" has irregular input types. Replace with another function or writing a wrapper of \"pifun_init\" with regular types of input (formula = , data = ) or (x = x, y = y) or (X = x, y = y)")
     }
 
     fit <- do.call(fun, args)
     if (is.null(fit$fitv)){
-        stop("pifun_init does not output fitv. Replace another function or change the name for fitted value to fitv")
+        stop("\"pifun_init\" does not output \"fitv\". Replace with another function or change the name for fitted value to \"fitv\"")
     }
 
     pix <- as.numeric(fit$fitv)
     if (any(is.na(pix))){
-        stop("Initialization of pix has NAs")
+        stop("Initialization of \"pix\" has NAs")
     }
     pix <- pminmax(pix, 0, 1)
 
@@ -46,17 +46,17 @@ init_mix_mu <- function(x, pvals, s, dist, fun, args){
     args <- complete_args(x, yhat, fun, args)
 
     if (is.null(args)) {
-        stop("mufun_init has irregular input types. Replace another function or writing a wrapper of mufun with regular types of input (formula = , data = ) or (x = x, y = y) or (X = x, y = y)")
+        stop("\"mufun_init\" has irregular input types. Replace with another function or writing a wrapper of \"mufun_init\" with regular types of input (formula = , data = ) or (x = x, y = y) or (X = x, y = y)")
     }
 
     fit <- do.call(fun, args)
-    if (is.null(fit$fitv)){
-        stop("mufun_init does not output fitv. Replace another function or change the name for fitted value to fitv")
-    }
 
+    if (is.null(fit$fitv)){
+        stop("\"mufun_init\" does not output \"fitv\". Replace with another function or change the name for fitted value to \"fitv\"")
+    }
     mux <- as.numeric(fit$fitv)
     if (any(is.na(mux))){
-        stop("Initialization of mux has NAs")
+        stop("Initialization of \"mux\" has NAs")
     }
     if (dist$family$family == "Gamma"){
         mux <- pmax(mux, 1)
@@ -87,19 +87,19 @@ init_mix_root <- function(x, pvals, s, dist,
 init_mix_glm <- function(x, pvals, s, dist,
                          piargs = NULL, muargs = NULL){
     pifun <- function(formula, data, ...){
-        safe_glm(formula, data,
+        adapt_glm(formula, data,
                  family = gaussian(), ...)
     }
     if (is.null(piargs$formula)){
-        stop("argument \"formula\" is missing. Please specify it in piargs")
+        stop("argument \"formula\" is missing. Please specify it in \"piargs\"")
     }
 
     mufun <- function(formula, data, ...){
-        safe_glm(formula, data, 
+        adapt_glm(formula, data, 
                  family = dist$family, ...)
     }
     if (is.null(muargs$formula)){
-        stop("argument \"formula\" is missing. Please specify it in muargs")
+        stop("argument \"formula\" is missing. Please specify it in \"muargs\"")
     }
 
     res <- init_mix_root(x, pvals, s, dist,
@@ -112,21 +112,20 @@ init_mix_gam <- function(x, pvals, s, dist,
                          pi_formula, mu_formula,
                          piargs = NULL, muargs = NULL){
     pifun <- function(formula, data, ...){
-        safe_gam(formula, data,
+        adapt_gam(formula, data,
                  family = gaussian(), ...)
     }
     if (is.null(piargs$formula)){
-        stop("argument \"formula\" is missing. Please specify it in piargs")
+        stop("argument \"formula\" is missing. Please specify it in \"piargs\"")
     }
 
     mufun <- function(formula, data, ...){
-        safe_gam(formula, data, 
+        adapt_gam(formula, data, 
                  family = dist$family, ...)
     }
     if (is.null(muargs$formula)){
-        stop("argument \"formula\" is missing. Please specify it in muargs")
+        stop("argument \"formula\" is missing. Please specify it in \"muargs\"")
     }
-
     res <- init_mix_root(x, pvals, s, dist,
                          pifun, mufun,
                          piargs, muargs)
@@ -136,11 +135,11 @@ init_mix_gam <- function(x, pvals, s, dist,
 init_mix_glmnet <- function(x, pvals, s, dist,
                             piargs = NULL, muargs = NULL){
     pifun <- function(x, y, ...){
-        safe_glmnet(x, y,
+        adapt_glmnet(x, y,
                     family = "gaussian", ...)
     }
     mufun <- function(x, y, ...){
-        safe_glmnet(x, y, 
+        adapt_glmnet(x, y, 
                     family = dist$family, ...)
     }
 

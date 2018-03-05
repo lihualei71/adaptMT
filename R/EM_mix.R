@@ -14,7 +14,7 @@ EM_mix <- function(x, pvals, s, dist,
                    method = c("glm", "gam", "glmnet", "custom"),
                    algo = NULL, piargs = NULL, muargs = NULL,
                    params0 = list(pix = NULL, mux = NULL),
-                   num_steps = 10, tol = 1e-4,
+                   niter = 10, tol = 1e-4,
                    verbose = FALSE){
     method <- method[1]
     if (method == "custom" && is.null(algo)){
@@ -23,8 +23,8 @@ EM_mix <- function(x, pvals, s, dist,
 
     if (verbose){
         cat("Model fitting starts!\n")
-        cat("Reduce num_steps if it is too time-consuming.\n")
-        pb <- utils::txtProgressBar(min = 0, max = num_steps, style = 3, width = 50)
+        cat("Reduce niter if it is too time-consuming.\n")
+        pb <- utils::txtProgressBar(min = 0, max = niter, style = 3, width = 50)
     }
 
     if (is.null(params0$pix) || is.null(params0$mux)){
@@ -38,7 +38,7 @@ EM_mix <- function(x, pvals, s, dist,
         old_mux <- mux <- params0$mux
     }
 
-    for (step in 1:num_steps){
+    for (step in 1:niter){
         Estep_res <-
             Estep_mix(pvals, s, dist, pix, mux)
         Mstep_res <-

@@ -16,7 +16,7 @@ EM_mix_ms <- function(x, pvals, s, dist, cr = "BIC",
                       cand_piargs = NULL,
                       cand_muargs = NULL,
                       params0 = list(pix = NULL, mux = NULL),
-                      num_steps = 20, tol = 1e-4,
+                      niter = 20, tol = 1e-4,
                       verbose = TRUE){
     if (is.null(cand_methods) && is.null(cand_algos)){
         stop("Either \"cand_methods\" or \"cand_algos\" must be specified.")
@@ -58,7 +58,7 @@ EM_mix_ms <- function(x, pvals, s, dist, cr = "BIC",
         mod <- try(
             EM_mix(x, pvals, s, dist, method, algo,
                    piargs, muargs,
-                   params0, num_steps, tol),
+                   params0, niter, tol),
             silent = TRUE
             )
         if (class(mod)[1] == "try-error"){
@@ -100,4 +100,3 @@ EM_mix_ms <- function(x, pvals, s, dist, cr = "BIC",
                 params = params,
                 info = info))
 }
-

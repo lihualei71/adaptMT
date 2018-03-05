@@ -1,8 +1,10 @@
 YES 1) Write preprocess()
 DEL 2) Write AdaPT_glm, AdaPT_gam and AdaPT_glmnet
 3) change filenames from _ to -
-4) change num_steps to niter
+YES 4) change num_steps to niter
 5) Write AdaPT_summary.R
 6) Compare weighted and unweighted versions on other datasets
 7) Add argument "return_threshold" to AdaPT()
-8) change stamps from an equi-spaced grid to an equi-log-spaced grid
+DEL 8) change stamps from an equi-spaced grid to an equi-log-spaced grid
+9) safe_glmnet binomial
+10) safe_model order of arguments

@@ -9,6 +9,29 @@ fdp_hat <- function(A, R){
     (1 + A) / pmax(1, R)
 }
 
+
+compute_lfdr_mix <- function(pvals, dist, params){
+    pix <- params$pix
+    mux <- params$mux
+    lfdr <- (pix * dist$h(1, mux) + 1 - pix) /
+        (pix * dist$h(pvals, mux) + 1 - pix)
+    return(lfdr)
+}
+
+compute_threshold_mix <- function(dist, params, lfdr_lev){
+    pix <- params$pix
+    mux <- params$mux
+    if (lfdr_lev == 0 || lfdr_lev == 1){
+        return(rep(lfdr_lev, length(pix)))
+    }
+    
+    val1 <- dist$h(1, mux) / lfdr_lev +
+        (1 - pix) / pix * (1 - lfdr_lev) / lfdr_lev
+    val2 <- (log(val1) + dist$A(mux) - dist$A(dist$mustar)) /
+        (dist$eta(mux) - dist$eta(dist$mustar))
+    dist$ginv(val2)
+}
+
 AdaPT_preprocess <- function(methods, algos, piargs, muargs){
     ## Check the type of methods
     if (!class(methods) %in% c("NULL", "character", "list")){
@@ -101,6 +124,7 @@ AdaPT_preprocess <- function(methods, algos, piargs, muargs){
     ## When a single method and multiple piargs/muargs are provided, set "methods" as a vector
     if (length(methods) == 1 && length(piargs) > 1){
         methods <- rep(methods, length(piargs))
+        algos <- rep(algos, length(piargs))
     }
 
     return(list(methods = methods, algos = algos,
@@ -129,8 +153,8 @@ AdaPT <- function(x, pvals,
                   params0 = list(pix = NULL, mux = NULL),
                   nfits = 20, nms = 1,
                   verbose = list(print = TRUE, fit = FALSE, ms = TRUE),
-                  num_steps_fit = 10, tol = 1e-4,
-                  num_steps_ms = 20, cr = "BIC",
+                  niter_fit = 10, tol = 1e-4,
+                  niter_ms = 20, cr = "BIC",
                   return_data = TRUE){
     ## Check if "dist" is of class "exp_family"
     if (class(dist)[1] != "exp_family"){
@@ -165,7 +189,7 @@ AdaPT <- function(x, pvals,
     ## Create root arguments to simplify fitting and model selection
     fit_args_root <- list(
         x = x, pvals = pvals, dist = dist,
-        num_steps = num_steps_fit, tol = tol,
+        niter = niter_fit, tol = tol,
         verbose = verbose$fit)
     if (any(stamps[, 2] == "ms")){
         ms_args_root <- list(
@@ -174,7 +198,7 @@ AdaPT <- function(x, pvals,
             cand_algos = algos,
             cand_piargs = piargs,
             cand_muargs = muargs,
-            num_steps = num_steps_ms, tol = tol,
+            niter = niter_ms, tol = tol,
             verbose = verbose$ms
             )
     }

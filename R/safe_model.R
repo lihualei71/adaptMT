@@ -3,87 +3,103 @@
 #---------------------------------------------------------------
 
 adapt_glm <- function(formula, family, data, weights = NULL,
-                     ...){
+                      ...){
     formula <- as.formula(formula)
     if (family$link %in% c("inverse", "log")){
-        mod <- try(glm(formula, family, data, weights,
+        fit <- try(glm(formula, family, data, weights,
                        ...),
                    silent = TRUE)
-        if (class(mod)[1] == "try-error"){
+        if (class(fit)[1] == "try-error"){
             mod_mat <- model.matrix(formula, data = data)
             p <- ncol(mod_mat) - 1
             start <- c(1, rep(0, p))
-            mod <- glm(formula, family, data, weights,
+            fit <- glm(formula, family, data, weights,
                        start = start, ...)
         }
     } else if (family$link == "logit"){
-        mod <- suppressWarnings(
+        fit <- suppressWarnings(
             glm(formula, family, data, weights,
                 ...))
     } else {
-        mod <- glm(formula, family, data, weights,
+        fit <- glm(formula, family, data, weights,
                    ...)
     }
 
-    fitv <- predict(mod, type = "response")
+    fitv <- as.numeric(
+        predict(fit, type = "response")
+        )
 
-    return(list(mod = mod, fitv = fitv))
+    df <- fit$rank
+    info <- list(df = df)
+    
+    return(list(fitv = fitv, info = info))
 }
 
 adapt_gam <- function(formula, family, data, weights = NULL,
-                     ...){
+                      ...){
     formula <- as.formula(formula)
     if (family$link %in% c("inverse", "log")){
-        mod <- try(mgcv::gam(formula, family, data, weights,
+        fit <- try(mgcv::gam(formula, family, data, weights,
                              ...),
                    silent = TRUE)
-        if (class(mod)[1] == "try-error"){
+        if (class(fit)[1] == "try-error"){
             mod_mat <- model.matrix(formula, data = data)
             p <- ncol(mod_mat) - 1
             start <- c(1, rep(0, p))
-            mod <- mgcv::gam(formula, family, data, weights,
+            fit <- mgcv::gam(formula, family, data, weights,
                              start = start, ...)
         }
     } else if (family$link == "logit"){
-        mod <- suppressWarnings(
+        fit <- suppressWarnings(
             mgcv::gam(formula, family, data, weights,
                       ...))
     } else {
-        mod <- mgcv::gam(formula, family, data, weights,
+        fit <- mgcv::gam(formula, family, data, weights,
                          ...)
     }
 
-    fitv <- predict(mod, type = "response")
+    fitv <- as.numeric(
+        predict(fit, type = "response")
+        )
 
-    return(list(mod = mod, fitv = fitv))
+    df <- fit$rank
+    info <- list(df = df)
+
+    return(list(fitv = fitv, info = info))
 }
 
 adapt_glmnet <- function(x, y, family, weights = NULL,
-                        ...){
+                         ...){
     ## Safe GLMnet
     if (class(family)[1] == "family"){
         family <- family$family
     }
 
     if (family %in% c("gaussian", "poisson", "multinomial", "cox", "mgaussian")){
-        mod <- glmnet::cv.glmnet(x, y, weights,
+        fit <- glmnet::cv.glmnet(x, y, weights,
                                  family = family, ...)
     } else if (family == "binomial") {
         n <- length(y)
         newy <- c(rep(1, n), rep(0, n))
         newx <- rbind(x, x)
         weights <- c(y, 1 - y)
-        mod <- glmnet::cv.glmnet(newx, newy, weights,
+        fit <- glmnet::cv.glmnet(newx, newy, weights,
                                  family = "binomial", ...)
     } else if (family == "Gamma"){
-        mod <- HDtweedie::cv.HDtweedie(x, y, p = 2,
+        fit <- HDtweedie::cv.HDtweedie(x, y, p = 2,
                                        weights = weights,
                                        ...)
     }
 
     fitv <- as.numeric(
-        predict(mod, newx = x, s = "lambda.min",
+        predict(fit, newx = x, s = "lambda.min",
                 type = "response")
         )
-    return(list(mod = mod, fitv = fitv))
+
+    beta <- coef(fit, s = "lambda.min")
+    vi <- as.numeric(beta != 0)[-1]    
+    df <- sum(vi) + 1
+    info <- list(df = df, vi = vi)
+    
+    return(list(fitv = fitv, info = info))
 }

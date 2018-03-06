@@ -76,3 +76,78 @@ complete_args <- function(x, response, fun,
     data_args <- c(data_args, list(weights = weights))
     return(data_args)
 }
+
+complete_model <- function(model, dist){
+    if (is.null(model$algo)){
+        switch(model$name,
+               "glm" = gen_adapt_model_glm(
+                   dist, model$args$piargs, model$args$muargs
+                   ),
+               "gam" = gen_adapt_model_gam(
+                   dist, model$args$piargs, model$args$muargs
+                   ),
+               "glmnet" = gen_adapt_model_glmnet(
+                   dist, model$args$piargs, model$args$muargs
+                   ),
+               stop("\"model$name\" not found in the library")
+               )
+    } else {
+        model
+    }
+}
+    
+fit_pi <- function(fun, args, type = c("Mstep", "init")){
+    type <- type[1]
+    if (type == "Mstep"){
+        fun_name <- "\"pifun\""
+    } else if (type == "init"){
+        fun_name <- "\"pifun_init\""
+    }
+    
+    if (is.null(args)) {
+        stop(paste0(fun_name, " has irregular input types. Replace it with another function or writing a wrapper of ", fun_name, " with regular types of input (formula = , data = ) or (x = x, y = y) or (X = x, y = y)"))
+    }
+
+    fit <- do.call(fun, args)
+    if (is.null(fit$fitv)){
+        stop(paste0(fun_name, " does not output \"fitv\". Replace it with another function or change the name for fitted value to \"fitv\""))
+    }
+
+    pix <- as.numeric(fit$fitv)
+    if (any(is.na(pix))){
+        stop("Initialization of \"pix\" has NAs")
+    }
+    pix <- pminmax(pix, 0, 1)
+
+    return(list(pix = pix, pi_info = fit$info))
+}
+
+fit_mu <- function(fun, args, dist, type = c("Mstep", "init")){
+    type <- type[1]
+    if (type == "Mstep"){
+        fun_name <- "\"pifun\""
+    } else if (type == "init"){
+        fun_name <- "\"pifun_init\""
+    }
+
+    if (is.null(args)) {
+        stop(paste0(fun_name, " has irregular input types. Replace it with another function or writing a wrapper of ", fun_name, " with regular types of input (formula = , data = ) or (x = x, y = y) or (X = x, y = y)"))
+    }
+
+    fit <- do.call(fun, args)
+    if (is.null(fit$fitv)){
+        stop(paste0(fun_name, " does not output \"fitv\". Replace it with another function or change the name for fitted value to \"fitv\""))
+    }
+
+    mux <- as.numeric(fit$fitv)
+    if (any(is.na(mux))){
+        stop("Initialization of \"mux\" has NAs")
+    }
+    if (dist$family$family == "Gamma"){
+        mux <- pmax(mux, 1)
+    } else if (dist$family$family == "gaussian"){
+        mux <- pmax(mux, 0)
+    }
+
+    return(list(mux = mux, mu_info = fit$info))
+}

@@ -10,17 +10,11 @@ EM_loglik <- function(dist, params, Hhat, phat){
     return(loglik1 + loglik2)
 }
 
-EM_mix <- function(x, pvals, s, dist,
-                   method = c("glm", "gam", "glmnet", "custom"),
-                   algo = NULL, piargs = NULL, muargs = NULL,
+EM_mix <- function(x, pvals, s, dist, model,
                    params0 = list(pix = NULL, mux = NULL),
                    niter = 10, tol = 1e-4,
                    verbose = FALSE){
-    method <- method[1]
-    if (method == "custom" && is.null(algo)){
-        stop("\"algo\" must be specified. The algo argument should be a list with names pifun, mufun, init_pifun, init_mufun")
-    }
-
+    model <- complete_model(model, dist)
     if (verbose){
         cat("Model fitting starts!\n")
         cat("Reduce niter if it is too time-consuming.\n")
@@ -28,9 +22,10 @@ EM_mix <- function(x, pvals, s, dist,
     }
 
     if (is.null(params0$pix) || is.null(params0$mux)){
-        init_res <- init_mix(x, pvals, s, dist, method,
-                             algo$init_pifun, algo$init_mufun,
-                             piargs, muargs)
+        init_res <- init_mix(
+            x, pvals, s, dist,
+            model$algo$pifun_init, model$algo$mufun_init,
+            model$args$piargs_init, model$args$muargs_init)
         old_pix <- pix <- init_res$pix
         old_mux <- mux <- init_res$mux
     } else {
@@ -42,10 +37,9 @@ EM_mix <- function(x, pvals, s, dist,
         Estep_res <-
             Estep_mix(pvals, s, dist, pix, mux)
         Mstep_res <-
-            Mstep_mix(x, Estep_res$Hhat, Estep_res$phat,
-                      dist, method,
-                      algo$pifun, algo$mufun,
-                      piargs, muargs)
+            Mstep_mix(x, Estep_res$Hhat, Estep_res$phat, dist,
+                      model$algo$pifun, model$algo$mufun,
+                      model$args$piargs, model$args$muargs)
         pix <- Mstep_res$pix
         mux <- Mstep_res$mux
         if (max(abs(mux - old_mux)) < tol &&
@@ -64,7 +58,7 @@ EM_mix <- function(x, pvals, s, dist,
     params <- list(pix = pix, mux = mux)
     loglik <- EM_loglik(dist, params,
                         Estep_res$Hhat, Estep_res$phat)
-    info <- Mstep_res$info
+    info <- list(pi = Mstep_res$pi_info, mu = Mstep_res$mu_info)
     
     return(list(params = params, loglik = loglik, info = info))
 }

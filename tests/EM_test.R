@@ -52,4 +52,5 @@ res <- AdaPT(x, pvals, mods, dist)
 res2 <- AdaPT(x, pvals, mods2, dist)
 identical(res$s, res2$s)
 
+res3 <- AdaPT(x, pvals, mods[[2]], dist)
 

@@ -4,8 +4,9 @@ DEL 2) Write AdaPT_glm, AdaPT_gam and AdaPT_glmnet
 YES 4) change num_steps to niter
 5) Write AdaPT_summary.R
 6) Compare weighted and unweighted versions on other datasets
-7) Add argument "return_threshold" to AdaPT()
+DEL 7) Add argument "return_threshold" to AdaPT()
 DEL 8) change stamps from an equi-spaced grid to an equi-log-spaced grid
 YES 9) safe_glmnet binomial
 YES 10) safe_model order of arguments
 11) safe_model !requireNamespace
+12) qvals is not compatible with s

@@ -119,13 +119,13 @@ AdaPT <- function(x, pvals, models,
     alphas <- alphas[1:m]
 
     nrejs_return <- rep(0, m) # number of rejections
-    fdp_return <- rep(0, m) # post-hoc fdp estimate for each alpha
     s_return <- matrix(0, n, m) # threshold
     params_return <- list() # parameters (including pix and mux)
     model_list <- list() # all selected models
     info_list <- list() # other information (df, vi, etc.)
-    qvals <- rep(NA, n) # q-values
-    
+    reveal_order <- which((pvals > s) & (pvals < 1 - s)) # the order to be revealed
+    fdp_return <- rep(Inf, length(reveal_order)) # fdphat along the whole path
+
     if (m > alphaind){
         nrejs_return[m] <- R
         fdp_return[m] <- minfdp
@@ -180,13 +180,13 @@ AdaPT <- function(x, pvals, models,
         ## Find the top "nreveals" hypotheses with highest lfdr 
         lfdr[!mask] <- -Inf
         inds <- order(lfdr, decreasing = TRUE)[1:nreveals]
+        reveal_order <- c(reveal_order, inds)
         ## Shortcut to calculate FDPhat after revealing the hypotheses one by one
         Adecre <- cumsum(pvals[inds] >= 1 - s[inds])
         Rdecre <- cumsum(pvals[inds] <= s[inds])
         fdp <- fdp_hat(A - Adecre, R - Rdecre)
+        fdp_return <- c(fdp_return, fdp)        
         fdp <- pmin(fdp, minfdp)
-        ## Calculate q-values
-        qvals[inds] <- cummin(fdp)
         ## Calculate the current minimum FDPhat
         minfdp <- min(fdp)
 
@@ -201,7 +201,6 @@ AdaPT <- function(x, pvals, models,
                 
                 fdpnew <- fdp[breakpoint]
                 Rnew <- sum(pvals <= snew)
-                fdp_return[alphaind] <- fdpnew
                 nrejs_return[alphaind] <- Rnew
 
                 if (verbose$print){
@@ -232,9 +231,11 @@ AdaPT <- function(x, pvals, models,
 
     res <- structure(
         list(nrejs = nrejs_return,
-             fdp = fdp_return,
              s = s_return,
-             qvals = qvals,
+             reveal = data.frame(
+                 order = reveal_order,
+                 fdp = fdp_return
+                 ),
              params = params_return,
              alphas = alphas,
              model = model_list,

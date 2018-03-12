@@ -45,6 +45,7 @@ create_stamps <- function(nmasks, nfits, nms){
     
 }
 
+#' @export
 AdaPT <- function(x, pvals, models,
                   dist = beta_family(),
                   s0 = rep(0.45, length(pvals)),

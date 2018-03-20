@@ -1,3 +1,5 @@
+#' @export
+
 adapt_1d_plot <- function(obj, alpha, title,
                           data = NULL,
                           xlab = "x",
@@ -6,7 +8,6 @@ adapt_1d_plot <- function(obj, alpha, title,
                           num_xbreaks = 3,
                           rand_seed_perturb = NA,
                           legend_pos = "topright",
-                          legend_cex = 1.3,
                           ...){
     if (!"adapt" %in% class(obj)){
         stop("obj is not an 'adapt' object.")
@@ -24,6 +25,13 @@ adapt_1d_plot <- function(obj, alpha, title,
     pix <- obj$params[[ind]]$pix
     mux <- obj$params[[ind]]$mux
     n <- length(s)
+
+    x_ord <- order(x)
+    pvals <- pvals[x_ord]
+    s <- s[x_ord]
+    pix <- pix[x_ord]
+    mux <- mux[x_ord]
+    x <- x[x_ord]
     
     par(mfrow = c(2, 1), ...)
 
@@ -64,7 +72,7 @@ adapt_1d_plot <- function(obj, alpha, title,
         x_grid <- c(x_grid, n)
     }
     p_grid <- exp(seq(-15, log(disp_lfdrmax), length.out=100))
-    xp_grid <- expand_grid(x = x_grid, p = p_grid)
+    xp_grid <- expand.grid(x = x_grid, p = p_grid)
     locfdr_vals <-
         compute_lfdr_mix(p = xp_grid$p, dist = dist,
                          params = list(mux = mux[xp_grid$x],
@@ -83,6 +91,6 @@ adapt_1d_plot <- function(obj, alpha, title,
                     col = colors)
     legend(legend_pos, col = "black", fill = rev(colors),
            legend = rev(c("0-0.1","0.1-0.2","0.2-0.3","0.3-0.5","0.5-1")),
-           cex = legend_cex, bty = "n")
+           bty = "n")
     
 }

@@ -1,12 +1,15 @@
 adapt_1d_plot <- function(obj, alpha, title,
                           data = NULL,
                           xlab = "x",
-                          disp.pmax = 0.2,
-                          num.xbreaks = 3,
-                          rand.seed.purturb = NA,
-                          legend.position = "topright"){
+                          disp_pmax = 0.2,
+                          disp_lfdrmax = 0.2,
+                          num_xbreaks = 3,
+                          rand_seed_perturb = NA,
+                          legend_pos = "topright",
+                          legend_cex = 1.3,
+                          ...){
     if (!"adapt" %in% class(obj)){
-        stop("\"obj\" is not of class \"adapt\".")
+        stop("obj is not an 'adapt' object.")
     }
 
     if (is.null(data)){
@@ -14,7 +17,7 @@ adapt_1d_plot <- function(obj, alpha, title,
     }
     x <- as.numeric(data[["x"]][,1])
     pvals <- data[["pvals"]]
-    dist <- obj$info$dist
+    dist <- obj$dist
     alphas <- obj$alphas
     ind <- which.min(abs(alphas - alpha))
     s <- obj$s[, ind]
@@ -22,33 +25,32 @@ adapt_1d_plot <- function(obj, alpha, title,
     mux <- obj$params[[ind]]$mux
     n <- length(s)
     
-    par(mfrow = c(2, 1))
-    par(mar=c(4.1, 4.1, 2, 0.15),
-        cex.axis = 1.7, cex.main = 1.7, cex.lab = 1.7)
+    par(mfrow = c(2, 1), ...)
 
     ## Top panel on threshold curves
-    what.type <- ifelse(pvals < s, 1, ifelse(pvals > 1 - s, 2, 3))
-    plot(x, (1:n * disp.pmax) / n, type = "n", pch = ".",
-         xaxs = "i", yaxs = "i", ylab = "p-value", xlab = "",
-         col = c("red", "blue", "black")[what.type], yaxt = "n",
+    what_type <- ifelse(pvals < s, 1, ifelse(pvals > 1 - s, 2, 3))
+    plot(x, (1:n * disp_pmax) / n, type = "n", pch = ".",
+         xaxs = "i", yaxs = "i", ylab = "p-values", xlab = "",
+         col = c("red", "blue", "black")[what_type], yaxt = "n",
          main = paste("Rejection threshold (", title, ")",
              sep = ""))
-    axis(2, at = seq(0, disp.pmax, length.out = num.xbreaks),
-         labels = seq(0, disp.pmax, length.out = num.xbreaks))
+    axis(2, at = seq(0, disp_pmax, length.out = num_xbreaks),
+         labels = seq(0, disp_pmax, length.out = num_xbreaks))
     hhi <- hlo <- .5
-    vlo <- -.01; vhi <- 1.01
+    vlo <- -.01
+    vhi <- 1.01
     polygon(x = c(x, rev(x)), y = c(s, rep(vlo, n)),
             col = "#FFDDDD", border = "red")
     polygon(x = c(x, rev(x)), y = c(1 - s, rep(vhi, n)),
             col = "light blue", border = "blue")
-    if(!is.na(rand.seed.purturb)) {
-        set.seed(rand.seed.purturb)
+    if(!is.na(rand_seed_perturb)) {
+        set.seed(rand_seed_perturb)
         points(x, pvals + 0.001 * rnorm(n),
                pch = ".",
-               col = c("red", "blue", "black")[what.type])
+               col = c("red", "blue", "black")[what_type])
     }
     points(x, pvals, pch = ".",
-           col = c("red", "blue", "black")[what.type])
+           col = c("red", "blue", "black")[what_type])
     box()
 
     ## Bottom panel on local fdr level curves.
@@ -57,29 +59,30 @@ adapt_1d_plot <- function(obj, alpha, title,
     mux <- mux[ind]
     pix <- pix[ind]    
 
-    x.grid <- c(seq(1, n, by = 100))
-    if (x.grid[length(x.grid)] < n){
-        x.grid <- c(x.grid, n)
+    x_grid <- c(seq(1, n, by = 100))
+    if (x_grid[length(x_grid)] < n){
+        x_grid <- c(x_grid, n)
     }
-    p.grid <- exp(seq(-15, log(disp.pmax), length.out=100))
-    xp.grid <- expand.grid(x = x.grid, p = p.grid)
-    locfdr.vals <- lfdr.mix(p = xp.grid$p, dist = dist,
-                            params = list(mux = mux[xp.grid$x],
-                                          pix = pix[xp.grid$x]))
-    locfdr.mat <- matrix(locfdr.vals, nrow = length(x.grid))
-    plot(0, 0, xlim = c(min(x), max(x)), ylim = c(0, disp.pmax),
+    p_grid <- exp(seq(-15, log(disp_lfdrmax), length.out=100))
+    xp_grid <- expand_grid(x = x_grid, p = p_grid)
+    locfdr_vals <-
+        compute_lfdr_mix(p = xp_grid$p, dist = dist,
+                         params = list(mux = mux[xp_grid$x],
+                             pix = pix[xp_grid$x]))
+    locfdr_mat <- matrix(locfdr_vals, nrow = length(x_grid))
+    plot(0, 0, xlim = c(min(x), max(x)), ylim = c(0, disp_lfdrmax),
          type = "n", xaxs = "i", yaxs = "i", yaxt = "n", 
          main = paste("Estimated local FDR (", title, ")", sep=""),
          ylab = "p-value", xlab = xlab)
-    axis(2, at = seq(0, disp.pmax, length.out = num.xbreaks),
-         labels = seq(0, disp.pmax, length.out = num.xbreaks))
-    colors <- c(rev(brewer.pal(n = 4, name = "Reds")), "white")
-    .filled.contour(x = x[x.grid] + 1e-10 * (1:length(x.grid)),
-                    y = p.grid, z = locfdr.mat,
+    axis(2, at = seq(0, disp_lfdrmax, length.out = num_xbreaks),
+         labels = seq(0, disp_lfdrmax, length.out = num_xbreaks))
+    colors <- c("#FEE5D9", "#FCAE91", "#FB6A4A", "#CB181D", "white")
+    .filled.contour(x = x[x_grid] + 1e-10 * (1:length(x_grid)),
+                    y = p_grid, z = locfdr_mat,
                     levels = c(0, 0.1, 0.2, 0.3, 0.5, 1),
                     col = colors)
-    legend(legend.position, col = "black", fill = rev(colors),
+    legend(legend_pos, col = "black", fill = rev(colors),
            legend = rev(c("0-0.1","0.1-0.2","0.2-0.3","0.3-0.5","0.5-1")),
-           cex = 1.3, bty = "n")
+           cex = legend_cex, bty = "n")
     
 }

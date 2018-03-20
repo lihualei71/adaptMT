@@ -64,28 +64,33 @@ adapt(x, pvals, models, dist = beta_family(), s0 = rep(0.45, length(pvals)),
 \code{verbose} has three elements: \code{print}, \code{fit} and \code{ms}. If \code{print = TRUE}, the progress of the main procedure is outputed to the console, in the form of "alpha = 0.05: FDPhat 0.0333, Number of Rej. 30" (where the numbers are made up for illustration). If \code{fit = TRUE}, a progress bar for the model fitting is outputed to the console. Similarly, if \code{ms = TRUE}, a progress bar for the model selection is outputed to the console.
 }
 \examples{
-# Load \\code{estrogen} data
+# Load estrogen data
 data(estrogen)
 pvals <- as.numeric(estrogen$pvals)
 x <- data.frame(x = as.numeric(estrogen$ord))
+dist <- beta_family()
 
 # Subsample the data for convenience
 pvals <- pvals[1:5000]
 x <- x[1:5000,,drop = FALSE]
 
-# Generate models for \\code{}
+# Generate models for function adapt
 library("splines")
 formulas <- paste0("ns(x, df = ", 6:10, ")")
 models <- lapply(formulas, function(formula){
     piargs <- muargs <- list(formula = formula)
-    gen_adapt_model(name = "glm", piargs = piargs, muargs = muargs)
+    gen_adapt_model(name = "glm",
+  piargs = piargs, muargs = muargs)
 })
 
-# Run \\code{adapt}
-res <- adapt(x = x, pvals = pvals, models = models)
+# Run adapt
+res <- adapt(x = x, pvals = pvals,
+  models = models, dist = dist)
 
-# Run \\code{adapt_glm}, an equivalent as above
-res2 <- adapt_glm(x = x, pvals = pvals, pi_formulas = formulas, mu_formulas = formulas)
+# Run adapt_glm, an equivalent as above
+res2 <- adapt_glm(x = x, pvals = pvals,
+  pi_formulas = formulas, mu_formulas = formulas,
+  dist = dist)
 
 # Check equivalence
 identical(res, res2)

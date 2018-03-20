@@ -109,28 +109,33 @@ check_pkgs <- function(models){
 #' \item{args}{a list including the other inputs \code{nfits}, \code{nms}, \code{niter_fit}, \code{niter_ms}, \code{tol}, \code{cr}}.
 #'
 #' @examples
-#' # Load \code{estrogen} data
+#' # Load estrogen data
 #' data(estrogen)
 #' pvals <- as.numeric(estrogen$pvals)
 #' x <- data.frame(x = as.numeric(estrogen$ord))
-#'
+#' dist <- beta_family()
+#' 
 #' # Subsample the data for convenience
 #' pvals <- pvals[1:5000]
 #' x <- x[1:5000,,drop = FALSE]
 #'
-#' # Generate models for \code{}
+#' # Generate models for function adapt
 #' library("splines")
 #' formulas <- paste0("ns(x, df = ", 6:10, ")")
 #' models <- lapply(formulas, function(formula){
 #'     piargs <- muargs <- list(formula = formula)
-#'     gen_adapt_model(name = "glm", piargs = piargs, muargs = muargs)
+#'     gen_adapt_model(name = "glm",
+#'   piargs = piargs, muargs = muargs)
 #' })
 #'
-#' # Run \code{adapt}
-#' res <- adapt(x = x, pvals = pvals, models = models)
+#' # Run adapt
+#' res <- adapt(x = x, pvals = pvals,
+#'   models = models, dist = dist)
 #'
-#' # Run \code{adapt_glm}, an equivalent as above
-#' res2 <- adapt_glm(x = x, pvals = pvals, pi_formulas = formulas, mu_formulas = formulas)
+#' # Run adapt_glm, an equivalent as above
+#' res2 <- adapt_glm(x = x, pvals = pvals,
+#'   pi_formulas = formulas, mu_formulas = formulas,
+#'   dist = dist)
 #'
 #' # Check equivalence
 #' identical(res, res2)
@@ -266,7 +271,7 @@ adapt <- function(x, pvals, models,
             model_list <- append(model_list, model)
             info_list <- append(info_list, list(fit_res$info))
         }
-        params_return <- append(params_return, params)
+        params_return <- append(params_return, list(params))
 
         ## Estimate local FDR
         lfdr <- compute_lfdr_mix(

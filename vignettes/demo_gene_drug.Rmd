@@ -63,12 +63,16 @@ res <- adapt_glm(x = x, pvals = pvals, pi_formulas = formulas, mu_formulas = for
 `adapt_1d_plot` gives the plots for the rejection threshold and the estimated local FDR as a function of x (must be univariate without repeated value) for given alpha.
 
 ```{r, echo=FALSE}
-par(mfrow = c(2, 3))
+par(mfcol = c(2, 3))
 for (alpha in seq(0.3, 0.05, -0.05)){
   nrejs <- res$nrejs[floor(alpha * 100)]
   title <- paste0("alpha = ", alpha, ", nrejs = ", nrejs)
-  adapt_1d_plot(res, alpha, title, disp_pmax = 1, disp_lfdrmax = 0.3, 
-                mar=c(2, 4.1, 2, 0.15))
+  plot_thresh_1d(res, alpha, title, disp_ymax = 1)
+}
+for (alpha in seq(0.3, 0.05, -0.05)){
+  nrejs <- res$nrejs[floor(alpha * 100)]
+  title <- paste0("alpha = ", alpha, ", nrejs = ", nrejs)
+  plot_lfdr_1d(res, alpha, title, disp_ymax = 0.25)
 }
 ```
 

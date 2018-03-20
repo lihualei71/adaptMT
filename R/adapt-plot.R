@@ -40,8 +40,7 @@ plot_thresh_1d <- function(obj, alpha, title,
     plot(x, (1:n * disp_ymax) / n, type = "n", pch = ".",
          xaxs = "i", yaxs = "i", ylab = "p-values", xlab = "",
          col = c("red", "blue", "black")[what_type], yaxt = "n",
-         main = paste("Rejection threshold (", title, ")",
-             sep = ""))
+         main = title)
     axis(2, at = seq(0, disp_ymax, length.out = num_xbreaks),
          labels = seq(0, disp_ymax, length.out = num_xbreaks))
     hhi <- hlo <- .5
@@ -112,8 +111,7 @@ plot_lfdr_1d <- function(obj, alpha, title,
     locfdr_mat <- matrix(locfdr_vals, nrow = length(x_grid))
     plot(0, 0, xlim = c(min(x), max(x)), ylim = c(0, disp_ymax),
          type = "n", xaxs = "i", yaxs = "i", yaxt = "n", 
-         main = paste("Estimated local FDR (", title, ")", sep=""),
-         ylab = "p-value", xlab = xlab)
+         main = title, ylab = "p-value", xlab = xlab)
     axis(2, at = seq(0, disp_ymax, length.out = num_xbreaks),
          labels = seq(0, disp_ymax, length.out = num_xbreaks))
     colors <- c("#CB181D", "#FB6A4A", "#FCAE91", "#FEE5D9", "white")

@@ -217,7 +217,8 @@ adapt <- function(x, pvals, models,
         alphaind <- m - 1
     }
     alphas <- alphas[1:m]
-
+    alpha <- alphas[alphaind]
+    
     nrejs_return <- rep(0, m) # number of rejections
     s_return <- matrix(0, n, m) # threshold
     params_return <- list() # parameters (including pix and mux)
@@ -272,6 +273,11 @@ adapt <- function(x, pvals, models,
             info_list <- append(info_list, list(fit_res$info))
         }
 
+        if (alpha < params_return[[length(params_return)]]$alpha){
+            params <- c(params, list(alpha = alpha))
+            params_return <- append(params_return, list(params))
+        }
+
         ## Estimate local FDR
         lfdr <- compute_lfdr_mix(
             pmin(pvals, 1 - pvals),
@@ -301,7 +307,6 @@ adapt <- function(x, pvals, models,
                 fdpnew <- fdp[breakpoint]
                 Rnew <- sum(pvals <= snew)
                 nrejs_return[alphaind] <- Rnew
-                params_return <- append(params_return, list(params))
                 if (verbose$print){
                     cat(paste0(
                         "alpha = ", alpha, ": FDPhat ",

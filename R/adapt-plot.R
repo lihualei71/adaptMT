@@ -19,13 +19,23 @@ adapt_1d_plot <- function(obj, alpha, title,
     }
     x <- as.numeric(data[["x"]][,1])
     pvals <- data[["pvals"]]
+    n <- length(pvals)
     dist <- obj$dist
     alphas <- obj$alphas
-    ind <- which.min(abs(alphas - alpha))
-    s <- obj$s[, ind]
+    if (alpha < min(alphas)){
+        s <- rep(0, n)
+    } else {
+        ind <- max(which(alphas <= alpha))
+        s <- obj$s[, ind]
+    }
+    params_alphas <- sapply(obj$params, function(x){x$alpha})
+    if (alpha > max(params_alphas)){
+        ind <- 1
+    } else {
+        ind <- min(which(params_alphas >= alpha))
+    }
     pix <- obj$params[[ind]]$pix
     mux <- obj$params[[ind]]$mux
-    n <- length(s)
 
     x_ord <- order(x)
     pvals <- pvals[x_ord]

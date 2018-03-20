@@ -271,7 +271,6 @@ adapt <- function(x, pvals, models,
             model_list <- append(model_list, model)
             info_list <- append(info_list, list(fit_res$info))
         }
-        params_return <- append(params_return, list(params))
 
         ## Estimate local FDR
         lfdr <- compute_lfdr_mix(
@@ -302,7 +301,7 @@ adapt <- function(x, pvals, models,
                 fdpnew <- fdp[breakpoint]
                 Rnew <- sum(pvals <= snew)
                 nrejs_return[alphaind] <- Rnew
-
+                params_return <- append(params_return, list(params))
                 if (verbose$print){
                     cat(paste0(
                         "alpha = ", alpha, ": FDPhat ",

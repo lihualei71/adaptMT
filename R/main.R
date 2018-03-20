@@ -273,7 +273,8 @@ adapt <- function(x, pvals, models,
             info_list <- append(info_list, list(fit_res$info))
         }
 
-        if (alpha < params_return[[length(params_return)]]$alpha){
+        if (length(params_return) == 0 ||
+            alpha < params_return[[length(params_return)]]$alpha){
             params <- c(params, list(alpha = alpha))
             params_return <- append(params_return, list(params))
         }

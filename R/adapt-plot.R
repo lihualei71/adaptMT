@@ -62,6 +62,7 @@ plot_thresh_1d <- function(obj, alpha, title,
     box()
 }
 
+#' @export
 plot_lfdr_1d <- function(obj, alpha, title,
                          data = NULL,
                          xlab = "x",

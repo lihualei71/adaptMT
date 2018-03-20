@@ -1,7 +1,6 @@
 #' Easy-to-use Wrappers of Adaptive P-value Thresholding
 #' 
 #' @export
-
 adapt_glm <- function(x, pvals, pi_formulas, mu_formulas,
                       dist = beta_family(),
                       s0 = rep(0.45, length(pvals)),

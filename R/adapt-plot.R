@@ -1,5 +1,6 @@
+#' Plotting
+#' 
 #' @export
-
 adapt_1d_plot <- function(obj, alpha, title,
                           data = NULL,
                           xlab = "x",

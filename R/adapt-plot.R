@@ -85,7 +85,7 @@ adapt_1d_plot <- function(obj, alpha, title,
          ylab = "p-value", xlab = xlab)
     axis(2, at = seq(0, disp_lfdrmax, length.out = num_xbreaks),
          labels = seq(0, disp_lfdrmax, length.out = num_xbreaks))
-    colors <- c("#FEE5D9", "#FCAE91", "#FB6A4A", "#CB181D", "white")
+    colors <- c("#CB181D", "#FB6A4A", "#FCAE91", "#FEE5D9", "white")
     .filled.contour(x = x[x_grid] + 1e-10 * (1:length(x_grid)),
                     y = p_grid, z = locfdr_mat,
                     levels = c(0, 0.1, 0.2, 0.3, 0.5, 1),

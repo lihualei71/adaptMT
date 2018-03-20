@@ -38,7 +38,7 @@ plot_thresh_1d <- function(obj, alpha, title,
     ## Top panel on threshold curves
     what_type <- ifelse(pvals < s, 1, ifelse(pvals > 1 - s, 2, 3))
     plot(x, (1:n * disp_ymax) / n, type = "n", pch = ".",
-         xaxs = "i", yaxs = "i", ylab = "p-values", xlab = "",
+         xaxs = "i", yaxs = "i", ylab = "p-values", xlab = xlab,
          col = c("red", "blue", "black")[what_type], yaxt = "n",
          main = title)
     axis(2, at = seq(0, disp_ymax, length.out = num_xbreaks),

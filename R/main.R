@@ -83,7 +83,7 @@ check_pkgs <- function(models){
 #' @param x a data.frame. Covariates (i.e. side-information)
 #' @param pvals a vector of values in [0, 1]. P-values
 #' @param models an object of class "\code{\link{adapt_model}}" or a list of objects of class "adapt_model". See Details
-#' @param dist an object of class "\code{\link{exp_family}}". \code{\link{beta_family()}} as default
+#' @param dist an object of class "\code{\link{exp_family}}". \code{\link{beta_family}()} as default
 #' @param s0 a vector of values in [0, 0.5). Initial threshold. 
 #' @param alphas a vector of values in (0, 1). Target FDR levels. 
 #' @param params0 a list in the form of list(pix = , mux = ). Initial guess of pi(x) and mu(x). NULL as default
@@ -123,8 +123,7 @@ check_pkgs <- function(models){
 #' })
 #'
 #' # Run \code{adapt}
-#' res <- adapt(x = x, pvals = pvals, models = models,
-#'              verbose = list(print = TRUE, fit = TRUE, ms = TRUE))
+#' res <- adapt(x = x, pvals = pvals, models = models)
 #' 
 #' @export
 adapt <- function(x, pvals, models,

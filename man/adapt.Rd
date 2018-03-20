@@ -17,7 +17,7 @@ adapt(x, pvals, models, dist = beta_family(), s0 = rep(0.45, length(pvals)),
 
 \item{models}{an object of class "\code{\link{adapt_model}}" or a list of objects of class "adapt_model". See Details}
 
-\item{dist}{an object of class "\code{\link{exp_family}}". \code{\link{beta_family()}} as default}
+\item{dist}{an object of class "\code{\link{exp_family}}". \code{\link{beta_family}()} as default}
 
 \item{s0}{a vector of values in [0, 0.5). Initial threshold.}
 
@@ -69,7 +69,11 @@ data(estrogen)
 pvals <- as.numeric(estrogen$pvals)
 x <- data.frame(x = as.numeric(estrogen$ord))
 
-# Generate models
+# Subsample the data for convenience
+pvals <- pvals[1:5000]
+x <- x[1:5000,,drop = FALSE]
+
+# Generate models for \\code{}
 library("splines")
 formulas <- paste0("ns(x, df = ", 6:10, ")")
 models <- lapply(formulas, function(formula){
@@ -78,7 +82,12 @@ models <- lapply(formulas, function(formula){
 })
 
 # Run \\code{adapt}
-res <- adapt(x = x, pvals = pvals, models = models,
-             verbose = list(print = TRUE, fit = TRUE, ms = TRUE))
+res <- adapt(x = x, pvals = pvals, models = models)
+
+# Run \\code{adapt_glm}, an equivalent as above
+res2 <- adapt_glm(x = x, pvals = pvals, pi_formulas = formulas, mu_formulas = formulas)
+
+# Check equivalence
+identical(res, res2)
 
 }

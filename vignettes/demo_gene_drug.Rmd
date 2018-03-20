@@ -35,7 +35,7 @@ Now we , and run it. The function to be used is
 library("splines")
 pvals <- as.numeric(estrogen$pvals)
 x <- data.frame(x = as.numeric(estrogen$ord))
-pi_formula <- mu_formula <- "ns(x, df = 8)"
+pi_formulas <- mu_formulas <- "ns(x, df = 8)"
 ```
 
 ```{r}

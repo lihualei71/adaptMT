@@ -5,10 +5,10 @@ output: html_notebook
 
 This is a demo on running AdaPT, with a logistic-Gamma GLM working model, on the gene/drug response data from NCBI Gene Expression Omnibus (GEO). We start from installing the package and loading the data. The data has been cached in the package.
 
-```{r}
+```{r, results='hide'}
 # install the "adaptMT" package from github.
 # will be submitted to CRAN very soon.
-devtools::github_install("lihualei71/adaptMT")
+devtools::install_github("lihualei71/adaptMT")
 library("adaptMT")
 ```
 
@@ -17,7 +17,13 @@ adaptMT provides
 ```{r}
 # load the data and look at the first 10 rows, for brevity
 data("estrogen")
-head(estrogen, 20)
+```
+
+```{r}
+head(estrogen, 10)
+```
+
+```{r}
 summary(estrogen)
 ```
 

@@ -114,7 +114,11 @@ check_pkgs <- function(models){
 #' pvals <- as.numeric(estrogen$pvals)
 #' x <- data.frame(x = as.numeric(estrogen$ord))
 #'
-#' # Generate models
+#' # Subsample the data for convenience
+#' pvals <- pvals[1:5000]
+#' x <- x[1:5000,,drop = FALSE]
+#'
+#' # Generate models for \code{}
 #' library("splines")
 #' formulas <- paste0("ns(x, df = ", 6:10, ")")
 #' models <- lapply(formulas, function(formula){
@@ -124,6 +128,12 @@ check_pkgs <- function(models){
 #'
 #' # Run \code{adapt}
 #' res <- adapt(x = x, pvals = pvals, models = models)
+#'
+#' # Run \code{adapt_glm}, an equivalent as above
+#' res2 <- adapt_glm(x = x, pvals = pvals, pi_formulas = formulas, mu_formulas = formulas)
+#'
+#' # Check equivalence
+#' identical(res, res2)
 #' 
 #' @export
 adapt <- function(x, pvals, models,

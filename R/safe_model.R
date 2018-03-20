@@ -2,12 +2,13 @@
 # Functions to fit models in adapt
 #---------------------------------------------------------------
 
-adapt_glm <- function(formula, family, data, weights = NULL,
+safe_glm <- function(formula, family, data, weights = NULL,
                       ...){
+    oldw <- options(warn = -1)
+
     formula <- as.formula(formula)
     if (family$link %in% c("inverse", "log")){
-        fit <- try(glm(formula, family, data, weights,
-                       ...),
+        fit <- try(glm(formula, family, data, weights, ...),
                    silent = TRUE)
         if (class(fit)[1] == "try-error"){
             mod_mat <- model.matrix(formula, data = data)
@@ -17,12 +18,9 @@ adapt_glm <- function(formula, family, data, weights = NULL,
                        start = start, ...)
         }
     } else if (family$link == "logit"){
-        fit <- suppressWarnings(
-            glm(formula, family, data, weights,
-                ...))
+        fit <- glm(formula, family, data, weights, ...)
     } else {
-        fit <- glm(formula, family, data, weights,
-                   ...)
+        fit <- glm(formula, family, data, weights, ...)
     }
 
     fitv <- as.numeric(
@@ -31,16 +29,19 @@ adapt_glm <- function(formula, family, data, weights = NULL,
 
     df <- fit$rank
     info <- list(df = df)
+
+    options(oldw)
     
     return(list(fitv = fitv, info = info))
 }
 
-adapt_gam <- function(formula, family, data, weights = NULL,
+safe_gam <- function(formula, family, data, weights = NULL,
                       ...){
+    oldw <- options(warn = -1)
+    
     formula <- as.formula(formula)
     if (family$link %in% c("inverse", "log")){
-        fit <- try(mgcv::gam(formula, family, data, weights,
-                             ...),
+        fit <- try(mgcv::gam(formula, family, data, weights, ...),
                    silent = TRUE)
         if (class(fit)[1] == "try-error"){
             mod_mat <- model.matrix(formula, data = data)
@@ -50,12 +51,9 @@ adapt_gam <- function(formula, family, data, weights = NULL,
                              start = start, ...)
         }
     } else if (family$link == "logit"){
-        fit <- suppressWarnings(
-            mgcv::gam(formula, family, data, weights,
-                      ...))
+        fit <- mgcv::gam(formula, family, data, weights, ...)
     } else {
-        fit <- mgcv::gam(formula, family, data, weights,
-                         ...)
+        fit <- mgcv::gam(formula, family, data, weights, ...)
     }
 
     fitv <- as.numeric(
@@ -65,12 +63,15 @@ adapt_gam <- function(formula, family, data, weights = NULL,
     df <- fit$rank
     info <- list(df = df)
 
+    options(oldw)
+    
     return(list(fitv = fitv, info = info))
 }
 
-adapt_glmnet <- function(x, y, family, weights = NULL,
+safe_glmnet <- function(x, y, family, weights = NULL,
                          ...){
-    ## Safe GLMnet
+    oldw <- options(warn = -1)
+    
     if (class(family)[1] == "family"){
         family <- family$family
     }
@@ -100,6 +101,8 @@ adapt_glmnet <- function(x, y, family, weights = NULL,
     vi <- as.numeric(beta != 0)[-1]    
     df <- sum(vi) + 1
     info <- list(df = df, vi = vi)
+
+    options(oldw)
     
     return(list(fitv = fitv, info = info))
 }

@@ -1,0 +1,44 @@
+---
+title: "AdaPT on gene/drug response data"
+output: html_notebook
+---
+
+This is a demo on running AdaPT, with a logistic-Gamma GLM working model, on the gene/drug response data from NCBI Gene Expression Omnibus (GEO). We start from installing the package and loading the data. The data has been cached in the package.
+
+```{r}
+# install the "adaptMT" package from github.
+# will be submitted to CRAN very soon.
+devtools::github_install("lihualei71/adaptMT")
+library("adaptMT")
+```
+
+adaptMT provides
+
+```{r}
+# load the data and look at the first 10 rows, for brevity
+data("estrogen")
+head(estrogen, 20)
+summary(estrogen)
+```
+
+Now we , and run it. The function to be used is 
+
+```{r}
+# prepare the inputs of AdaPT
+# need "splines" package to construct the formula for glm
+library("splines")
+pvals <- as.numeric(estrogen$pvals)
+x <- data.frame(x = as.numeric(estrogen$ord))
+pi_formula <- mu_formula <- "ns(x, df = 8)"
+```
+
+```{r}
+# run AdaPT
+res <- adapt_glm(x = x, pvals = pvals, pi_formulas = pi_formula, mu_formulas = mu_formula,
+                 verbose = list(print = TRUE, fit = TRUE, ms = TRUE), return_data = FALSE)
+```
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+

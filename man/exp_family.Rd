@@ -4,7 +4,7 @@
 \alias{exp_family}
 \alias{beta_family}
 \alias{inv_gaussian_family}
-\title{Exp_family Objects for Exponential Families}
+\title{exp_family Objects for Exponential Families}
 \usage{
 exp_family(g, ginv, eta, mustar, A, name = NULL, family = NULL)
 
@@ -13,26 +13,25 @@ beta_family()
 inv_gaussian_family()
 }
 \arguments{
-\item{g}{function. An transformation of p-values}
+\item{g}{a function. An transformation of p-values}
 
-\item{ginv}{function. The inverse function of \code{g}}
+\item{ginv}{a function. The inverse function of \code{g}}
 
-\item{eta}{function. The natural parameter as a function of the mean parameter \code{mu}}
+\item{eta}{a function. The natural parameter as a function of the mean parameter \code{mu}}
 
-\item{mustar}{scalar. The mean parameter that gives \eqn{U([0, 1])}}
+\item{mustar}{a scalar. The mean parameter that gives \eqn{U([0, 1])}}
 
-\item{A}{function. The partition function}
+\item{A}{a function. The partition function}
 
-\item{name}{character. A name for the family. NULL by default}
+\item{name}{a string. A name for the family. NULL by default}
 
-\item{family}{object of S3 class "\code{\link[stats]{family}}" from \code{stats} package. The family used for model fitting in \code{\link[stats]{glm}}, \code{\link[mgcv]{gam}}, \code{\link[glmnet]{glmnet}}, etc..}
+\item{family}{an object of class "\code{\link[stats]{family}}" from \code{stats} package. The family used for model fitting in \code{\link[stats]{glm}}, \code{\link[mgcv]{gam}}, \code{\link[glmnet]{glmnet}}, etc..}
 }
 \value{
-an object of S3 class "exp_family". This includes all inputs and  \item{h }{bivariate function of p and \code{mu}. The density function computed}
+an object of class "exp_family". This includes all inputs and  \item{h }{bivariate function of p and \code{mu}. The density function computed}
 }
 \description{
-An object containing all required information in an exponential
-family to perform the E-step. The exponential function is encoded by
+\code{exp_family} objects contain all required information in an exponential family to perform the E-step. The exponential function is encoded by
 \deqn{h(p; \eta) = \exp\{(\eta(\mu) - \eta(\mu^{*})) g(p) - (A(\mu) - A(\mu^{*}))\}}{h(p; \eta) = exp{(\eta(\mu) - \eta(\mu*)) g(p) - (A(\mu) - A(\mu*))}}
 where \eqn{g(p)} is an arbitrary transformation, \eqn{\mu} is the
 \emph{mean parameter}, \eqn{\eta} is the natural parameter,

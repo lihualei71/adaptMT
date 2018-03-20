@@ -2,10 +2,9 @@
 # exp_family class
 #===============================================================
 
-#' Exp_family Objects for Exponential Families
+#' exp_family Objects for Exponential Families
 #'
-#' An object containing all required information in an exponential
-#' family to perform the E-step. The exponential function is encoded by
+#' \code{exp_family} objects contain all required information in an exponential family to perform the E-step. The exponential function is encoded by
 #' \deqn{h(p; \eta) = \exp\{(\eta(\mu) - \eta(\mu^{*})) g(p) - (A(\mu) - A(\mu^{*}))\}}{h(p; \eta) = exp{(\eta(\mu) - \eta(\mu*)) g(p) - (A(\mu) - A(\mu*))}}
 #' where \eqn{g(p)} is an arbitrary transformation, \eqn{\mu} is the
 #' \emph{mean parameter}, \eqn{\eta} is the natural parameter,
@@ -17,14 +16,14 @@
 #'
 #' Inverse-gaussian family (\code{inv_gaussian_family()}): modelling p-values as transformed z-scores, i.e. \eqn{g(p) = \Phi^{-1}(p) (\Phi is the c.d.f. of a standard normal random variable)}, \eqn{\eta(\mu) = \mu}, \eqn{\mu* = 0}, \eqn{A(\mu) = \mu^2 / 2}, name = "inv_gaussian" and family = gaussian().
 #'
-#' @param g function. An transformation of p-values
-#' @param ginv function. The inverse function of \code{g}
-#' @param eta function. The natural parameter as a function of the mean parameter \code{mu}
-#' @param mustar scalar. The mean parameter that gives \eqn{U([0, 1])}
-#' @param A function. The partition function
-#' @param name character. A name for the family. NULL by default
-#' @param family object of S3 class "\code{\link[stats]{family}}" from \code{stats} package. The family used for model fitting in \code{\link[stats]{glm}}, \code{\link[mgcv]{gam}}, \code{\link[glmnet]{glmnet}}, etc..
-#' @return an object of S3 class "exp_family". This includes all inputs and  \item{h }{bivariate function of p and \code{mu}. The density function computed}
+#' @param g a function. An transformation of p-values
+#' @param ginv a function. The inverse function of \code{g}
+#' @param eta a function. The natural parameter as a function of the mean parameter \code{mu}
+#' @param mustar a scalar. The mean parameter that gives \eqn{U([0, 1])}
+#' @param A a function. The partition function
+#' @param name a string. A name for the family. NULL by default
+#' @param family an object of class "\code{\link[stats]{family}}" from \code{stats} package. The family used for model fitting in \code{\link[stats]{glm}}, \code{\link[mgcv]{gam}}, \code{\link[glmnet]{glmnet}}, etc..
+#' @return an object of class "exp_family". This includes all inputs and  \item{h }{bivariate function of p and \code{mu}. The density function computed}
 #'
 #' @export
 #'

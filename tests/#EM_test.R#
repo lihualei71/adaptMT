@@ -56,4 +56,7 @@ identical(res$s, res2$s)
 
 x1 <- x[1:5000,,drop=FALSE]
 pvals1 <- pvals[1:5000]
-res3 <- adapt(x1, pvals1, mods[[5]], dist)
+res3 <- adapt(x[1:500,,drop=FALSE], pvals[1:500], mods[1:5], dist)
+
+tmp1 <- EM_mix(x[1:2000,,drop=FALSE], pvals[1:2000], s[1:2000], dist, mods[[1]])
+tmp <- EM_mix(x, pvals, s, dist, mods[[1]])

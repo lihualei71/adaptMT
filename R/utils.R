@@ -29,20 +29,41 @@ find_newname <- function(names_vec){
     return(name)
 }
 
-complete_formulas <- function(args, response_name){
-    if (!is.null(args$formula)){
-        formula <- as.character(args$formula)
-        formula <- tail(formula, 1)
-        formula <- tail(strsplit(formula, "~")[[1]], 1)
-        ## completed_formula <- as.formula(
-        ##     paste(response_name, "~", formula),
-        ##     env = environment(args$formula))
-        completed_formula <- paste(response_name, "~", formula)
-        args$formula <- completed_formula
-    } else {
+complete_pkg <- function(formula){
+    formula <- as.character(formula)
+    formula <- tail(formula, 1)
+    formula <- tail(strsplit(formula, "~")[[1]], 1)    
+    formula <- paste0(" ", formula)    
+    if (grepl("ns\\(", formula)){
+        if (!requireNamespace("splines", quietly = TRUE)){
+            stop("package \"splines\" not found. Please install.")
+        }
+        formula <- gsub("([^:])ns\\(", "\\1splines::ns\\(", formula)
+    }
+    if (grepl("[^a-z]s\\(", formula)){
+        if (!requireNamespace("mgcv", quietly = TRUE)){
+            stop("package \"mgcv\" not found. Please install.")
+        }
+        formula <- gsub("([^:a-z])s\\(", "\\1mgcv::s\\(", formula)
+    }
+    return(formula)
+}
+    
+
+complete_formula <- function(formula, response_name){
+    if (is.null(formula)){
         stop("No formula is found. Please specify a formula ")
     }
-    return(args)
+    formula <- as.character(formula)
+    formula <- tail(formula, 1)
+    formula <- tail(strsplit(formula, "~")[[1]], 1)
+    formula <- paste0(" ", formula)
+    ## completed_formula <- as.formula(
+    ##     paste(response_name, "~", formula),
+    ##     env = environment(args$formula))
+    completed_formula <- paste0(response_name, " ~", formula)
+
+    return(completed_formula)
 }
 
 complete_args <- function(x, response, fun,
@@ -61,7 +82,7 @@ complete_args <- function(x, response, fun,
         }
         data <- cbind(data.frame(response), x)        
         colnames(data)[1] <- response_name
-        args <-  complete_formulas(args, response_name)
+        args$formula <-  complete_formula(args$formula, response_name)
         data_args <- c(list(data = data), args)
     } else if (input_type == "xy"){
         data_args <- c(

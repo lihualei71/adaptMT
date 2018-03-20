@@ -1,7 +1,7 @@
-Package: adapt
+Package: adaptMT
 Type: Package
 Title: Adaptive P-value Thresholding (AdaPT) for multiple hypothesis testing with side information
-Version: 0.1.2.9000
+Version: 0.1.3.9000
 Authors@R: person("Lihua", "Lei", email = "lihua.lei@berkeley.edu", role = c("aut", "cre"))
 Maintainer: Lihua Lei <lihua.lei@berkeley.edu>
 Description: More about what it does (maybe more than one line)
@@ -13,7 +13,11 @@ Suggests:
     glmnet,
     HDtweedie,
     mgcv,
-    splines
+    splines,
+    testthat,
+    knitr,
+    rmarkdown
 RoxygenNote: 6.0.1
 Imports: 
     methods
+VignetteBuilder: knitr

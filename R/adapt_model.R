@@ -2,13 +2,71 @@
 # adapt_model class
 #===============================================================
 
-gen_adapt_model <- function(pifun, mufun,
-                            pifun_init, mufun_init,
+#' adapt_model Objects for M-steps
+#'
+#' \code{adapt_model} objects provide the functions and their arguments in computing the M-steps. Each object can be passed to \code{\link{adapt}} as a candidate model.
+#'
+#' @param pifun a function to fit pi(x)
+#' @param mufun a function to fit mu(x)
+#' @param pifun_init a function to fit pi(x) at the initial step
+#' @param mufun_init a function to fit mu(x) at the initial step
+#' @param piargs a list. Arguments for "pifun". An empty list as default 
+#' @param muargs a list. Arguments for "mufun". An empty list as default 
+#' @param piargs_init a list. Arguments for piargs_init. An empty list as default 
+#' @param muargs_init a list. Arguments for muargs_init. An empty list as default
+#' @param name a string. An optional argument for the user-specified name of the model. An empty string as default.
+#'
+#' @return
+#' \item{name}{same as the input \code{name}}
+#' \item{algo}{a list recording \code{pifun}, \code{mufun}, \code{pifun_init} and \code{mufun_init}}
+#' \item{args}{a list recording \code{piargs}, \code{muargs}, \code{piargs_init} and \code{muargs_init}}
+#' 
+#' @examples
+#' # Generate 'adapt_model' for logistic-Gamma glm.
+#' # pifun as a logistic regression
+#'    pifun <- function(formula, data, ...){
+#'        glm(formula, data, family = binomial(), ...)
+#'    }
+#' # pifun_init as a linear regression
+#'    pifun_init <- function(formula, data, ...){
+#'        glm(formula, data, family = gaussian(), ...)
+#'    }
+#' # Both mufun and mufun_init as Gamma GLMs (The real implementation in the package is more complicated than the following in order to handle the corner cases)
+#'    mufun <- mufun_init <- function(formula, data, weights, ...){
+#'        glm(formula, data, weights = weights, family = Gamma(), ...)
+#'    }
+#'
+#' library("splines") # for using ns() in the formula
+#' piargs <- list(formula = "ns(x, df = 8)")
+#' muargs <- list(formula = "ns(x, df = 8)")
+#' name <- "glm"
+#'
+#' mod <- gen_adapt_model(pifun, mufun, pifun_init, mufun_init,
+#'                        piargs, muargs, name = name)
+#' mod
+#' 
+#' @export
+gen_adapt_model <- function(pifun = NULL,
+                            mufun = NULL,
+                            pifun_init = NULL,
+                            mufun_init = NULL,
                             piargs = list(),
                             muargs = list(),
                             piargs_init = list(),
                             muargs_init = list(),
                             name = ""){
+    args <- list(piargs = piargs, muargs = muargs,
+                 piargs_init = piargs_init, muargs_init = muargs_init)
+
+    if (is.null(pifun) && is.null(mufun) &&
+        is.null(pifun_init) && is.null(mufun_init)){
+        model <- structure(
+            list(name = name, args = args),
+            class = "adapt_model"
+            )
+        return(model)
+    }
+    
     if (!is.function(pifun)){
         stop("\"pifun\" must be a function.")
     }
@@ -24,8 +82,7 @@ gen_adapt_model <- function(pifun, mufun,
 
     algo <- list(pifun = pifun, mufun = mufun,
                  pifun_init = pifun_init, mufun_init = mufun_init)
-    args <- list(piargs = piargs, muargs = muargs,
-                 piargs_init = piargs_init, muargs_init = muargs_init)
+
     model <- structure(
         list(name = name, algo = algo, args = args),
         class = "adapt_model"
@@ -37,18 +94,22 @@ gen_adapt_model_glm <- function(dist,
                                 piargs = list(),
                                 muargs = list()){
     pifun <- function(formula, data, ...){
-        adapt_glm(formula, data,
+        safe_glm(formula, data,
                   family = binomial(), ...)
     }
     
     pifun_init <- function(formula, data, ...){
-        adapt_glm(formula, data,
+        safe_glm(formula, data,
                   family = gaussian(), ...)
     }
     
     mufun <- mufun_init <- function(formula, data, weights, ...){
-        adapt_glm(formula, data, weights = weights,
+        safe_glm(formula, data, weights = weights,
                   family = dist$family, ...)
+    }
+
+    if (is.null(piargs$formula) || is.null(muargs$formula)){
+        stop("Argument \"formula\" is missing from \"piargs\" or \"muargs\".")
     }
 
     piargs_init <- piargs
@@ -62,20 +123,24 @@ gen_adapt_model_gam <- function(dist,
                                 piargs = list(),
                                 muargs = list()){
     pifun <- function(formula, data, ...){
-        adapt_gam(formula, data,
+        safe_gam(formula, data,
                   family = binomial(), ...)
     }
     
     pifun_init <- function(formula, data, ...){
-        adapt_gam(formula, data,
+        safe_gam(formula, data,
                   family = gaussian(), ...)
     }
     
     mufun <- mufun_init <- function(formula, data, weights, ...){
-        adapt_gam(formula, data, weights = weights,
+        safe_gam(formula, data, weights = weights,
                   family = dist$family, ...)
     }
 
+    if (is.null(piargs$formula) || is.null(muargs$formula)){
+        stop("Argument \"formula\" is missing from \"piargs\" or \"muargs\".")
+    }
+    
     piargs_init <- piargs
     muargs_init <- muargs
 
@@ -87,17 +152,17 @@ gen_adapt_model_glmnet <- function(dist,
                                    piargs = list(),
                                    muargs = list()){
     pifun <- function(x, y, ...){
-        adapt_glmnet(x, y,
+        safe_glmnet(x, y,
                      family = "binomial", ...)
     }
     
     pifun_init <- function(x, y, ...){
-        adapt_glmnet(x, y,
+        safe_glmnet(x, y,
                      family = "gaussian", ...)
     }
     
     mufun <- mufun_init <- function(x, y, weights, ...){
-        adapt_glmnet(x, y, weights = weights,
+        safe_glmnet(x, y, weights = weights,
                      family = dist$family, ...)
     }
 

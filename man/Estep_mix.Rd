@@ -7,23 +7,23 @@
 Estep_mix(pvals, s, dist, pix, mux)
 }
 \arguments{
-\item{pvals}{vector of values in [0, 1]. P-values}
+\item{pvals}{a vector of values in [0, 1]. P-values}
 
-\item{s}{vector of values in [0, 1]. Threshold curve}
+\item{s}{a vector of values in [0, 1]. Threshold curve}
 
-\item{dist}{object of "\code{\link{exp_family}}" family}
+\item{dist}{an object of class "\code{\link{exp_family}}"}
 
-\item{pix}{vector of values in [0, 1]. \eqn{\pi(x_{i})}{\pi(xi)}}
+\item{pix}{a vector of values in [0, 1]. \eqn{\pi(x_{i})}{\pi(xi)}}
 
-\item{mux}{vector of values. \eqn{\mu(x_{i})}{\mu(xi)}}
+\item{mux}{a vector of values. \eqn{\mu(x_{i})}{\mu(xi)}}
 }
 \value{
 Imputed values, including
-\item{Hhat}{vector of binary values. imputed values for \eqn{H_{i}}{Hi}'s}
-\item{phat}{vector of values in [0, 1]. imputed values for \eqn{p_{i}}{pi}'s}
+\item{Hhat}{a vector of values in [0, 1]. Imputed values for \eqn{H_{i}}{Hi}'s}
+\item{phat}{a vector of values in [0, 1]. Imputed values for \eqn{p_{i}}{pi}'s}
 }
 \description{
-Estep_mix computes the E-step, namely imputation of missing values, including the p-values and indicators of null/non-null hypotheses.
+\code{Estep_mix} computes the E-step, namely imputation of missing values, including the p-values and indicators of null/non-null hypotheses.
 }
 \details{
 The p-values are assumed to be generated from an covariate-varying mixture model

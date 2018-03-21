@@ -1,0 +1,92 @@
+context("Test EM")
+
+data("estrogen")
+
+library("splines")
+pvals <- as.numeric(estrogen$pvals)
+x <- data.frame(x = as.numeric(estrogen$ord))
+n <- length(pvals)
+s <- rep(0.45, n)
+dist <- beta_family()
+piargs <- muargs <- list(formula = "ns(x, df = 8)")
+
+mod <- gen_adapt_model_glm(beta_family(), list(formula = "ns(x, df = 8)"), list(formula = "ns(x, df = 8)"))
+
+init_obj <- init_mix(x, pvals, s, dist,
+                     mod$algo$pifun_init,
+                     mod$algo$mufun_init,
+                     mod$args$piargs_init,
+                     muargs = mod$args$muargs_init)
+Estep_obj <- Estep_mix(pvals, s, dist, init_obj$pix, init_obj$mux)
+Mstep_obj <- Mstep_mix(x, pvals, dist,
+                       Estep_obj$Hhat, Estep_obj$bhat,
+                       mod$algo$pifun, mod$algo$mufun,
+                       mod$args$piargs, mod$args$muargs)
+loglik <- EM_loglik(pvals, dist, Mstep_obj$pix, mux = Mstep_obj$mux, Estep_obj$Hhat, Estep_obj$bhat)
+EM_obj <- EM_mix(x, pvals, s, dist, mod)
+
+mods <- lapply(6:10, function(i){
+    formula <- paste0("ns(x, df = ", i, ")")
+    gen_adapt_model_glm(dist,
+         list(formula = formula), list(formula = formula))
+})
+EM_ms_obj <- EM_mix_ms(x, pvals, s, dist, mods)
+    
+test_that("initialization", {
+    res0_pix <- c(0, 0.07884513, 0.1194709, 0.1340804, 0.179624, 0.586203)
+    res0_mux <- c(1.763264, 1.769205, 1.776525, 1.852323, 1.831987, 2.987274)
+    res_pix <- as.numeric(summary(init_obj$pix, digits = 10))
+    res_mux <- as.numeric(summary(init_obj$mux, digits = 10))
+    expect_equal(res_pix, res0_pix, tolerance = 1e-5)
+    expect_equal(res_mux, res0_mux, tolerance = 1e-5)    
+})
+
+test_that("Estep", {
+    res0_Hhat <- c(1e-5, 0.07178834, 0.1149031, 0.1375873, 0.1699528, 0.9960277)
+    res0_phat <- c(1.104524e-05, 0.1757817, 0.3478994, 0.311381, 0.4583199, 0.5499793)
+    res_Hhat <- as.numeric(summary(Estep_obj$Hhat, digits = 10))
+    phat <- dist$ginv(Estep_obj$bhat * dist$g(pvals) + (1 - Estep_obj$bhat) * dist$g(1 - pvals))    
+    res_phat <- as.numeric(summary(phat, digits = 10))
+    expect_equal(res_Hhat, res0_Hhat, tolerance = 1e-5)
+    expect_equal(res_phat, res0_phat, tolerance = 1e-5)    
+})
+
+test_that("Mstep", {
+    res0_pix <- c(0.01730374, 0.07845116, 0.1176432, 0.1375873, 0.1749168, 0.7361001)
+    res0_mux <- c(1.657742, 1.693265, 1.739558, 1.841315, 1.770693, 3.19766)
+    res_pix <- as.numeric(summary(Mstep_obj$pix, digits = 10))
+    res_mux <- as.numeric(summary(Mstep_obj$mux, digits = 10))
+    expect_equal(res_pix, res0_pix, tolerance = 1e-5)
+    expect_equal(res_mux, res0_mux, tolerance = 1e-5)    
+})
+
+test_that("EM log-likelihood", {
+    loglik0 <- -6964.847
+    expect_equal(loglik, loglik0, tolerance = 1e-5)
+})
+
+test_that("EM algorithm", {
+    res0_pix <- c(0.01948206, 0.08652919, 0.12947547, 0.16164888, 0.18375174, 0.90635556)
+    res0_mux <- c(1.476597, 1.529094, 1.639958, 1.736527, 1.779511, 2.731010)
+    loglik0 <- -7256.956
+    res_pix <- as.numeric(summary(EM_obj$params$pix, digits = 10))
+    res_mux <- as.numeric(summary(EM_obj$params$mux, digits = 10))
+    loglik <- EM_obj$loglik
+    expect_equal(res_pix, res0_pix, tolerance = 1e-5)
+    expect_equal(res_mux, res0_mux, tolerance = 1e-5)    
+    expect_equal(loglik, loglik0, tolerance = 1e-5)
+})
+
+test_that("EM algorithm with model selection", {
+    piformula0 <- muformula0 <- "ns(x, df = 7)"
+    res0_pix <- c(0.01793096, 0.10736448, 0.14979745, 0.18213420, 0.19170550, 0.9349155)
+    res0_mux <- c(1.467227, 1.514354, 1.672172, 1.686646, 1.736594, 2.684053)
+    piformula <- EM_ms_obj$model$args$piargs$formula
+    muformula <- EM_ms_obj$model$args$muargs$formula
+    res_pix <- as.numeric(summary(EM_ms_obj$params$pix, digits = 10))
+    res_mux <- as.numeric(summary(EM_ms_obj$params$mux, digits = 10))
+    expect_equal(piformula, piformula0)
+    expect_equal(muformula, muformula0)    
+    expect_equal(res_pix, res0_pix, tolerance = 1e-5)
+    expect_equal(res_mux, res0_mux, tolerance = 1e-5)    
+})

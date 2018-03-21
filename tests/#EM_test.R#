@@ -22,7 +22,7 @@ summary(init_obj$mux, digits = 10)
 Estep_obj <- Estep_mix(pvals, s, dist, init_obj$pix, init_obj$mux)
 summary(Estep_obj$Hhat, digits = 10)
 ## c(0, 0.07178834, 0.1149031, 0.1375873, 0.1699528, 0.9960277)
-summary(Estep_obj$phat)
+summary(Estep_obj$phat, digits = 10)
 ## c(1.104524e-05, 0.1757817, 0.3478994, 0.311381, 0.4583199, 0.5499793)
 Mstep_obj <- Mstep_mix(x, Estep_obj$Hhat, Estep_obj$phat, dist,
                        mod$algo$pifun, mod$algo$mufun,

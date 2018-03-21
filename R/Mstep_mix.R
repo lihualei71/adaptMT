@@ -2,28 +2,27 @@
 # Compute M-step for the mixture model.
 #===============================================================
 
-Mstep_mix_pi <- function(x, Hhat, fun, args){
-    args <- complete_args(x, Hhat, fun, args)
-
-    fit_pi(fun, args, type = "Mstep")
-}
-
-Mstep_mix_mu <- function(x, Hhat, phat, dist, fun, args){
-    yhat <- dist$g(phat)
-    Hhat <- pmax(Hhat, 1e-5)
-    if (!"weights" %in% formalArgs(fun)){
-        stop("mufun does not have input weights")
-    }
-
-    args <- complete_args(x, yhat, fun, args, Hhat)
-
-    fit_mu(fun, args, dist, type = "Mstep")    
-}
-
-Mstep_mix <- function(x, Hhat, phat, dist,
+Mstep_mix <- function(x, pvals, dist,
+                      Hhat, bhat, 
                       pifun, mufun, 
                       piargs = NULL, muargs = NULL){
-    pi_res <- Mstep_mix_pi(x, Hhat, pifun, piargs)
-    mu_res <- Mstep_mix_mu(x, Hhat, phat, dist, mufun, muargs)
-    c(pi_res, mu_res)
+    if (!"weights" %in% formalArgs(mufun)){
+        stop("'mufun' does not have input 'weights'")
+    }
+    
+    n <- length(Hhat)
+    x_aug <- rbind(x, x)
+    H_aug <- c(rep(1, n), rep(0, n))
+    weights <- c(Hhat, 1 - Hhat) 
+    piargs <- complete_args(x_aug, H_aug, pifun, piargs, weights)
+    pi_res <- fit_pi(pifun, piargs, type = "Mstep")
+    pi_res$pix <- pi_res$pix[1:n]
+
+    y_aug <- c(dist$g(pvals), dist$g(1 - pvals))
+    weights <- c(Hhat * bhat, Hhat * (1 - bhat))
+    muargs <- complete_args(x_aug, y_aug, mufun, muargs, weights)
+    mu_res <- fit_mu(mufun, muargs, dist, type = "Mstep")
+    mu_res$mux <- mu_res$mux[1:n]
+
+    return(c(pi_res, mu_res))
 }

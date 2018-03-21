@@ -1,5 +1,5 @@
-#' @import methods
 #' @importFrom methods formalArgs
-#' @importFrom stats as.formula binomial coef Gamma gaussian glm model.matrix pnorm predict qnorm
+#' @importFrom stats as.formula binomial coef Gamma gaussian glm model.matrix pnorm predict qnorm rnorm
 #' @importFrom utils setTxtProgressBar tail txtProgressBar
+#' @importFrom graphics par plot axis .filled.contour legend polygon points box
 NULL

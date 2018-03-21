@@ -4,7 +4,7 @@
 
 safe_glm <- function(formula, family, data, weights = NULL,
                       ...){
-    oldw <- options(warn = -1)
+    options(warn = -1)
 
     formula <- as.formula(formula)
     if (family$link %in% c("inverse", "log")){
@@ -17,8 +17,6 @@ safe_glm <- function(formula, family, data, weights = NULL,
             fit <- glm(formula, family, data, weights,
                        start = start, ...)
         }
-    } else if (family$link == "logit"){
-        fit <- glm(formula, family, data, weights, ...)
     } else {
         fit <- glm(formula, family, data, weights, ...)
     }
@@ -30,14 +28,14 @@ safe_glm <- function(formula, family, data, weights = NULL,
     df <- fit$rank
     info <- list(df = df)
 
-    options(oldw)
+    options(warn = 0)
     
     return(list(fitv = fitv, info = info))
 }
 
 safe_gam <- function(formula, family, data, weights = NULL,
                       ...){
-    oldw <- options(warn = -1)
+    options(warn = -1)
     
     formula <- as.formula(formula)
     if (family$link %in% c("inverse", "log")){
@@ -50,8 +48,6 @@ safe_gam <- function(formula, family, data, weights = NULL,
             fit <- mgcv::gam(formula, family, data, weights,
                              start = start, ...)
         }
-    } else if (family$link == "logit"){
-        fit <- mgcv::gam(formula, family, data, weights, ...)
     } else {
         fit <- mgcv::gam(formula, family, data, weights, ...)
     }
@@ -63,14 +59,14 @@ safe_gam <- function(formula, family, data, weights = NULL,
     df <- fit$rank
     info <- list(df = df)
 
-    options(oldw)
+    options(warn = 0)
     
     return(list(fitv = fitv, info = info))
 }
 
 safe_glmnet <- function(x, y, family, weights = NULL,
                          ...){
-    oldw <- options(warn = -1)
+    options(warn = -1)
     
     if (class(family)[1] == "family"){
         family <- family$family
@@ -79,13 +75,6 @@ safe_glmnet <- function(x, y, family, weights = NULL,
     if (family %in% c("gaussian", "poisson", "multinomial", "cox", "mgaussian")){
         fit <- glmnet::cv.glmnet(x, y, weights,
                                  family = family, ...)
-    } else if (family == "binomial") {
-        n <- length(y)
-        newy <- c(rep(1, n), rep(0, n))
-        newx <- rbind(x, x)
-        weights <- c(y, 1 - y)
-        fit <- glmnet::cv.glmnet(newx, newy, weights,
-                                 family = "binomial", ...)
     } else if (family == "Gamma"){
         fit <- HDtweedie::cv.HDtweedie(x, y, p = 2,
                                        weights = weights,
@@ -102,7 +91,7 @@ safe_glmnet <- function(x, y, family, weights = NULL,
     df <- sum(vi) + 1
     info <- list(df = df, vi = vi)
 
-    options(oldw)
+    options(warn = 0)
     
     return(list(fitv = fitv, info = info))
 }

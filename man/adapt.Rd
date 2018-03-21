@@ -15,7 +15,7 @@ adapt(x, pvals, models, dist = beta_family(), s0 = rep(0.45, length(pvals)),
 
 \item{pvals}{a vector of values in [0, 1]. P-values}
 
-\item{models}{an object of class "\code{\link{adapt_model}}" or a list of objects of class "adapt_model". See Details}
+\item{models}{an object of class "\code{adapt_model}" or a list of objects of class "adapt_model". See Details}
 
 \item{dist}{an object of class "\code{\link{exp_family}}". \code{\link{beta_family}()} as default}
 
@@ -49,7 +49,7 @@ adapt(x, pvals, models, dist = beta_family(), s0 = rep(0.45, length(pvals)),
 \item{fdp}{a vector of values in [0, 1]. i-th entry records the FDPhat when i-th hypothesis is rejected}
 \item{alphas}{same as the input \code{alphas}}
 \item{dist}{same as the input \code{dist}}
-\item{models}{a list of \code{\link{adapt_model}} objects of length \code{nfits}. The model used in each fitting step}
+\item{models}{a list of \code{adapt_model} objects of length \code{nfits}. The model used in each fitting step}
 \item{info}{a list of length \code{nfits}. Each element is a list recording extra information in each fitting step, e.g. degree of freedom (df) and variable importance (vi)}
 \item{args}{a list including the other inputs \code{nfits}, \code{nms}, \code{niter_fit}, \code{niter_ms}, \code{tol}, \code{cr}}.
 }

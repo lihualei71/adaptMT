@@ -56,16 +56,21 @@ check_pkgs <- function(models){
         models <- list(models)
     }    
 
-    model_names <- sapply(models, function(model){model$name})
-    if ("gam" %in% model_names &&
-        is.null(model$algo) &&
-        !requireNamespace("mgcv", quietly = TRUE)){
-        stop("'mgcv' package not found. Please install.")
+    models_names <- sapply(models, function(model){model$name})
+    
+    if ("gam" %in% models_names){
+        ind <- which(models_names == "gam")
+        tmp <- sapply(models, function(model){is.null(model$algo)})
+        if (any(tmp) && !requireNamespace("mgcv", quietly = TRUE)){
+            stop("'mgcv' package not found. Please install.")
+        }
     }
-    if ("glmnet" %in% model_names &&
-        is.null(model$algo) &&
-        !requireNamespace("glmnet", quietly = TRUE)){
-        stop("'glmnet' package not found. Please install.")
+    if ("glmnet" %in% models_names){
+        ind <- which(models_names == "glmnet")
+        tmp <- sapply(models, function(model){is.null(model$algo)})
+        if (any(tmp) && !requireNamespace("glmnet", quietly = TRUE)){
+            stop("'glmnet' package not found. Please install.")
+        }
     }
     return(invisible())
 }
@@ -82,7 +87,7 @@ check_pkgs <- function(models){
 #' 
 #' @param x a data.frame. Covariates (i.e. side-information)
 #' @param pvals a vector of values in [0, 1]. P-values
-#' @param models an object of class "\code{\link{adapt_model}}" or a list of objects of class "adapt_model". See Details
+#' @param models an object of class "\code{adapt_model}" or a list of objects of class "adapt_model". See Details
 #' @param dist an object of class "\code{\link{exp_family}}". \code{\link{beta_family}()} as default
 #' @param s0 a vector of values in [0, 0.5). Initial threshold. 
 #' @param alphas a vector of values in (0, 1). Target FDR levels. 
@@ -104,7 +109,7 @@ check_pkgs <- function(models){
 #' \item{fdp}{a vector of values in [0, 1]. i-th entry records the FDPhat when i-th hypothesis is rejected}
 #' \item{alphas}{same as the input \code{alphas}}
 #' \item{dist}{same as the input \code{dist}}
-#' \item{models}{a list of \code{\link{adapt_model}} objects of length \code{nfits}. The model used in each fitting step}
+#' \item{models}{a list of \code{adapt_model} objects of length \code{nfits}. The model used in each fitting step}
 #' \item{info}{a list of length \code{nfits}. Each element is a list recording extra information in each fitting step, e.g. degree of freedom (df) and variable importance (vi)}
 #' \item{args}{a list including the other inputs \code{nfits}, \code{nms}, \code{niter_fit}, \code{niter_ms}, \code{tol}, \code{cr}}.
 #'

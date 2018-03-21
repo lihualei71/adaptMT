@@ -68,7 +68,8 @@ complete_formula <- function(formula, response_name){
 
 complete_args <- function(x, response, fun,
                           args = NULL,
-                          weights = NULL){
+                          weights = NULL,
+                          force_integer = FALSE){
     input_type <- func_input_type(fun)
     if (!input_type %in% c("formula", "xy", "Xy")){
         stop("Wrong input type.")

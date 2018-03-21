@@ -2,11 +2,10 @@
 # EM algorithm to fit a mixture model.
 #---------------------------------------------------------------
 
-EM_loglik <- function(dist, params, Hhat, phat){
-    pix <- params$pix
-    mux <- params$mux
+EM_loglik <- function(pvals, dist, pix, mux, Hhat, bhat){
     loglik1 <- sum(Hhat * log(pix) + (1 - Hhat) * log(1 - pix))
-    loglik2 <- sum(Hhat * log(dist$h(phat, mux)))
+    loglik2 <- sum(Hhat * bhat * log(dist$h(pvals, mux)) +
+                   Hhat * (1 - bhat) * log(dist$h(1 - pvals, mux)))
     return(loglik1 + loglik2)
 }
 
@@ -37,7 +36,8 @@ EM_mix <- function(x, pvals, s, dist, model,
         Estep_res <-
             Estep_mix(pvals, s, dist, pix, mux)
         Mstep_res <-
-            Mstep_mix(x, Estep_res$Hhat, Estep_res$phat, dist,
+            Mstep_mix(x, pvals, dist,
+                      Estep_res$Hhat, Estep_res$bhat, 
                       model$algo$pifun, model$algo$mufun,
                       model$args$piargs, model$args$muargs)
         pix <- Mstep_res$pix
@@ -56,8 +56,8 @@ EM_mix <- function(x, pvals, s, dist, model,
         cat("\n")
     }
     params <- list(pix = pix, mux = mux)
-    loglik <- EM_loglik(dist, params,
-                        Estep_res$Hhat, Estep_res$phat)
+    loglik <- EM_loglik(pvals, dist, params$pix, params$mux,
+                        Estep_res$Hhat, Estep_res$bhat)
     info <- list(pi = Mstep_res$pi_info, mu = Mstep_res$mu_info)
     
     return(list(params = params, loglik = loglik, info = info))

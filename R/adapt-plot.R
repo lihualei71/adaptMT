@@ -105,7 +105,7 @@ plot_lfdr_1d <- function(obj, alpha, title,
     p_grid <- exp(seq(-15, log(disp_ymax), length.out=100))
     xp_grid <- expand.grid(x = x_grid, p = p_grid)
     locfdr_vals <-
-        compute_lfdr_mix(p = xp_grid$p, dist = dist,
+        compute_lfdr_mix(pvals = xp_grid$p, dist = dist,
                          params = list(mux = mux[xp_grid$x],
                              pix = pix[xp_grid$x]))
     locfdr_mat <- matrix(locfdr_vals, nrow = length(x_grid))

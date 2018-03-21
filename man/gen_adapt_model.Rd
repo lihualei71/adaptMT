@@ -45,7 +45,8 @@ gen_adapt_model(pifun = NULL, mufun = NULL, pifun_init = NULL,
    pifun_init <- function(formula, data, ...){
        glm(formula, data, family = gaussian(), ...)
    }
-# Both mufun and mufun_init as Gamma GLMs (The real implementation in the package is more complicated than the following in order to handle the corner cases)
+# Both mufun and mufun_init as Gamma GLMs (The real implementation in the package
+# is more complicated than the following in order to handle the corner cases)
    mufun <- mufun_init <- function(formula, data, weights, ...){
        glm(formula, data, weights = weights, family = Gamma(), ...)
    }

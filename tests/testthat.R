@@ -1,4 +1,4 @@
 library(testthat)
-library(adapt)
+library(adaptMT)
 
-test_check("adapt")
+test_check("adaptMT")

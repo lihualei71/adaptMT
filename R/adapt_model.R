@@ -31,7 +31,8 @@
 #'    pifun_init <- function(formula, data, ...){
 #'        glm(formula, data, family = gaussian(), ...)
 #'    }
-#' # Both mufun and mufun_init as Gamma GLMs (The real implementation in the package is more complicated than the following in order to handle the corner cases)
+#' # Both mufun and mufun_init as Gamma GLMs (The real implementation in the package
+#' # is more complicated than the following in order to handle the corner cases)
 #'    mufun <- mufun_init <- function(formula, data, weights, ...){
 #'        glm(formula, data, weights = weights, family = Gamma(), ...)
 #'    }
@@ -95,17 +96,17 @@ gen_adapt_model_glm <- function(dist,
                                 muargs = list()){
     pifun <- function(formula, data, ...){
         safe_glm(formula, data,
-                  family = binomial(), ...)
+                 family = quasibinomial(), ...)
     }
     
     pifun_init <- function(formula, data, ...){
         safe_glm(formula, data,
-                  family = gaussian(), ...)
+                 family = gaussian(), ...)
     }
     
     mufun <- mufun_init <- function(formula, data, weights, ...){
         safe_glm(formula, data, weights = weights,
-                  family = dist$family, ...)
+                 family = dist$family, ...)
     }
 
     if (is.null(piargs$formula) || is.null(muargs$formula)){
@@ -124,17 +125,17 @@ gen_adapt_model_gam <- function(dist,
                                 muargs = list()){
     pifun <- function(formula, data, ...){
         safe_gam(formula, data,
-                  family = binomial(), ...)
+                 family = quasibinomial(), ...)
     }
     
     pifun_init <- function(formula, data, ...){
         safe_gam(formula, data,
-                  family = gaussian(), ...)
+                 family = gaussian(), ...)
     }
     
     mufun <- mufun_init <- function(formula, data, weights, ...){
         safe_gam(formula, data, weights = weights,
-                  family = dist$family, ...)
+                 family = dist$family, ...)
     }
 
     if (is.null(piargs$formula) || is.null(muargs$formula)){
@@ -153,17 +154,17 @@ gen_adapt_model_glmnet <- function(dist,
                                    muargs = list()){
     pifun <- function(x, y, ...){
         safe_glmnet(x, y,
-                     family = "binomial", ...)
+                    family = "binomial", ...)
     }
     
     pifun_init <- function(x, y, ...){
         safe_glmnet(x, y,
-                     family = "gaussian", ...)
+                    family = "gaussian", ...)
     }
     
     mufun <- mufun_init <- function(x, y, weights, ...){
         safe_glmnet(x, y, weights = weights,
-                     family = dist$family, ...)
+                    family = dist$family, ...)
     }
 
     piargs_init <- piargs

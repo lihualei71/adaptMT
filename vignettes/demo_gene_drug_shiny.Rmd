@@ -73,8 +73,9 @@ renderPlot({
   alpha <- input$alpha
   nrejs <- res$nrejs[floor(alpha * 100)]
   title <- paste0("alpha = ", alpha, ", nrejs = ", nrejs)
-  adapt_1d_plot(res, alpha, title, disp_pmax = 1, disp_lfdrmax = 0.3, 
-                mar=c(2, 4.1, 2, 0.15))
+  par(mfrow = c(2, 1), mar=c(2, 4.1, 2, 0.15))
+  plot_1d_thresh(res, alpha, title, disp_ymax = 1, xlab = "order")
+  plot_1d_lfdr(res, alpha, title, disp_ymax = 0.3, xlab = "order")
 }, width = 700, height = 650)
 ```
 

@@ -67,7 +67,7 @@ par(mfrow = c(2, 3))
 for (alpha in seq(0.3, 0.05, -0.05)){
   nrejs <- res$nrejs[floor(alpha * 100)]
   title <- paste0("alpha = ", alpha, ", nrejs = ", nrejs)
-  plot_thresh_1d(res, alpha, title, disp_ymax = 1, xlab = "order")
+  plot_1d_thresh(res, alpha, title, disp_ymax = 1, xlab = "order")
 }
 ```
 
@@ -78,7 +78,7 @@ par(mfrow = c(2, 3))
 for (alpha in seq(0.3, 0.05, -0.05)){
   nrejs <- res$nrejs[floor(alpha * 100)]
   title <- paste0("alpha = ", alpha, ", nrejs = ", nrejs)
-  plot_lfdr_1d(res, alpha, title, disp_ymax = 0.25, xlab = "order")
+  plot_1d_lfdr(res, alpha, title, disp_ymax = 0.25, xlab = "order")
 }
 ```
 

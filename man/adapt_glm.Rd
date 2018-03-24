@@ -2,11 +2,65 @@
 % Please edit documentation in R/adapt-wrappers.R
 \name{adapt_glm}
 \alias{adapt_glm}
-\title{Easy-to-use Wrappers of Adaptive P-value Thresholding}
+\title{Adaptive P-value Thresholding with Generalized Linear Models}
 \usage{
 adapt_glm(x, pvals, pi_formulas, mu_formulas, dist = beta_family(),
-  s0 = rep(0.45, length(pvals)), alphas = seq(0.01, 1, 0.01), ...)
+  s0 = rep(0.45, length(pvals)), alphas = seq(0.01, 1, 0.01),
+  piargs = list(), muargs = list(), ...)
+}
+\arguments{
+\item{x}{a data.frame. Covariates (i.e. side-information)}
+
+\item{pvals}{a vector of values in [0, 1]. P-values}
+
+\item{pi_formulas}{a vector/list of strings/formulas. Formulas for fitting pi(x) by glm. See Details}
+
+\item{mu_formulas}{a vector/list of strings/formulas. Formulas for fitting mu(x) by glm. See Details}
+
+\item{dist}{an object of class "\code{\link{exp_family}}". \code{\link{beta_family}()} as default}
+
+\item{s0}{a vector of values in [0, 0.5). Initial threshold.}
+
+\item{alphas}{a vector of values in (0, 1). Target FDR levels.}
+
+\item{piargs}{a list. Other arguments passed to glm for fitting pi(x)}
+
+\item{muargs}{a list. Other arguments passed to glm for fitting mu(x)}
+
+\item{...}{other arguments passed to \code{\link{adapt}}}
 }
 \description{
-Easy-to-use Wrappers of Adaptive P-value Thresholding
+\code{adapt_glm} is a wrapper of \code{\link{adapt}} that fits pi(x) and mu(x) by \code{\link[stats]{glm}}
+}
+\examples{
+\dontrun{
+# Load estrogen data
+data(estrogen)
+pvals <- as.numeric(estrogen$pvals)
+x <- data.frame(x = as.numeric(estrogen$ord))
+dist <- beta_family()
+
+# Subsample the data for convenience
+pvals <- pvals[1:5000]
+x <- x[1:5000,,drop = FALSE]
+
+# Generate models for function adapt
+library("splines")
+formulas <- paste0("ns(x, df = ", 6:10, ")")
+models <- lapply(formulas, function(formula){
+    piargs <- muargs <- list(formula = formula)
+    gen_adapt_model(name = "glm", piargs = piargs, muargs = muargs)
+})
+
+# Run adapt_glm, an equivalent as above
+res <- adapt_glm(x = x, pvals = pvals, pi_formulas = formulas,
+                 mu_formulas = formulas, dist = dist)
+
+# Run adapt
+res2 <- adapt(x = x, pvals = pvals, models = models, dist = dist)
+
+# Check equivalence
+identical(res, res2)
+}
+
 }

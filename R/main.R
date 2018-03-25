@@ -219,7 +219,6 @@ adapt <- function(x, pvals, models,
         warning("Task completed! Initial \'s0\' has guaranteed FDR control for all alpha's in \'alphas\'.")
         m <- 1
         alphaind <- 0
-            
     } else if (max(alphas) < minfdp){
         m <- length(alphas)
         alphaind <- m
@@ -227,9 +226,7 @@ adapt <- function(x, pvals, models,
         m <- max(which(alphas <= minfdp)) + 1
         alphaind <- m - 1
     }
-    alphas <- alphas[1:m]
-    alpha <- alphas[alphaind]
-    
+
     nrejs_return <- rep(0, m) # number of rejections
     s_return <- matrix(0, n, m) # threshold
     params_return <- list() # parameters (including pix and mux)
@@ -244,6 +241,8 @@ adapt <- function(x, pvals, models,
         s_return[, m] <- s0        
     }
 
+    alphas <- alphas[1:m]
+
     for (i in 1:(nrow(stamps) - 1)){
         if (alphaind == 0){
             if (verbose$print){
@@ -252,6 +251,7 @@ adapt <- function(x, pvals, models,
             break
         }
 
+        alpha <- alphas[alphaind]
         mask <- (pvals <= s) | (pvals >= 1 - s)
         nmasks <- sum(mask)
         A <- sum(pvals >= 1 - s)

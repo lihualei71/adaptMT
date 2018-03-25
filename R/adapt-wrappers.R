@@ -132,6 +132,7 @@ adapt_glm <- function(x, pvals, pi_formulas, mu_formulas,
 #' n <- 400
 #' x1 <- x2 <- seq(-100, 100, length.out = 20)
 #' x <- expand.grid(x1, x2)
+#' colnames(x) <- c("x1", "x2")
 #'
 #' # Generate p-values (one-sided z test)
 #' # Set all hypotheses in the central circle with radius 30 to be
@@ -217,6 +218,7 @@ adapt_gam <- function(x, pvals, pi_formulas, mu_formulas,
 #' mu <- pmax(1, x %*% beta.mu + beta0.mu)
 #'
 #' # Generate p-values
+#' set.seed(0)
 #' H0 <- as.logical(ifelse(runif(n) < pi, 1, 0))
 #' y <- ifelse(H0, rexp(n, 1/mu), rexp(n, 1))
 #' pvals <- exp(-y)

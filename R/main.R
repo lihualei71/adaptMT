@@ -336,7 +336,7 @@ adapt <- function(x, pvals, models,
         
         if (alphaind == 0){ # check again to save computation
             if (verbose$print){
-                cat("Task completed!")
+                cat("Task completed!\n")
             }
             break
         }

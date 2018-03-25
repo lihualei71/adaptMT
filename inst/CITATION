@@ -1,0 +1,10 @@
+citHeader("To cite adaptMT in publications, please use:")
+
+citEntry(entry = "article",
+         author = "Lihua Lei and William Fithian",
+         title = "AdaPT: An interactive procedure for multiple testing with side information",
+         journal = "Arxiv",
+         year = "2016",
+         url = "https://arxiv.org/abs/1609.06035v1",
+         textVersion = "Lei, L., & Fithian, W. (2016). AdaPT: An interactive procedure for multiple testing with side information. arXiv preprint arXiv:1609.06035."
+         )

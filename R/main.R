@@ -1,5 +1,5 @@
 #---------------------------------------------------------------
-# AdaPT with varying-coefficient two-group model
+# Adaptive P-Value Thresholding For Multiple Testing With Side Information
 # Lihua Lei & William Fithian,
 #   "AdaPT: An interactive procedure for multiple testing with side information"
 # Available from http://arxiv.org/abs/1609.06035
@@ -84,7 +84,7 @@ check_pkgs <- function(models){
 #'
 #' \code{verbose} has three elements: \code{print}, \code{fit} and \code{ms}. If \code{print = TRUE}, the progress of the main procedure is outputed to the console, in the form of "alpha = 0.05: FDPhat 0.0333, Number of Rej. 30" (where the numbers are made up for illustration). If \code{fit = TRUE}, a progress bar for the model fitting is outputed to the console. Similarly, if \code{ms = TRUE}, a progress bar for the model selection is outputed to the console. 
 #' 
-#' @param x a data.frame. Covariates (i.e. side-information)
+#' @param x covariates (i.e. side-information). Should be compatible to \code{models}. See Details
 #' @param pvals a vector of values in [0, 1]. P-values
 #' @param models an object of class "\code{adapt_model}" or a list of objects of class "adapt_model". See Details
 #' @param dist an object of class "\code{\link{exp_family}}". \code{\link{beta_family}()} as default
@@ -133,7 +133,8 @@ check_pkgs <- function(models){
 #' })
 #'
 #' # Run adapt
-#' res <- adapt(x = x, pvals = pvals, models = models, dist = dist)
+#' res <- adapt(x = x, pvals = pvals, models = models,
+#'              dist = dist, nfits = 10)
 #' }
 #'
 #' @export
@@ -147,11 +148,6 @@ adapt <- function(x, pvals, models,
                   niter_ms = 20, cr = "BIC",
                   return_data = TRUE,
                   verbose = list(print = TRUE, fit = FALSE, ms = TRUE)){
-    ## Check if 'x' is a data.frame
-    if (!is.data.frame(x)){
-        stop("\'x\' must be a data.frame")
-    }
-
     ## Check if 'pvals' is a vector of values in [0, 1]
     if (!is.numeric(pvals) || min(pvals) < 0 || max(pvals) > 1){
         stop("Invalid p-values")
@@ -185,7 +181,11 @@ adapt <- function(x, pvals, models,
             warning("Model selection cannot be more frequent than model fitting. Set \'nms\' to \'nfits\'")
             nms <- nfits
         }
-    } 
+        if (length(models) == 1){
+            model <- models[[1]]
+            nms <- NULL
+        }
+    }
     
     ## Create time stamps when model is fitted or model selection is performed
     nmasks <- sum(pvals <= s0) + sum(pvals >= 1 - s0)

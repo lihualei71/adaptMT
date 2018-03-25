@@ -9,7 +9,7 @@ adapt_gam(x, pvals, pi_formulas, mu_formulas, piargs = list(),
   alphas = seq(0.01, 1, 0.01), ...)
 }
 \arguments{
-\item{x}{a data.frame. Covariates (i.e. side-information)}
+\item{x}{covariates (i.e. side-information). Should be compatible to \code{models}. See Details}
 
 \item{pvals}{a vector of values in [0, 1]. P-values}
 
@@ -27,8 +27,50 @@ adapt_gam(x, pvals, pi_formulas, mu_formulas, piargs = list(),
 
 \item{alphas}{a vector of values in (0, 1). Target FDR levels.}
 
-\item{...}{other arguments passed to \code{\link{adapt}}}
+\item{...}{other arguments passed to \code{\link{adapt}} (except \code{models})}
 }
 \description{
-Adaptive P-value Thresholding with Generalized Additive Models
+\code{adapt_gam} is a wrapper of \code{\link{adapt}} that fits pi(x) and mu(x) by \code{\link[mgcv]{gam}} from \code{mgcv} package.
+}
+\details{
+\code{pi_formulas} and \code{mu_formulas} can either be a list or a vector with each element being a string or a formula. For instance, suppose \code{x} has a single column with name \code{x1}, the following five options are valid for the same inputs (\code{\link[splines]{ns}} forms a spline basis with \code{df} knots and \code{\link[mgcv]{s}} forms a spline basis with knots automatically selected by generalized cross-validation):
+\enumerate{
+\item{c("x1", "ns(x1, df = 8)", "s(x1)");}
+\item{c("~ x1", "~ ns(x1, df = 8)", "s(x1)");}
+\item{list("x1", "ns(x1, df = 8)", "s(x1)");}
+\item{list("~ x1", "~ ns(x1, df = 8)", "s(x1)");}
+\item{list(~ x1, ~ ns(x1, df = 8), s(x1))}
+}
+There is no need to specify the name of the response variable, as this is handled in the function.
+
+When \code{x} has a few variables, it is common to use non-parametric GLM by replacing \code{x} by a spline basis of \code{x}. In this case, \code{\link[splines]{ns}} from \code{library(splines)} package or \code{\link[mgcv]{s}} from \code{mgcv} package are suggested. When \code{\link[mgcv]{s}} (from \code{mgcv} package) is used, it is treated as a single model because the knots will be selected automatically.
+}
+\examples{
+\dontrun{
+# Generate a 2-dim x
+n <- 400
+x1 <- x2 <- seq(-100, 100, length.out = 20)
+x <- expand.grid(x1, x2)
+
+# Generate p-values (one-sided z test)
+# Set all hypotheses in the central circle with radius 30 to be
+# non-nulls. For non-nulls, z~N(2,1) and for nulls, z~N(0,1).
+H0 <- apply(x, 1, function(coord){sum(coord^2) < 900})
+mu <- ifelse(H0, 2, 0)
+set.seed(0)
+zvals <- rnorm(n) + mu
+pvals <- 1 - pnorm(zvals)
+
+# Run adapt_gam with a 2d spline basis
+library("mgcv")
+formula <- "s(x1, x2)"
+dist <- beta_family()
+res <- adapt_gam(x = x, pvals = pvals, pi_formulas = formula,
+                 mu_formulas = formula, dist = dist, nfits = 5)
+}
+
+
+}
+\seealso{
+\code{\link{adapt}}, \code{\link{adapt_glm}}, \code{\link{adapt_glmnet}}, \code{\link[mgcv]{gam}}, \code{\link[splines]{ns}}, \code{\link[mgcv]{s}}
 }

@@ -11,7 +11,7 @@ adapt(x, pvals, models, dist = beta_family(), s0 = rep(0.45, length(pvals)),
   FALSE, ms = TRUE))
 }
 \arguments{
-\item{x}{a data.frame. Covariates (i.e. side-information)}
+\item{x}{covariates (i.e. side-information). Should be compatible to \code{models}. See Details}
 
 \item{pvals}{a vector of values in [0, 1]. P-values}
 
@@ -84,7 +84,8 @@ models <- lapply(formulas, function(formula){
 })
 
 # Run adapt
-res <- adapt(x = x, pvals = pvals, models = models, dist = dist)
+res <- adapt(x = x, pvals = pvals, models = models,
+             dist = dist, nfits = 10)
 }
 
 }

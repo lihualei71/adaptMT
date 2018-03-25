@@ -36,13 +36,13 @@ complete_pkg <- function(formula){
     formula <- paste0(" ", formula)    
     if (grepl("ns\\(", formula)){
         if (!requireNamespace("splines", quietly = TRUE)){
-            stop("package \"splines\" not found. Please install.")
+            stop("package \'splines\' not found. Please install.")
         }
         formula <- gsub("([^:])ns\\(", "\\1splines::ns\\(", formula)
     }
     if (grepl("[^a-z]s\\(", formula)){
         if (!requireNamespace("mgcv", quietly = TRUE)){
-            stop("package \"mgcv\" not found. Please install.")
+            stop("package \'mgcv\' not found. Please install.")
         }
         formula <- gsub("([^:a-z])s\\(", "\\1mgcv::s\\(", formula)
     }
@@ -87,15 +87,16 @@ complete_args <- function(x, response, fun,
         data_args <- c(list(data = data), args)
     } else if (input_type == "xy"){
         data_args <- c(
-            list(x = x, y = response, weights = weights),
+            list(x = x, y = response),
             args)
     } else if (input_type == "Xy"){
         data_args <- c(
-            list(X = x, y = response, weights = weights),
+            list(X = x, y = response),
             args)
     } 
 
     data_args <- c(data_args, list(weights = weights))
+
     return(data_args)
 }
 
@@ -111,7 +112,7 @@ complete_model <- function(model, dist){
                "glmnet" = gen_adapt_model_glmnet(
                    dist, model$args$piargs, model$args$muargs
                    ),
-               stop("\"model$name\" not found in the library")
+               stop("\'model$name\' not found in the library")
                )
     } else {
         model
@@ -121,9 +122,9 @@ complete_model <- function(model, dist){
 fit_pi <- function(fun, args, type = c("Mstep", "init")){
     type <- type[1]
     if (type == "Mstep"){
-        fun_name <- "\"pifun\""
+        fun_name <- "\'pifun\'"
     } else if (type == "init"){
-        fun_name <- "\"pifun_init\""
+        fun_name <- "\'pifun_init\'"
     }
     
     if (is.null(args)) {
@@ -132,12 +133,12 @@ fit_pi <- function(fun, args, type = c("Mstep", "init")){
 
     fit <- do.call(fun, args)
     if (is.null(fit$fitv)){
-        stop(paste0(fun_name, " does not output \"fitv\". Replace it with another function or change the name for fitted value to \"fitv\""))
+        stop(paste0(fun_name, " does not output \'fitv\'. Replace it with another function or change the name for fitted value to \'fitv\'"))
     }
 
     pix <- as.numeric(fit$fitv)
     if (any(is.na(pix))){
-        stop("Initialization of \"pix\" has NAs")
+        stop("Initialization of \'pix\' has NAs")
     }
     pix <- pminmax(pix, 0, 1)
 
@@ -147,9 +148,9 @@ fit_pi <- function(fun, args, type = c("Mstep", "init")){
 fit_mu <- function(fun, args, dist, type = c("Mstep", "init")){
     type <- type[1]
     if (type == "Mstep"){
-        fun_name <- "\"pifun\""
+        fun_name <- "\'pifun\'"
     } else if (type == "init"){
-        fun_name <- "\"pifun_init\""
+        fun_name <- "\'pifun_init\'"
     }
 
     if (is.null(args)) {
@@ -158,12 +159,12 @@ fit_mu <- function(fun, args, dist, type = c("Mstep", "init")){
 
     fit <- do.call(fun, args)
     if (is.null(fit$fitv)){
-        stop(paste0(fun_name, " does not output \"fitv\". Replace it with another function or change the name for fitted value to \"fitv\""))
+        stop(paste0(fun_name, " does not output \'fitv\'. Replace it with another function or change the name for fitted value to \'fitv\'"))
     }
 
     mux <- as.numeric(fit$fitv)
     if (any(is.na(mux))){
-        stop("Initialization of \"mux\" has NAs")
+        stop("Initialization of \'mux\' has NAs")
     }
     if (dist$family$family == "Gamma"){
         mux <- pmax(mux, 1)

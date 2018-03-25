@@ -9,7 +9,7 @@ adapt_glm(x, pvals, pi_formulas, mu_formulas, dist = beta_family(),
   piargs = list(), muargs = list(), ...)
 }
 \arguments{
-\item{x}{a data.frame. Covariates (i.e. side-information)}
+\item{x}{covariates (i.e. side-information). Should be compatible to \code{models}. See Details}
 
 \item{pvals}{a vector of values in [0, 1]. P-values}
 
@@ -27,10 +27,23 @@ adapt_glm(x, pvals, pi_formulas, mu_formulas, dist = beta_family(),
 
 \item{muargs}{a list. Other arguments passed to glm for fitting mu(x)}
 
-\item{...}{other arguments passed to \code{\link{adapt}}}
+\item{...}{other arguments passed to \code{\link{adapt}} (except \code{models})}
 }
 \description{
-\code{adapt_glm} is a wrapper of \code{\link{adapt}} that fits pi(x) and mu(x) by \code{\link[stats]{glm}}
+\code{adapt_glm} is a wrapper of \code{\link{adapt}} that fits pi(x) and mu(x) by \code{\link[stats]{glm}}.
+}
+\details{
+\code{pi_formulas} and \code{mu_formulas} can either be a list or a vector with each element being a string or a formula. For instance, suppose \code{x} has a single column with name \code{x1}, the following five options are valid for the same inputs (\code{\link[splines]{ns}} forms a spline basis with \code{df} knots):
+\enumerate{
+\item{c("x1", "ns(x1, df = 8)");}
+\item{c("~ x1", "~ ns(x1, df = 8)");}
+\item{list("x1", "ns(x1, df = 8)");}
+\item{list("~ x1", "~ ns(x1, df = 8)");}
+\item{list(~ x1, ~ ns(x1, df = 8))}
+}
+There is no need to specify the name of the response variable, as this is handled in the function.
+
+When \code{x} has a few variables, it is common to use non-parametric GLM by replacing \code{x} by a spline basis of \code{x}. In this case, \code{\link[splines]{ns}} from \code{library(splines)} package is suggested.
 }
 \examples{
 \dontrun{
@@ -41,26 +54,29 @@ x <- data.frame(x = as.numeric(estrogen$ord))
 dist <- beta_family()
 
 # Subsample the data for convenience
-pvals <- pvals[1:5000]
-x <- x[1:5000,,drop = FALSE]
+inds <- (x$x <= 5000)
+pvals <- pvals[inds]
+x <- x[inds,,drop = FALSE]
 
-# Generate models for function adapt
+# Run adapt_glm
 library("splines")
 formulas <- paste0("ns(x, df = ", 6:10, ")")
+res <- adapt_glm(x = x, pvals = pvals, pi_formulas = formulas,
+                 mu_formulas = formulas, dist = dist, nfits = 10)
+
+# Run adapt by manually setting models for glm
 models <- lapply(formulas, function(formula){
     piargs <- muargs <- list(formula = formula)
     gen_adapt_model(name = "glm", piargs = piargs, muargs = muargs)
 })
-
-# Run adapt_glm, an equivalent as above
-res <- adapt_glm(x = x, pvals = pvals, pi_formulas = formulas,
-                 mu_formulas = formulas, dist = dist)
-
-# Run adapt
-res2 <- adapt(x = x, pvals = pvals, models = models, dist = dist)
+res2 <- adapt(x = x, pvals = pvals, models = models,
+              dist = dist, nfits = 10)
 
 # Check equivalence
 identical(res, res2)
 }
 
+}
+\seealso{
+\code{\link{adapt}}, \code{\link{adapt_gam}}, \code{\link{adapt_glmnet}}, \code{\link[stats]{glm}}, \code{\link[splines]{ns}}
 }

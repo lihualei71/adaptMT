@@ -9,7 +9,7 @@ adapt_glmnet(x, pvals, piargs = list(), muargs = list(),
   1, 0.01), ...)
 }
 \arguments{
-\item{x}{a data.frame. Covariates (i.e. side-information)}
+\item{x}{covariates (i.e. side-information). Should be compatible to \code{models}. See Details}
 
 \item{pvals}{a vector of values in [0, 1]. P-values}
 
@@ -23,8 +23,45 @@ adapt_glmnet(x, pvals, piargs = list(), muargs = list(),
 
 \item{alphas}{a vector of values in (0, 1). Target FDR levels.}
 
-\item{...}{other arguments passed to \code{\link{adapt}}}
+\item{...}{other arguments passed to \code{\link{adapt}} (except \code{models})}
 }
 \description{
-Adaptive P-value Thresholding with L1/L2 Penalized Generalized Linear Models
+\code{adapt_glmnet} is a wrapper of \code{\link{adapt}} that fits pi(x) and mu(x) by \code{\link[glmnet]{glmnet}} from \code{glmnet} package.
+}
+\details{
+\code{adapt_glmnet} by default implements LASSO on \code{x} with lambda selected by cross-validation. Specify in \code{piargs} and \code{muargs} if ridge or elastic-net penalty is needed.
+}
+\examples{
+\dontrun{
+# Generate a 100-dim covariate x
+m <- 100
+n <- 1000
+x <- matrix(runif(n * m), n, m)
+
+# Generate the parameters from a conditional two-group
+# logistic-Gamma GLM  where pi(x) and mu(x) are both
+# linear in x. pi(x) has an intercept so that the average
+# of pi(x) is 0.3
+inv_logit <- function(x) {exp(x) / (1 + exp(x))}
+pi1 <- 0.3
+beta.pi <- c(3, 3, rep(0, m-2))
+beta0.pi <- uniroot(function(b){
+    mean(inv_logit(x \%*\% beta.pi + b)) - pi1
+}, c(-100, 100))$root
+pi <- inv_logit(x \%*\% beta.pi + beta0.pi)
+beta.mu <- c(2, 2, rep(0, m-2))
+beta0.mu <- 0
+mu <- pmax(1, x \%*\% beta.mu + beta0.mu)
+
+# Generate p-values
+H0 <- as.logical(ifelse(runif(n) < pi, 1, 0))
+y <- ifelse(H0, rexp(n, 1/mu), rexp(n, 1))
+pvals <- exp(-y)
+
+# Run adapt_glmnet
+res <- adapt_glmnet(x, pvals, s0 = rep(0.15, n), nfits = 5)
+}
+}
+\seealso{
+\code{\link{adapt}}, \code{\link{adapt_glm}}, \code{\link{adapt_gam}}, \code{\link[glmnet]{glmnet}}
 }

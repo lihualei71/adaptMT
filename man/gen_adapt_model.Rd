@@ -9,9 +9,9 @@ gen_adapt_model(pifun = NULL, mufun = NULL, pifun_init = NULL,
   piargs_init = list(), muargs_init = list(), name = "")
 }
 \arguments{
-\item{pifun}{a function to fit pi(x)}
+\item{pifun}{a function to fit pi(x). See Details}
 
-\item{mufun}{a function to fit mu(x)}
+\item{mufun}{a function to fit mu(x). See Details}
 
 \item{pifun_init}{a function to fit pi(x) at the initial step}
 
@@ -34,6 +34,13 @@ gen_adapt_model(pifun = NULL, mufun = NULL, pifun_init = NULL,
 }
 \description{
 \code{adapt_model} objects provide the functions and their arguments in computing the M-steps. Each object can be passed to \code{\link{adapt}} as a candidate model.
+}
+\details{
+\code{pifun} should be in the form of \code{pifun(formula, data, family, ...)} or \code{pifun(x, y, family, ...)}. The former includes \code{\link[stats]{glm}} and \code{\link[mgcv]{gam}} and the latter includes \code{\link[glmnet]{glmnet}}. The outputs should be in the form of \code{list(fitv = , info = , ...)} where \code{fitv} gives the estimate of pi(x), as a vector with the same order of \code{x}, and \code{info} should at least contain a key \code{df} if model selection is used, i.e. \code{info = list(df = , ...)}
+
+\code{mufun} should be in the form of \code{pifun(formula, data, family, weights, ...)} or \code{pifun(x, y, family, weights, ...)}. Note that \code{mufun} must take \code{weights} as an input. The outputs should be in the same form as \code{pifun} except that \code{fitv} should give the estimate of mu(x).
+
+When \code{pifun} / \code{mufun} takes the form of \code{(formula, family, ...)}, \code{piargs} / \code{muargs} should at least contain a key \code{formula}; when \code{pifun} / \code{mufun} takes the form of \code{(x, y, family, ...)}, \code{piargs} / \code{muargs} can be empty.
 }
 \examples{
 # Generate 'adapt_model' for logistic-Gamma glm.

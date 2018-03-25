@@ -65,20 +65,34 @@ safe_gam <- function(formula, family, data, weights = NULL,
 }
 
 safe_glmnet <- function(x, y, family, weights = NULL,
-                         ...){
+                        ...){
     options(warn = -1)
-    
+
     if (class(family)[1] == "family"){
         family <- family$family
     }
 
-    if (family %in% c("gaussian", "poisson", "multinomial", "cox", "mgaussian")){
-        fit <- glmnet::cv.glmnet(x, y, weights,
-                                 family = family, ...)
+    if (family %in% c("gaussian", "binomial", "poisson", "multinomial", "cox", "mgaussian")){
+        if (is.null(weights)){
+            fit <- glmnet::cv.glmnet(x, y, 
+                                     family = family, ...)
+        } else {
+            weights <- pminmax(weights, 1e-5, 1-1e-5)
+            fit <- glmnet::cv.glmnet(x, y, weights,
+                                     family = family, ...)
+        }
     } else if (family == "Gamma"){
-        fit <- HDtweedie::cv.HDtweedie(x, y, p = 2,
-                                       weights = weights,
-                                       ...)
+        if (is.null(weights)){
+            fit <- HDtweedie::cv.HDtweedie(x, y, p = 2,
+                                           standardize = TRUE,
+                                           ...)
+        } else {
+            weights <- pminmax(weights, 1e-5, 1-1e-5)
+            fit <- HDtweedie::cv.HDtweedie(x, y, p = 2,
+                                           weights = weights,
+                                           standardize = TRUE,
+                                           ...)
+        }
     }
 
     fitv <- as.numeric(

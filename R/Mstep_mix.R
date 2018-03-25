@@ -9,7 +9,7 @@ Mstep_mix <- function(x, pvals, dist,
     if (!"weights" %in% formalArgs(mufun)){
         stop("'mufun' does not have input 'weights'")
     }
-    
+
     n <- length(Hhat)
     x_aug <- rbind(x, x)
     H_aug <- c(rep(1, n), rep(0, n))

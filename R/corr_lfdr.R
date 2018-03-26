@@ -23,7 +23,7 @@
 #' }
 #'
 #' @examples
-#' #' \dontrun{
+#' \dontrun{
 #' # Load estrogen data
 #' data(estrogen)
 #' pvals <- as.numeric(estrogen$pvals)
@@ -78,7 +78,7 @@ corr_lfdr <- function(obj, data = NULL, model = NULL,
         model <- obj$models[[length(obj$models)]]
     }
     oracle_params <- EM_mix(x, pvals, rep(0, n), dist, model,
-                            params = params,
+                            params0 = params,
                             niter = niter_oracle)$params
     oracle_lfdr <- compute_lfdr_mix(pvals, dist, oracle_params)
 

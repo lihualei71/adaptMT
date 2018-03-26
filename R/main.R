@@ -121,8 +121,9 @@ check_pkgs <- function(models){
 #' dist <- beta_family()
 #'
 #' # Subsample the data for convenience
-#' pvals <- pvals[1:5000]
-#' x <- x[1:5000,,drop = FALSE]
+#' inds <- (x$x <= 5000)
+#' pvals <- pvals[inds]
+#' x <- x[inds,,drop = FALSE]
 #' 
 #' # Generate models for function adapt
 #' library("splines")
@@ -269,8 +270,7 @@ adapt <- function(x, pvals, models,
             ms_res <- do.call(EM_mix_ms, ms_args)
             params <- ms_res$params
             model <- ms_res$model
-            model_list <- append(model_list, list(model))
-            info_list <- append(info_list, list(ms_res$info))
+            modinfo <- ms_res$info
         } else if (type == "fit"){
             fit_args <- c(
                 list(s = s, params0 = params, model = model),
@@ -279,8 +279,7 @@ adapt <- function(x, pvals, models,
             ## Use "EM_mix" from "EM-mix.R"            
             fit_res <- do.call(EM_mix, fit_args)
             params <- fit_res$params
-            model_list <- append(model_list, model)
-            info_list <- append(info_list, list(fit_res$info))
+            modinfo <- fit_res$info
         }
 
         if (length(params_return) == 0 ||
@@ -288,6 +287,8 @@ adapt <- function(x, pvals, models,
             params <- c(params,
                         list(alpha = alpha, nmasks = nmasks))
             params_return <- append(params_return, list(params))
+            model_list <- append(model_list, list(model))
+            info_list <- append(info_list, modinfo)
         }
 
         ## Estimate local FDR

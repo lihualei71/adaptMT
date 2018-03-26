@@ -1,4 +1,4 @@
-context("Formula completion")
+## context("Formula completion")
 
 ## test_that("complete_formula completes the package name (splines) for simple formulas", {
 ##     tempfun <- function(formula){

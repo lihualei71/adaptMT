@@ -51,6 +51,7 @@ When \code{x} has a few variables, it is common to use non-parametric GLM by rep
 n <- 400
 x1 <- x2 <- seq(-100, 100, length.out = 20)
 x <- expand.grid(x1, x2)
+colnames(x) <- c("x1", "x2")
 
 # Generate p-values (one-sided z test)
 # Set all hypotheses in the central circle with radius 30 to be

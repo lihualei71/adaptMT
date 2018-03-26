@@ -50,7 +50,7 @@ When \code{x} has a few variables, it is common to use non-parametric GLM by rep
 # Load estrogen data
 data(estrogen)
 pvals <- as.numeric(estrogen$pvals)
-x <- data.frame(x = as.numeric(estrogen$ord))
+x <- data.frame(x = as.numeric(estrogen$ord_high))
 dist <- beta_family()
 
 # Subsample the data for convenience

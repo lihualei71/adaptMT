@@ -54,6 +54,7 @@ beta0.mu <- 0
 mu <- pmax(1, x \%*\% beta.mu + beta0.mu)
 
 # Generate p-values
+set.seed(0)
 H0 <- as.logical(ifelse(runif(n) < pi, 1, 0))
 y <- ifelse(H0, rexp(n, 1/mu), rexp(n, 1))
 pvals <- exp(-y)

@@ -68,7 +68,7 @@ adapt(x, pvals, models, dist = beta_family(), s0 = rep(0.45, length(pvals)),
 # Load estrogen data
 data(estrogen)
 pvals <- as.numeric(estrogen$pvals)
-x <- data.frame(x = as.numeric(estrogen$ord))
+x <- data.frame(x = as.numeric(estrogen$ord_high))
 dist <- beta_family()
 
 # Subsample the data for convenience

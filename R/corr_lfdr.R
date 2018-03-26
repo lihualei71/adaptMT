@@ -8,9 +8,9 @@
 #'
 #' \code{corr_lfdr} computes the oracle local FDR estimate, by using revealing all p-values, and computes the Pearson correlation between it and the estimate within each step of \code{adapt}. 
 #'
-#' @param obj an \'adapt\' object. Output of \code{\link{adapt}} function
+#' @param obj an 'adapt' object. Output of \code{\link{adapt}} function
 #' @param data an optional argument. If \code{data = NULL} then \code{obj$data} is used. Otherwise it should be a list in the form of \code{list(x = , pvals = )}
-#' @param model an optional argument. If \code{model = NULL} then the last model in \code{obj$models} is used for fitting the oracle model (i.e. with all p-values revealed). Otherwise it should be an \'adapt_model\' object
+#' @param model an optional argument. If \code{model = NULL} then the last model in \code{obj$models} is used for fitting the oracle model (i.e. with all p-values revealed). Otherwise it should be an 'adapt_model' object
 #' @param niter_oracle an positive integer. Number of iterations in EM algorithm
 #'
 #' @return

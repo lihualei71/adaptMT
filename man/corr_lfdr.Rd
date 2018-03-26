@@ -7,11 +7,11 @@
 corr_lfdr(obj, data = NULL, model = NULL, niter_oracle = 100)
 }
 \arguments{
-\item{obj}{an \'adapt\' object. Output of \code{\link{adapt}} function}
+\item{obj}{an 'adapt' object. Output of \code{\link{adapt}} function}
 
 \item{data}{an optional argument. If \code{data = NULL} then \code{obj$data} is used. Otherwise it should be a list in the form of \code{list(x = , pvals = )}}
 
-\item{model}{an optional argument. If \code{model = NULL} then the last model in \code{obj$models} is used for fitting the oracle model (i.e. with all p-values revealed). Otherwise it should be an \'adapt_model\' object}
+\item{model}{an optional argument. If \code{model = NULL} then the last model in \code{obj$models} is used for fitting the oracle model (i.e. with all p-values revealed). Otherwise it should be an 'adapt_model' object}
 
 \item{niter_oracle}{an positive integer. Number of iterations in EM algorithm}
 }

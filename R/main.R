@@ -104,12 +104,12 @@ check_pkgs <- function(models){
 #' \item{order}{a permutation of \code{1:length(pvals)}. Indices of hypotheses arranged in the order of reveal}
 #' \item{nrejs}{a vector of integers. Number of rejections for each alpha}
 #' \item{s}{a matrix of size \code{length(pvals) X length(alphas)}. Threshold curves for each alpha}
-#' \item{params}{a list of length \code{nfits}. Each element is a list in the form of \code{list(pix = , mux = )}, recording the parameter estimates at each time}
+#' \item{params}{a list. Each element is a list in the form of \code{list(pix = , mux = , alpha = , nmasks =)}, recording the parameter estimates, the achieved alpha and the number of masked p-values. To avoid massive storage cost, it only contains the information when a new target FDR level is achieved. As a result, it might be  shorter than \code{nfits}.}
 #' \item{fdp}{a vector of values in [0, 1]. i-th entry records the FDPhat when i-th hypothesis is rejected}
 #' \item{alphas}{same as the input \code{alphas}}
 #' \item{dist}{same as the input \code{dist}}
-#' \item{models}{a list of \code{adapt_model} objects of length \code{nfits}. The model used in each fitting step}
-#' \item{info}{a list of length \code{nfits}. Each element is a list recording extra information in each fitting step, e.g. degree of freedom (df) and variable importance (vi)}
+#' \item{models}{a list of \code{adapt_model} objects of length \code{params}. The model used in each fitting step. As in \code{params}, it only contains the model when a new target FDR level is achieved and each element corresponds to an element of \code{params}.}
+#' \item{info}{a list of length \code{nfits}. Each element is a list recording extra information in each fitting step, e.g. degree of freedom (df) and variable importance (vi). As in \code{params}, it only contains the model information when a new target FDR level is achieved and each element corresponds to an element of \code{params}.}
 #' \item{args}{a list including the other inputs \code{nfits}, \code{nms}, \code{niter_fit}, \code{niter_ms}, \code{tol}, \code{cr}}.
 #'
 #' @examples

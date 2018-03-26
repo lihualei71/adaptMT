@@ -91,7 +91,7 @@ plot_1d_lfdr <- function(obj, alpha, title,
                          legend_pos = "topright",
                          ...){
     if (!"adapt" %in% class(obj)){
-        stop("obj is not an 'adapt' object.")
+        stop("\'obj\' is not an \'adapt\' object.")
     }
 
     if (is.null(data)){

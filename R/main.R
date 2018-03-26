@@ -236,7 +236,7 @@ adapt <- function(x, pvals, models,
     if (m > alphaind){
         nrejs_return[(alphaind + 1):m] <- R
         fdp_return[(alphaind + 1):m] <- minfdp
-        s_return[(alphaind + 1):m] <- s0        
+        s_return[, (alphaind + 1):m] <- s0        
     }
 
     ## alphas <- alphas[1:m]

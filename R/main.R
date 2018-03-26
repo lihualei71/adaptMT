@@ -217,16 +217,14 @@ adapt <- function(x, pvals, models,
     alphas <- sort(alphas)
     if (min(alphas) >= minfdp){
         warning("Task completed! Initial \'s0\' has guaranteed FDR control for all alpha's in \'alphas\'.")
-        m <- 1
         alphaind <- 0
     } else if (max(alphas) < minfdp){
-        m <- length(alphas)
-        alphaind <- m
+        alphaind <- length(alphas)
     } else {
-        m <- max(which(alphas <= minfdp)) + 1
-        alphaind <- m - 1
+        alphaind <- max(which(alphas <= minfdp))
     }
 
+    m <- length(alphas)
     nrejs_return <- rep(0, m) # number of rejections
     s_return <- matrix(0, n, m) # threshold
     params_return <- list() # parameters (including pix and mux)
@@ -236,12 +234,12 @@ adapt <- function(x, pvals, models,
     fdp_return <- rep(Inf, length(reveal_order)) # fdphat along the whole path
 
     if (m > alphaind){
-        nrejs_return[m] <- R
-        fdp_return[m] <- minfdp
-        s_return[, m] <- s0        
+        nrejs_return[(alphaind + 1):m] <- R
+        fdp_return[(alphaind + 1):m] <- minfdp
+        s_return[(alphaind + 1):m] <- s0        
     }
 
-    alphas <- alphas[1:m]
+    ## alphas <- alphas[1:m]
 
     for (i in 1:(nrow(stamps) - 1)){
         if (alphaind == 0){

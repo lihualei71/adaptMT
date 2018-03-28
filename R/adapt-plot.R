@@ -66,7 +66,8 @@ plot_1d_thresh <- function(obj, alpha, title,
     ## Top panel on threshold curves
     what_type <- ifelse(pvals < s, 1, ifelse(pvals > 1 - s, 2, 3))
     plot(x, (1:n * disp_ymax) / n, type = "n", pch = ".",
-         xaxs = "i", yaxs = "i", ylab = "p-values", xlab = xlab,
+         xaxs = "i", yaxs = "i", ylab = "p-values",
+         xlab = xlab, xlim = xlim,
          col = c("red", "blue", "black")[what_type], yaxt = "n",
          main = title)
     axis(2, at = seq(0, disp_ymax, length.out = num_yticks),
@@ -153,7 +154,7 @@ plot_1d_lfdr <- function(obj, alpha, title,
     locfdr_mat <- matrix(locfdr_vals, nrow = length(x_grid))
     plot(0, 0, xlim = c(min(x), max(x)), ylim = c(0, disp_ymax),
          type = "n", xaxs = "i", yaxs = "i", yaxt = "n", 
-         main = title, ylab = "p-value", xlab = xlab)
+         main = title, ylab = "p-value", xlab = xlab, xlim = xlim)
     axis(2, at = seq(0, disp_ymax, length.out = num_yticks),
          labels = seq(0, disp_ymax, length.out = num_yticks))
     colors <- c("#CB181D", "#FB6A4A", "#FCAE91", "#FEE5D9", "white")
@@ -214,9 +215,9 @@ plot_1d_params <- function(obj, alpha, title,
     
     ## Bottom panel on local fdr level curves.
     plot(x, pix, xlim = c(min(x), max(x)), type = "l", 
-         main = title, ylab = "pi(x)", xlab = xlab)
+         main = title, ylab = "pi(x)", xlab = xlab, xlim = xlim)
     plot(x, mux, xlim = c(min(x), max(x)), type = "l", 
-         main = title, ylab = "mu(x)", xlab = xlab)
+         main = title, ylab = "mu(x)", xlab = xlab, xlim = xlim)
     
     par(oldpar)
 }

@@ -7,6 +7,7 @@
 #' @param title a string. Title of the figure
 #' @param data a list in the form of list(x = , pvals = ). NULL if obj$data is not NULL
 #' @param xlab a string. Label of the x-axis
+#' @param xlim a vector of length 2. Limits of x-axis
 #' @param disp_ymax a positive scalar in (0, 1]. Maximum value displayed in the y-axis
 #' @param num_yticks a positive integer. Number of ticks in the y-axis
 #' @param rand_seed_perturb random seed if jitter is added. NA if no jittering is needed
@@ -22,7 +23,7 @@ NULL
 #' @export
 plot_1d_thresh <- function(obj, alpha, title,
                            data = NULL,
-                           xlab = "x",
+                           xlab = "x", xlim = NULL,
                            disp_ymax = 0.2,
                            num_yticks = 3,
                            rand_seed_perturb = NA,
@@ -51,6 +52,13 @@ plot_1d_thresh <- function(obj, alpha, title,
     s <- s[x_ord]
     x <- x[x_ord]
 
+    if (!is.null(xlim)){
+        inds <- which(x >= xlim[1] & x <= xlim[2])
+        x <- x[inds]
+        pvals <- pvals[inds]
+        s <- s[inds]
+    }
+    
     par(...)
     ## par(mfrow = c(2, 1), ...)
 
@@ -85,7 +93,7 @@ plot_1d_thresh <- function(obj, alpha, title,
 #' @export
 plot_1d_lfdr <- function(obj, alpha, title,
                          data = NULL,
-                         xlab = "x",
+                         xlab = "x", xlim = NULL,
                          disp_ymax = 0.2,
                          num_yticks = 3,
                          legend_pos = "topright",
@@ -116,6 +124,14 @@ plot_1d_lfdr <- function(obj, alpha, title,
     mux <- mux[x_ord]
     x <- x[x_ord]
 
+    if (!is.null(xlim)){
+        inds <- which(x >= xlim[1] & x <= xlim[2])
+        x <- x[inds]
+        pvals <- pvals[inds]
+        pix <- pix[inds]
+        mux <- mux[inds]
+    }
+    
     par(...)
     
     ## Bottom panel on local fdr level curves.
@@ -154,7 +170,7 @@ plot_1d_lfdr <- function(obj, alpha, title,
 #' @export
 plot_1d_params <- function(obj, alpha, title,
                            data = NULL,
-                           xlab = "x",
+                           xlab = "x", xlim = NULL,
                            num_yticks = 3,
                            ...){
     if (!"adapt" %in% class(obj)){
@@ -183,6 +199,14 @@ plot_1d_params <- function(obj, alpha, title,
     mux <- mux[x_ord]
     x <- x[x_ord]
 
+    if (!is.null(xlim)){
+        inds <- which(x >= xlim[1] & x <= xlim[2])
+        x <- x[inds]
+        pvals <- pvals[inds]
+        pix <- pix[inds]
+        mux <- mux[inds]
+    }
+    
     oldpar <- par(mfrow = c(2, 1), ...)
     
     ## Bottom panel on local fdr level curves.

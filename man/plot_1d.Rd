@@ -7,14 +7,14 @@
 \alias{plot_1d_params}
 \title{Plotting for 1d Covariate}
 \usage{
-plot_1d_thresh(obj, alpha, title, data = NULL, xlab = "x",
+plot_1d_thresh(obj, alpha, title, data = NULL, xlab = "x", xlim = NULL,
   disp_ymax = 0.2, num_yticks = 3, rand_seed_perturb = NA, ...)
 
-plot_1d_lfdr(obj, alpha, title, data = NULL, xlab = "x", disp_ymax = 0.2,
-  num_yticks = 3, legend_pos = "topright", ...)
+plot_1d_lfdr(obj, alpha, title, data = NULL, xlab = "x", xlim = NULL,
+  disp_ymax = 0.2, num_yticks = 3, legend_pos = "topright", ...)
 
-plot_1d_params(obj, alpha, title, data = NULL, xlab = "x", num_yticks = 3,
-  ...)
+plot_1d_params(obj, alpha, title, data = NULL, xlab = "x", xlim = NULL,
+  num_yticks = 3, ...)
 }
 \arguments{
 \item{obj}{an 'adapt' object}
@@ -26,6 +26,8 @@ plot_1d_params(obj, alpha, title, data = NULL, xlab = "x", num_yticks = 3,
 \item{data}{a list in the form of list(x = , pvals = ). NULL if obj$data is not NULL}
 
 \item{xlab}{a string. Label of the x-axis}
+
+\item{xlim}{a vector of length 2. Limits of x-axis}
 
 \item{disp_ymax}{a positive scalar in (0, 1]. Maximum value displayed in the y-axis}
 

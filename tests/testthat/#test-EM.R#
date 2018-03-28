@@ -9,6 +9,10 @@ library("splines")
 
 pvals <- as.numeric(estrogen$pvals)
 x <- data.frame(x = as.numeric(estrogen$ord_high))
+inds <- order(x$x)
+x <- x[inds, ,drop=FALSE]
+pvals <- pvals[inds]
+
 n <- length(pvals)
 s <- rep(0.45, n)
 dist <- beta_family()
@@ -23,10 +27,12 @@ init_obj <- init_mix(x, pvals, s, dist,
                      muargs = mod$args$muargs_init)
 
 Estep_obj <- Estep_mix(pvals, s, dist, init_obj$pix, init_obj$mux)
+
 Mstep_obj <- Mstep_mix(x, pvals, dist,
                        Estep_obj$Hhat, Estep_obj$bhat,
                        mod$algo$pifun, mod$algo$mufun,
                        mod$args$piargs, mod$args$muargs)
+
 loglik <- EM_loglik(pvals, dist, Mstep_obj$pix, mux = Mstep_obj$mux, Estep_obj$Hhat, Estep_obj$bhat)
 ## EM_obj <- EM_mix(x, pvals, s, dist, mod)
 

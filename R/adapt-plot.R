@@ -152,9 +152,9 @@ plot_1d_lfdr <- function(obj, alpha, title,
                              pix = pix[xp_grid$x])
                          )
     locfdr_mat <- matrix(locfdr_vals, nrow = length(x_grid))
-    plot(0, 0, xlim = c(min(x), max(x)), ylim = c(0, disp_ymax),
+    plot(0, 0, xlim = xlim, ylim = c(0, disp_ymax),
          type = "n", xaxs = "i", yaxs = "i", yaxt = "n", 
-         main = title, ylab = "p-value", xlab = xlab, xlim = xlim)
+         main = title, ylab = "p-value", xlab = xlab)
     axis(2, at = seq(0, disp_ymax, length.out = num_yticks),
          labels = seq(0, disp_ymax, length.out = num_yticks))
     colors <- c("#CB181D", "#FB6A4A", "#FCAE91", "#FEE5D9", "white")
@@ -215,9 +215,9 @@ plot_1d_params <- function(obj, alpha, title,
     
     ## Bottom panel on local fdr level curves.
     plot(x, pix, xlim = c(min(x), max(x)), type = "l", 
-         main = title, ylab = "pi(x)", xlab = xlab, xlim = xlim)
+         main = title, ylab = "pi(x)", xlab = xlab)
     plot(x, mux, xlim = c(min(x), max(x)), type = "l", 
-         main = title, ylab = "mu(x)", xlab = xlab, xlim = xlim)
+         main = title, ylab = "mu(x)", xlab = xlab)
     
     par(oldpar)
 }

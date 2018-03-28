@@ -18,6 +18,7 @@ compute_lfdr_mix <- function(pvals, dist, params){
     }
     lfdr <- (pix * dist$h(1, mux) + 1 - pix) /
         (pix * dist$h(pvals, mux) + 1 - pix)
+    ## lfdr <- (1 - pix) / (pix * dist$h(pvals, mux) + 1 - pix)
     return(lfdr)
 }
 
@@ -33,6 +34,8 @@ compute_threshold_mix <- function(dist, params, lfdr_lev){
     
     val1 <- dist$h(1, mux) / lfdr_lev +
         (1 - pix) / pix * (1 - lfdr_lev) / lfdr_lev
+    ## val1 <- (1 - pix) / pix * (1 - lfdr_lev) / lfdr_lev
+    
     val2 <- (log(val1) + dist$A(mux) - dist$A(dist$mustar)) /
         (dist$eta(mux) - dist$eta(dist$mustar))
     dist$ginv(val2)

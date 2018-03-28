@@ -57,6 +57,7 @@ plot_1d_thresh <- function(obj, alpha, title,
         x <- x[inds]
         pvals <- pvals[inds]
         s <- s[inds]
+        n <- length(inds)
     }
     
     par(...)
@@ -130,6 +131,7 @@ plot_1d_lfdr <- function(obj, alpha, title,
         pvals <- pvals[inds]
         pix <- pix[inds]
         mux <- mux[inds]
+        n <- length(inds)        
     }
     
     par(...)
@@ -205,6 +207,7 @@ plot_1d_params <- function(obj, alpha, title,
         pvals <- pvals[inds]
         pix <- pix[inds]
         mux <- mux[inds]
+        n <- length(inds)        
     }
     
     oldpar <- par(mfrow = c(2, 1), ...)

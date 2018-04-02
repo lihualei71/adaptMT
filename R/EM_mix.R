@@ -12,7 +12,8 @@ EM_loglik <- function(pvals, dist, pix, mux, Hhat, bhat){
 EM_mix <- function(x, pvals, s, dist, model,
                    params0 = list(pix = NULL, mux = NULL),
                    niter = 10, tol = 1e-4,
-                   verbose = FALSE){
+                   verbose = FALSE,
+                   type = "unweighted"){
     model <- complete_model(model, dist)
     if (verbose){
         cat("Model fitting starts!\n")
@@ -39,7 +40,8 @@ EM_mix <- function(x, pvals, s, dist, model,
             Mstep_mix(x, pvals, dist,
                       Estep_res$Hhat, Estep_res$bhat, 
                       model$algo$pifun, model$algo$mufun,
-                      model$args$piargs, model$args$muargs)
+                      model$args$piargs, model$args$muargs,
+                      type = type[1])
         pix <- Mstep_res$pix
         mux <- Mstep_res$mux
         if (max(abs(mux - old_mux)) < tol &&

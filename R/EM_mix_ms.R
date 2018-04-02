@@ -14,7 +14,8 @@ EM_mix_ms <- function(x, pvals, s, dist, models,
                       cr = "BIC",
                       params0 = list(pix = NULL, mux = NULL),
                       niter = 20, tol = 1e-4,
-                      verbose = TRUE){
+                      verbose = TRUE,
+                      type = "unweighted"){
     n <- length(pvals)
     info_cr_val <- -Inf
     
@@ -28,7 +29,8 @@ EM_mix_ms <- function(x, pvals, s, dist, models,
     for (i in 1:m){
         model <- complete_model(models[[i]], dist)
         fit <- try(
-            EM_mix(x, pvals, s, dist, model, params0, niter, tol),
+            EM_mix(x, pvals, s, dist, model, params0, niter, tol,
+                   verbose, type),
             silent = TRUE
             )
         if (class(fit)[1] == "try-error"){

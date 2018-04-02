@@ -10,19 +10,25 @@ fdp_hat <- function(A, R){
 }
 
 
-compute_lfdr_mix <- function(pvals, dist, params){
+compute_lfdr_mix <- function(pvals, dist, params,
+                             type = "over"){
     pix <- pmax(params$pix, 1e-5)
     mux <- params$mux
     if (dist$family$family == "Gamma"){
         mux <- pmax(mux, 1 + 1e-5)
     }
-    lfdr <- (pix * dist$h(1, mux) + 1 - pix) /
-        (pix * dist$h(pvals, mux) + 1 - pix)
-    ## lfdr <- (1 - pix) / (pix * dist$h(pvals, mux) + 1 - pix)
+    type <- type[1]
+    if (type == "over"){
+        lfdr <- (pix * dist$h(1, mux) + 1 - pix) /
+            (pix * dist$h(pvals, mux) + 1 - pix)
+    } else if (type == "raw"){
+        lfdr <- (1 - pix) / (pix * dist$h(pvals, mux) + 1 - pix)
+    }
     return(lfdr)
 }
 
-compute_threshold_mix <- function(dist, params, lfdr_lev){
+compute_threshold_mix <- function(dist, params, lfdr_lev,
+                                  type = "over"){
     pix <- pmax(params$pix, 1e-5)
     mux <- params$mux
     if (dist$family$family == "Gamma"){
@@ -31,10 +37,14 @@ compute_threshold_mix <- function(dist, params, lfdr_lev){
     if (lfdr_lev == 0 || lfdr_lev == 1){
         return(rep(lfdr_lev, length(pix)))
     }
-    
-    val1 <- dist$h(1, mux) / lfdr_lev +
-        (1 - pix) / pix * (1 - lfdr_lev) / lfdr_lev
-    ## val1 <- (1 - pix) / pix * (1 - lfdr_lev) / lfdr_lev
+
+    type <- type[1]
+    if (type == "over"){
+        val1 <- dist$h(1, mux) / lfdr_lev +
+            (1 - pix) / pix * (1 - lfdr_lev) / lfdr_lev
+    } else if (type == "raw"){
+        val1 <- (1 - pix) / pix * (1 - lfdr_lev) / lfdr_lev
+    }
     
     val2 <- (log(val1) + dist$A(mux) - dist$A(dist$mustar)) /
         (dist$eta(mux) - dist$eta(dist$mustar))
@@ -151,7 +161,9 @@ adapt <- function(x, pvals, models,
                   niter_fit = 10, tol = 1e-4,
                   niter_ms = 20, cr = "BIC",
                   return_data = TRUE,
-                  verbose = list(print = TRUE, fit = FALSE, ms = TRUE)){
+                  verbose = list(print = TRUE, fit = FALSE, ms = TRUE),
+                  Mstep_type = "unweighted",
+                  lfdr_type = "over"){
     ## Check if 'pvals' is a vector of values in [0, 1]
     if (!is.numeric(pvals) || min(pvals) < 0 || max(pvals) > 1){
         stop("Invalid p-values")

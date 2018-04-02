@@ -30,7 +30,7 @@ EM_mix_ms <- function(x, pvals, s, dist, models,
         model <- complete_model(models[[i]], dist)
         fit <- try(
             EM_mix(x, pvals, s, dist, model, params0, niter, tol,
-                   verbose, type),
+                   type = type),
             silent = TRUE
             )
         if (class(fit)[1] == "try-error"){

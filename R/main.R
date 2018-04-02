@@ -211,13 +211,13 @@ adapt <- function(x, pvals, models,
     fit_args_root <- list(
         x = x, pvals = pvals, dist = dist,
         niter = niter_fit, tol = tol,
-        verbose = verbose$fit
+        verbose = verbose$fit, type = Mstep_type,
         )
     if (any(stamps[, 2] == "ms")){
         ms_args_root <- list(
             x = x, pvals = pvals, dist = dist, models = models,
             cr = cr, niter = niter_ms, tol = tol,
-            verbose = verbose$ms
+            verbose = verbose$ms, type = Mstep_type,
             )
     }
     
@@ -309,7 +309,7 @@ adapt <- function(x, pvals, models,
         ## Estimate local FDR
         lfdr <- compute_lfdr_mix(
             pmin(pvals, 1 - pvals),
-            dist, params)
+            dist, params, lfdr_type)
         ## Find the top "nreveals" hypotheses with highest lfdr 
         lfdr[!mask] <- -Inf
         inds <- order(lfdr, decreasing = TRUE)[1:nreveals]
@@ -328,7 +328,7 @@ adapt <- function(x, pvals, models,
             if (any(fdp <= alpha)){
                 breakpoint <- which(fdp <= alpha)[1]
                 lfdr_lev <- lfdr[inds[breakpoint]]
-                snew <- compute_threshold_mix(dist, params, lfdr_lev)
+                snew <- compute_threshold_mix(dist, params, lfdr_lev, lfdr_type)
                 snew <- pmin(s, snew)
                 s_return[, alphaind] <- snew
                 
@@ -357,7 +357,7 @@ adapt <- function(x, pvals, models,
 
         ## Update s(x)
         final_lfdr_lev <- lfdr[tail(inds, 1)]
-        snew <- compute_threshold_mix(dist, params, final_lfdr_lev)
+        snew <- compute_threshold_mix(dist, params, final_lfdr_lev, lfdr_type)
         s <- pmin(s, snew)
     }
 

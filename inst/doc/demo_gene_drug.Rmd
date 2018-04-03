@@ -1,0 +1,90 @@
+---
+title: "Introduction to `adaptMT` package"
+author: Lihua Lei
+output: 
+  pdf_document:
+    toc: true
+    number_sections: true
+---
+
+# Introduction
+This is a demo of our `adaptMT` package. `adaptMT` has two main components: a generic interface that allows users to specify the working model and algorithms to fit them, as well as a pool of easy-to-use end-to-end wrappers. The former is captured by function `adapt`. The latter includes `adapt_glm`, `adapt_gam` and `adapt_glmnet` for using GLM, GAM and L1-regularized GLM.
+
+```{r, results='hide'}
+# install the "adaptMT" package from github.
+# will be submitted to CRAN very soon.
+devtools::install_github("lihualei71/adaptMT")
+library("adaptMT")
+```
+
+We illustrate one of the main function `adapt_glm`, for AdaPT with logistic-Gamma GLM as the working model, on `estrogen` dataset, a gene/drug response dataset from NCBI Gene Expression Omnibus (GEO). `estrogen` dataset consists of gene expression measurements for $n = 22283$ genes, in response to estrogen treatments in breast cancer cells for five groups of patients, with different dosage levels and 5 trials in each. The task is to identify the genes responding to a low dosage. The p-values pi for gene i is obtained by a one-sided permutation test which evaluates evidence for a change in gene expression level between the control group (placebo) and the low-dose group. $\{p_i : i \in [n]\}$ are then ordered according to permutation t-statistics comparing the control and low-dose data, pooled, against data from a higher dosage (with genes that appear to have a strong response at higher dosages placed earlier in the list). The code to compute p-values and the ordering can be found in [Rina Barber's website](http://www.stat.uchicago.edu/~rina/sabha/gene_drug_data_example.R).
+
+In this demo, we subsample the top 5000 genes for illustration.
+
+```{r,results='hide'}
+# load the data.
+data("estrogen")
+# Take the first 5000 genes 
+library("dplyr")
+estrogen <- select(estrogen, pvals, ord_high) %>% 
+  filter(ord_high <= 5000)
+rownames(estrogen) <- NULL
+```
+
+```{r}
+head(estrogen, 5)
+```
+
+```{r}
+summary(estrogen)
+```
+
+```{r, echo=FALSE}
+  plot(estrogen$ord, estrogen$pvals, pch = ".", xlab = "order", ylab = "p-values", xaxs = "i", yaxs = "i", main = "Scatter plot of p-values in the (sub-sampled) estrogen dataset")
+```
+
+Now we execute `adapt_glm` on this dataset. `adapt_glm` assumes a conditional logistic-Gamma GLM as the working model. Specifically, it models the p-values as
+$$H_i \mid x_i \sim \pi(x_i), \quad \mathrm{logit}(\pi(x_i))= \phi(x_i)^{T}\beta$$
+$$-\log p_i \mid H_i, x_i\sim \left\{\begin{array}{ll} \mathrm{Exp(1)} & H_i = 0\\ \mathrm{Exp(\mu(x))} & H_i = 1\end{array}\right., \quad \frac{1}{\mu(x_i)} = \phi(x_i)^{T}\gamma$$
+where $\phi(x)$ is a featurization of $x$. In this example, we use the spline bases, given by `ns` function from `splines` package. For illustration, we choose our candidate models as the above GLMs with $\phi(x)$ being the spline bases with equal-spaced knots and the number of knots ranging from 6-10. We use BIC to select the best model at the initial stage and use the selected model for the following model fitting.
+
+```{r}
+# prepare the inputs of AdaPT
+# need "splines" package to construct the formula for glm
+library("splines")
+pvals <- as.numeric(estrogen$pvals)
+x <- data.frame(x = as.numeric(estrogen$ord))
+formulas <- paste0("ns(x, df = ", 6:10, ")")
+formulas
+```
+
+`adapt_glm` function provides several user-friendly tools to monitor the progress. For model selection, a progress bar will, by default, be shown in the console that indicates how much proportion of models have been fitted. This can be turned off by setting verbose\$ms = FALSE. Similarly for model fitting, a progress bar can be shown in the console, though not by default, by setting verbose\$fit = TRUE. Also, by default, the progress of the main process will be shown in the console that indicates (1) which target FDR level has been achieved; (2) FDPhat for each target FDR level; (3) number of rejections for each target FDR level.
+
+```{r, warning=FALSE}
+# run AdaPT
+res <- adapt_glm(x = x, pvals = pvals, pi_formulas = formulas, mu_formulas = formulas)
+```
+
+`plot_thresh_1d` gives the plot for the rejection threshold as a function of x (must be univariate without repeated value) for given $\alpha$. We display the plots for $\alpha \in \{0.3, 0.25, 0.2, 0.15, 0.1, 0.05\}$.
+
+```{r, echo=FALSE}
+par(mfrow = c(2, 3))
+for (alpha in seq(0.3, 0.05, -0.05)){
+  nrejs <- res$nrejs[floor(alpha * 100)]
+  title <- paste0("alpha = ", alpha, ", nrejs = ", nrejs)
+  plot_1d_thresh(res, alpha, title, disp_ymax = 1, xlab = "order")
+}
+```
+
+`plot_lfdr_1d` gives the plot for the estimated local FDR as a function of x (must be univariate without repeated value) for given $\alpha$. We display the plots for $\alpha \in \{0.3, 0.25, 0.2, 0.15, 0.1, 0.05\}$. It is clear that the estimated local FDR almost remains the same, indicating that the information loss caused by partial masking is small.
+
+```{r}
+par(mfrow = c(2, 3))
+for (alpha in seq(0.3, 0.05, -0.05)){
+  nrejs <- res$nrejs[floor(alpha * 100)]
+  title <- paste0("alpha = ", alpha, ", nrejs = ", nrejs)
+  plot_1d_lfdr(res, alpha, title, disp_ymax = 0.25, xlab = "order")
+}
+```
+
+

@@ -7,4 +7,3 @@
 ^R/source_all.R$
 ^tests/EM_test.R$
 .travis.yml
-inst/doc

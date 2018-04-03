@@ -20,7 +20,8 @@ Suggests:
     splines,
     testthat,
     knitr,
-    rmarkdown
+    rmarkdown,
+    dplyr
 RoxygenNote: 6.0.1
 Imports: 
     methods

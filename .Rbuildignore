@@ -2,8 +2,5 @@
 ^\.Rproj\.user$
 ^TODO$
 ^exprs/*
-^inst/extdata/estrogen_test.RData$
 ^LICENSE\.md$
-^R/source_all.R$
-^tests/EM_test.R$
 .travis.yml

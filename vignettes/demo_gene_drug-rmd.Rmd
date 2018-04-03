@@ -1,11 +1,20 @@
 ---
 title: "Introduction to `adaptMT` package"
-author: Lihua Lei
-output: 
-  pdf_document:
-    toc: true
-    number_sections: true
+author: "Lihua Lei"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
 
 # Introduction
 This is a demo of our `adaptMT` package. `adaptMT` has two main components: a generic interface that allows users to specify the working model and algorithms to fit them, as well as a pool of easy-to-use end-to-end wrappers. The former is captured by function `adapt`. The latter includes `adapt_glm`, `adapt_gam` and `adapt_glmnet` for using GLM, GAM and L1-regularized GLM.
@@ -86,5 +95,3 @@ for (alpha in seq(0.3, 0.05, -0.05)){
   plot_1d_lfdr(res, alpha, title, disp_ymax = 0.25, xlab = "order")
 }
 ```
-
-

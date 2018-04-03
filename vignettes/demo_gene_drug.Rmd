@@ -4,7 +4,7 @@ author: Lihua Lei
 output: 
   pdf_document:
     toc: true
-      number_sections: true
+    number_sections: true
 ---
 
 # Introduction

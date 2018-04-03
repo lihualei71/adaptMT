@@ -33,7 +33,10 @@ In this demo, we subsample the top 5000 genes for illustration.
 ```{r,results='hide'}
 # load the data.
 data("estrogen")
-# Take the first 5000 genes 
+# Take the first 5000 genes
+if (!requireNamespace("dplyr")){
+  install.packages("dplyr")
+}
 library("dplyr")
 estrogen <- select(estrogen, pvals, ord_high) %>% 
   filter(ord_high <= 5000)

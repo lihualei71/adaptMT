@@ -22,7 +22,7 @@ This is a demo of our `adaptMT` package. `adaptMT` has two main components: a ge
 ```{r, results='hide'}
 # install the "adaptMT" package from github.
 # will be submitted to CRAN very soon.
-devtools::install_github("lihualei71/adaptMT")
+# devtools::install_github("lihualei71/adaptMT")
 library("adaptMT")
 ```
 

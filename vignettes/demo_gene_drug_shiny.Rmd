@@ -1,7 +1,7 @@
 ---
 title: "A demo of adaptMT package"
 runtime: shiny
-output: html_notebook
+output: html_document
 ---
 
 This is a demo of our `adaptMT` package. `adaptMT` has two main components: an API that allows users to specify the working model and algorithms to fit them, as well as a pool of easy-to-use end-to-end wrappers. The former is captured by function `adapt`. The latter includes `adapt_glm`, `adapt_gam` and `adapt_glmnet` in current version (0.1.3.9000) for using GLM, GAM and L1-regularized GLM.
@@ -22,8 +22,8 @@ In this demo, we subsample the top 5000 genes for illustration.
 data("estrogen")
 # Take the first 5000 genes 
 library("dplyr")
-estrogen <- select(estrogen, pvals, ord) %>% 
-  filter(ord <= 5000)
+estrogen <- select(estrogen, pvals, ord_high) %>% 
+  filter(ord_high <= 5000)
 rownames(estrogen) <- NULL
 ```
 

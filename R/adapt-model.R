@@ -31,12 +31,12 @@
 #' @examples
 #' # Generate 'adapt_model' for logistic-Gamma glm.
 #' # pifun as a logistic regression
-#'    pifun <- function(formula, data, ...){
-#'        glm(formula, data, family = binomial(), ...)
+#'    pifun <- function(formula, data, weights, ...){
+#'        glm(formula, data, weights = weights, family = binomial(),  ...)
 #'    }
 #' # pifun_init as a linear regression
-#'    pifun_init <- function(formula, data, ...){
-#'        glm(formula, data, family = gaussian(), ...)
+#'    pifun_init <- function(formula, data, weights, ...){
+#'        glm(formula, data, weights = weights, family = gaussian(), ...)
 #'    }
 #' # Both mufun and mufun_init as Gamma GLMs (The real implementation in the package
 #' # is more complicated than the following in order to handle the corner cases)
@@ -102,12 +102,12 @@ gen_adapt_model_glm <- function(dist,
                                 piargs = list(),
                                 muargs = list()){
     pifun <- function(formula, data, weights, ...){
-        safe_glm(formula, data, weights,
+        safe_glm(formula, data, weights = weights,
                  family = quasibinomial(), ...)
     }
     
     pifun_init <- function(formula, data, weights, ...){
-        safe_glm(formula, data, weights, 
+        safe_glm(formula, data, weights = weights, 
                  family = gaussian(), ...)
     }
     
@@ -132,12 +132,12 @@ gen_adapt_model_gam <- function(dist,
                                 piargs = list(),
                                 muargs = list()){
     pifun <- function(formula, data, weights, ...){
-        safe_gam(formula, data, weights,
+        safe_gam(formula, data, weights = weights,
                  family = quasibinomial(), ...)
     }
     
     pifun_init <- function(formula, data, weights, ...){
-        safe_gam(formula, data, weights,
+        safe_gam(formula, data, weights = weights,
                  family = gaussian(), ...)
     }
     
@@ -161,12 +161,12 @@ gen_adapt_model_gam <- function(dist,
 gen_adapt_model_glmnet <- function(dist, 
                                    piargs = list(),
                                    muargs = list()){
-    pifun <- function(x, y, ...){
+    pifun <- function(x, y, weights, ...){
         safe_glmnet(x, y, weights = weights,
                     family = "binomial", ...)
     }
     
-    pifun_init <- function(x, y, ...){
+    pifun_init <- function(x, y, weights, ...){
         safe_glmnet(x, y, weights = weights,
                     family = "gaussian", ...)
     }

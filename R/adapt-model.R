@@ -101,13 +101,13 @@ gen_adapt_model <- function(pifun = NULL,
 gen_adapt_model_glm <- function(dist, 
                                 piargs = list(),
                                 muargs = list()){
-    pifun <- function(formula, data, ...){
-        safe_glm(formula, data,
+    pifun <- function(formula, data, weights, ...){
+        safe_glm(formula, data, weights,
                  family = quasibinomial(), ...)
     }
     
-    pifun_init <- function(formula, data, ...){
-        safe_glm(formula, data,
+    pifun_init <- function(formula, data, weights, ...){
+        safe_glm(formula, data, weights, 
                  family = gaussian(), ...)
     }
     
@@ -131,13 +131,13 @@ gen_adapt_model_glm <- function(dist,
 gen_adapt_model_gam <- function(dist, 
                                 piargs = list(),
                                 muargs = list()){
-    pifun <- function(formula, data, ...){
-        safe_gam(formula, data,
+    pifun <- function(formula, data, weights, ...){
+        safe_gam(formula, data, weights,
                  family = quasibinomial(), ...)
     }
     
-    pifun_init <- function(formula, data, ...){
-        safe_gam(formula, data,
+    pifun_init <- function(formula, data, weights, ...){
+        safe_gam(formula, data, weights,
                  family = gaussian(), ...)
     }
     
@@ -162,12 +162,12 @@ gen_adapt_model_glmnet <- function(dist,
                                    piargs = list(),
                                    muargs = list()){
     pifun <- function(x, y, ...){
-        safe_glmnet(x, y,
+        safe_glmnet(x, y, weights = weights,
                     family = "binomial", ...)
     }
     
     pifun_init <- function(x, y, ...){
-        safe_glmnet(x, y,
+        safe_glmnet(x, y, weights = weights,
                     family = "gaussian", ...)
     }
     

@@ -8,7 +8,7 @@ adapt(x, pvals, models, dist = beta_family(), s0 = rep(0.45, length(pvals)),
   alphas = seq(0.01, 1, 0.01), params0 = list(pix = NULL, mux = NULL),
   nfits = 20, nms = 1, niter_fit = 10, tol = 1e-04, niter_ms = 20,
   cr = "BIC", return_data = TRUE, verbose = list(print = TRUE, fit =
-  FALSE, ms = TRUE))
+  FALSE, ms = TRUE), Mstep_type = "unweighted", lfdr_type = "over")
 }
 \arguments{
 \item{x}{covariates (i.e. side-information). Should be compatible to \code{models}. See Details}

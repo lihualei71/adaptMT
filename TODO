@@ -3,7 +3,7 @@ DEL 2) Write AdaPT_glm, AdaPT_gam and AdaPT_glmnet
 3) change filenames from _ to -
 YES 4) change num_steps to niter
 YES 5) Write AdaPT_summary.R
-6) Compare weighted and unweighted versions on other datasets
+YES 6) Compare weighted and unweighted versions on other datasets
 DEL 7) Add argument "return_threshold" to AdaPT()
 DEL 8) change stamps from an equi-spaced grid to an equi-log-spaced grid
 YES 9) safe_glmnet binomial
@@ -11,5 +11,5 @@ YES 10) safe_model order of arguments
 DEL 11) safe_model !requireNamespace
 DEL 12) qvals is not compatible with s
 DEL 13) stamps may change when repeated lfdr values appear
-14) document "estrogen"
-15) check documentation
+YES 14) document "estrogen"
+YES 15) check documentation

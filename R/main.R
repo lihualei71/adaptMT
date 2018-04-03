@@ -106,13 +106,13 @@ check_pkgs <- function(models){
 #' @param params0 a list in the form of list(pix = , mux = ). Initial guess of pi(x) and mu(x). NULL as default
 #' @param nfits a positive integer. Number of model-fitting steps. See Details
 #' @param nms a non-negative integer. Number of model selection steps. See Details
-#' @param verbose a list of logical values in the form of list(print = , fit = , ms = ). Each element indicates whether the relevant information is outputed to the console. See Details
 #' @param niter_fit a positive integer. Number of EM iterations in model fitting
 #' @param tol a positive scalar. EM algorithm stops when pi(x) and mu(x) in consecutive steps differ by at most 'tol' elementwisely
 #' @param niter_ms a positive integer. Number of EM iterations in model selection
 #' @param cr a string. The criterion for model selection with BIC as default. Also support AIC, AICC and HIC
 #' @param return_data a logical value. The original data will be returned in the form of list(x = x, pvals = pvals). Not recommended for large dataset
-#'
+#' @param verbose a list of logical values in the form of list(print = , fit = , ms = ). Each element indicates whether the relevant information is outputed to the console. See Details
+#' 
 #' @return
 #' \item{order}{a permutation of \code{1:length(pvals)}. Indices of hypotheses arranged in the order of reveal}
 #' \item{nrejs}{a vector of integers. Number of rejections for each alpha}
@@ -211,13 +211,13 @@ adapt <- function(x, pvals, models,
     fit_args_root <- list(
         x = x, pvals = pvals, dist = dist,
         niter = niter_fit, tol = tol,
-        verbose = verbose$fit, type = Mstep_type,
+        verbose = verbose$fit, type = Mstep_type
         )
     if (any(stamps[, 2] == "ms")){
         ms_args_root <- list(
             x = x, pvals = pvals, dist = dist, models = models,
             cr = cr, niter = niter_ms, tol = tol,
-            verbose = verbose$ms, type = Mstep_type,
+            verbose = verbose$ms, type = Mstep_type
             )
     }
     
@@ -247,7 +247,7 @@ adapt <- function(x, pvals, models,
     model_list <- list() # all selected models
     info_list <- list() # other information (df, vi, etc.)
     reveal_order <- which((pvals > s) & (pvals < 1 - s)) # the order to be revealed
-    fdp_return <- rep(Inf, length(reveal_order)) # fdphat along the whole path
+    fdp_return <- rep(minfdp, length(reveal_order)) # fdphat along the whole path
 
     if (m > alphaind){
         nrejs_return[(alphaind + 1):m] <- R
@@ -361,6 +361,9 @@ adapt <- function(x, pvals, models,
         s <- pmin(s, snew)
     }
 
+    reveal_order <- c(reveal_order, mask)
+    fdp_return <- c(fdp_return, rep(minfdp, length(mask)))
+        
     args <- list(nfits = nfits, nms = nms,
                  niter_fit = niter_fit, niter_ms = niter_ms,
                  tol = tol, cr = cr)

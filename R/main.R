@@ -161,9 +161,12 @@ adapt <- function(x, pvals, models,
                   niter_fit = 10, tol = 1e-4,
                   niter_ms = 20, cr = "BIC",
                   return_data = TRUE,
-                  verbose = list(print = TRUE, fit = FALSE, ms = TRUE),
-                  Mstep_type = "unweighted",
-                  lfdr_type = "over"){
+                  verbose = list(print = TRUE, fit = FALSE, ms = TRUE)
+                  ){
+    
+    Mstep_type <- "unweighted"
+    lfdr_type <- "over"
+    
     ## Check if 'pvals' is a vector of values in [0, 1]
     if (!is.numeric(pvals) || min(pvals) < 0 || max(pvals) > 1){
         stop("Invalid p-values")

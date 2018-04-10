@@ -5,7 +5,7 @@
 #' exp_family Objects for Exponential Families
 #'
 #' \code{exp_family} objects contain all required information in an exponential family to perform the E-step. The exponential function is encoded by
-#' \deqn{h(p; \eta) = \exp\{(\eta(\mu) - \eta(\mu^{*})) g(p) - (A(\mu) - A(\mu^{*}))\}}{h(p; \eta) = exp{(\eta(\mu) - \eta(\mu*)) g(p) - (A(\mu) - A(\mu*))}}
+#' \deqn{h(p; \mu) = \exp\{(\eta(\mu) - \eta(\mu^{*})) g(p) - (A(\mu) - A(\mu^{*}))\}}{h(p; \eta) = exp{(\eta(\mu) - \eta(\mu*)) g(p) - (A(\mu) - A(\mu*))}}
 #' where \eqn{g(p)} is an arbitrary transformation, \eqn{\mu} is the
 #' \emph{mean parameter}, \eqn{\eta} is the natural parameter,
 #' and \eqn{A(\mu)} is the partition function. The extra redundant
@@ -23,7 +23,7 @@
 #' @param A a function. The partition function
 #' @param name a string. A name for the family. NULL by default
 #' @param family an object of class "\code{\link[stats]{family}}" from \code{stats} package. The family used for model fitting in \code{\link[stats]{glm}}, \code{\link[mgcv]{gam}}, \code{\link[glmnet]{glmnet}}, etc..
-#' @return an object of class "exp_family". This includes all inputs and  \item{h }{bivariate function of p and \code{mu}. The density function computed}
+#' @return an object of class "exp_family". This includes all inputs and  \code{h}, the density function.
 #'
 #' @export
 #'

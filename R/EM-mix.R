@@ -22,12 +22,20 @@ EM_mix <- function(x, pvals, s, dist, model,
     }
 
     if (is.null(params0$pix) || is.null(params0$mux)){
-        init_res <- init_mix(
-            x, pvals, s, dist,
-            model$algo$pifun_init, model$algo$mufun_init,
-            model$args$piargs_init, model$args$muargs_init)
-        old_pix <- pix <- init_res$pix
-        old_mux <- mux <- init_res$mux
+        piargs_init <- c(list(x = x, pvals = pvals, s = s),
+                         model$args$piargs_init)
+        pix <- do.call(model$algo$pifun_init, piargs_init)$fitv
+        muargs_init <- c(list(x = x, pvals = pvals, s = s),
+                         model$args$muargs_init)
+        mux <- do.call(model$algo$mufun_init, muargs_init)$fitv
+
+            ## init_res <- init_mix(
+            ## x, pvals, s, dist,
+            ## model$algo$pifun_init, model$algo$mufun_init,
+            ## model$args$piargs_init, model$args$muargs_init)
+
+        old_pix <- pix ## <- init_res$pix
+        old_mux <- mux ## <- init_res$mux
     } else {
         old_pix <- pix <- params0$pix
         old_mux <- mux <- params0$mux

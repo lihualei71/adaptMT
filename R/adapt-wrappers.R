@@ -198,6 +198,7 @@ adapt_gam <- function(x, pvals, pi_formulas, mu_formulas,
 #' @examples
 #' \dontrun{
 #' # Generate a 100-dim covariate x
+#' set.seed(0)
 #' m <- 100
 #' n <- 1000
 #' x <- matrix(runif(n * m), n, m)
@@ -218,7 +219,6 @@ adapt_gam <- function(x, pvals, pi_formulas, mu_formulas,
 #' mu <- pmax(1, x %*% beta.mu + beta0.mu)
 #'
 #' # Generate p-values
-#' set.seed(0)
 #' H0 <- as.logical(ifelse(runif(n) < pi, 1, 0))
 #' y <- ifelse(H0, rexp(n, 1/mu), rexp(n, 1))
 #' pvals <- exp(-y)

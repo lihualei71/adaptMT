@@ -33,30 +33,35 @@ gen_adapt_model(pifun = NULL, mufun = NULL, pifun_init = NULL,
 \item{args}{a list recording \code{piargs}, \code{muargs}, \code{piargs_init} and \code{muargs_init}}
 }
 \description{
-\code{adapt_model} objects provide the functions and their arguments in computing the M-steps. Each object can be passed to \code{\link{adapt}} as a candidate model.
+\code{adapt_model} objects provide the functions and their arguments in computing the M-steps.
+Each object can be passed to \code{\link{adapt}} as a candidate model.
 }
 \details{
-\code{pifun} should be in the form of \code{pifun(formula, data, family, ...)} or \code{pifun(x, y, family, ...)}. The former includes \code{\link[stats]{glm}} and \code{\link[mgcv]{gam}} and the latter includes \code{\link[glmnet]{glmnet}}. The outputs should be in the form of \code{list(fitv = , info = , ...)} where \code{fitv} gives the estimate of pi(x), as a vector with the same order of \code{x}, and \code{info} should at least contain a key \code{df} if model selection is used, i.e. \code{info = list(df = , ...)}
+\code{pifun} should be in the form of \code{pifun(formula, data, family, weights, ...)} or \code{pifun(x, y, family, ...)}.
+The former includes \code{\link[stats]{glm}} and \code{\link[mgcv]{gam}} and the latter includes \code{\link[glmnet]{glmnet}}.
+The outputs should be in the form of \code{list(fitv = , info = , ...)} where \code{fitv} gives the estimate of pi(x),
+as a vector with the same order of \code{x}, and \code{info} should at least contain a key \code{df} if model selection is used, i.e. \code{info = list(df = , ...)}
 
-\code{mufun} should be in the form of \code{pifun(formula, data, family, weights, ...)} or \code{pifun(x, y, family, weights, ...)}. Note that \code{mufun} must take \code{weights} as an input. The outputs should be in the same form as \code{pifun} except that \code{fitv} should give the estimate of mu(x).
+\code{mufun} should be in the form of \code{pifun(formula, data, family, weights, ...)} or \code{pifun(x, y, family, weights, ...)}.
+Note that \code{mufun} must take \code{weights} as an input. The outputs should be in the same form as \code{pifun} except that \code{fitv} should give the estimate of mu(x).
 
 When \code{pifun} / \code{mufun} takes the form of \code{(formula, family, ...)}, \code{piargs} / \code{muargs} should at least contain a key \code{formula}; when \code{pifun} / \code{mufun} takes the form of \code{(x, y, family, ...)}, \code{piargs} / \code{muargs} can be empty.
 }
 \examples{
 # Generate 'adapt_model' for logistic-Gamma glm.
 # pifun as a logistic regression
-   pifun <- function(formula, data, weights, ...){
-       glm(formula, data, weights = weights, family = binomial(),  ...)
-   }
+pifun <- function(formula, data, weights, ...){
+  glm(formula, data, weights = weights, family = binomial(),  ...)
+}
 # pifun_init as a linear regression
-   pifun_init <- function(formula, data, weights, ...){
-       glm(formula, data, weights = weights, family = gaussian(), ...)
-   }
+pifun_init <- function(formula, data, weights, ...){
+  glm(formula, data, weights = weights, family = gaussian(), ...)
+}
 # Both mufun and mufun_init as Gamma GLMs (The real implementation in the package
 # is more complicated than the following in order to handle the corner cases)
-   mufun <- mufun_init <- function(formula, data, weights, ...){
-       glm(formula, data, weights = weights, family = Gamma(), ...)
-   }
+mufun <- mufun_init <- function(formula, data, weights, ...){
+  glm(formula, data, weights = weights, family = Gamma(), ...)
+}
 
 library("splines") # for using ns() in the formula
 piargs <- list(formula = "ns(x, df = 8)")

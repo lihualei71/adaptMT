@@ -10,14 +10,14 @@ Mstep_mix <- function(x, pvals, dist,
     if (!"weights" %in% formalArgs(mufun)){
         stop("'mufun' does not have input 'weights'")
     }
-
+    
     n <- length(Hhat)
     x_aug <- rbind(x, x)
     H_aug <- c(rep(1, n), rep(0, n))
     weights <- c(Hhat, 1 - Hhat)
     piargs <- complete_args(x_aug, H_aug, pifun, piargs, weights)
     pi_res <- fit_pi(pifun, piargs, type = "Mstep")
-    pi_res$pix <- pi_res$pix[1:n]
+    pi_res$fitv <- pi_res$fitv[1:n]
 
     y_aug <- c(dist$g(pvals), dist$g(1 - pvals))
 
@@ -28,7 +28,12 @@ Mstep_mix <- function(x, pvals, dist,
     }
     muargs <- complete_args(x_aug, y_aug, mufun, muargs, weights)
     mu_res <- fit_mu(mufun, muargs, dist, type = "Mstep")
-    mu_res$mux <- mu_res$mux[1:n]
+    mu_res$fitv <- mu_res$fitv[1:n]
 
-    return(c(pi_res, mu_res))
+    res <- list(pix = pi_res$fitv,
+                mux = mu_res$fitv,
+                pi_info = pi_res$info,
+                mu_info = mu_res$info)
+
+    return(res)
 }

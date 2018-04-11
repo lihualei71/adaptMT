@@ -240,6 +240,8 @@ mufun <- function(formula, data, weights, ...){
 }
 ```
 
+Finally we need to define `pifun_init` and `mufun_init` for the initialization. As described in the paper, the initialization of $\pi_{1}(x)$ is done by defining
+
 ### x-y input type
 
 The only requirement for 

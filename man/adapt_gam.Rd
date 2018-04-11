@@ -21,7 +21,7 @@ adapt_gam(x, pvals, pi_formulas, mu_formulas, piargs = list(),
 
 \item{muargs}{a list. Other arguments passed to gam for fitting mu(x)}
 
-\item{dist}{an object of class "\code{\link{exp_family}}". \code{\link{beta_family}()} as default}
+\item{dist}{an object of class "\code{\link{gen_exp_family}}". \code{\link{beta_family}()} as default}
 
 \item{s0}{a vector of values in [0, 0.5). Initial threshold.}
 

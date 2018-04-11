@@ -17,7 +17,7 @@ adapt_glm(x, pvals, pi_formulas, mu_formulas, dist = beta_family(),
 
 \item{mu_formulas}{a vector/list of strings/formulas. Formulas for fitting mu(x) by glm. See Details}
 
-\item{dist}{an object of class "\code{\link{exp_family}}". \code{\link{beta_family}()} as default}
+\item{dist}{an object of class "\code{\link{gen_exp_family}}". \code{\link{beta_family}()} as default}
 
 \item{s0}{a vector of values in [0, 0.5). Initial threshold.}
 

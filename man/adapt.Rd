@@ -17,7 +17,7 @@ adapt(x, pvals, models, dist = beta_family(), s0 = rep(0.45, length(pvals)),
 
 \item{models}{an object of class "\code{adapt_model}" or a list of objects of class "adapt_model". See Details}
 
-\item{dist}{an object of class "\code{\link{exp_family}}". \code{\link{beta_family}()} as default}
+\item{dist}{an object of class "\code{\link{gen_exp_family}}". \code{\link{beta_family}()} as default}
 
 \item{s0}{a vector of values in [0, 0.5). Initial threshold.}
 

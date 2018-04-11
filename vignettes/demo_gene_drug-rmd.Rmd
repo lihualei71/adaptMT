@@ -17,7 +17,9 @@ knitr::opts_chunk$set(
 ```
 
 # Introduction
-This is a demo of our `adaptMT` package. `adaptMT` has two main components: a generic interface that allows users to specify the working model and algorithms to fit them, as well as a pool of easy-to-use end-to-end wrappers. The former is captured by function `adapt`. The latter includes `adapt_glm`, `adapt_gam` and `adapt_glmnet` for using GLM, GAM and L1-regularized GLM. In this section, we illustrate `adaptMT` package on an example.
+This is a demo of our `adaptMT` package. `adaptMT` has two main components: a generic interface that allows users to specify the working model and algorithms to fit them, as well as a pool of easy-to-use end-to-end wrappers. The former is captured by function `adapt`. The latter includes `adapt_glm`, `adapt_gam` and `adapt_glmnet` for using GLM, GAM and L1-regularized GLM. 
+
+In this section, we illustrate `adaptMT` package on an example.
 
 ```{r, results='hide'}
 # install the "adaptMT" package from github.
@@ -102,7 +104,20 @@ for (alpha in seq(0.3, 0.05, -0.05)){
 # Generic Interface of `adaptMT` Package
 The pipeline of AdaPT is as follows:
 
+```{r, out.width = "100%", fig.align = "center", echo = FALSE}
+knitr::include_graphics('flowchart_AdaPT.pdf')
+```
+
+
 The data-adaptive/human-in-the-loop part is embedded in the EM sub-pipeline:
+
+```{r, out.width = "100%", fig.align = "center", echo = FALSE}
+knitr::include_graphics('flowchart_EM.pdf')
+```
+
+```{r, out.width = "100%", fig.align = "center", echo = FALSE}
+knitr::include_graphics('flowchart_EM_ms.pdf')
+```
 
 There are two main user-specified options:
 - exponential family to fit E-steps;
@@ -124,37 +139,108 @@ For `inv_gaussian_family()`,
 $$g(p) = \Phi^{-1}(1 - p), \,\,\,\, g^{-1}(x) = 1 - \Phi(x), \,\,\,\, \eta(\mu) = \mu, \,\,\,\, \mu^{*} = 0, \,\,\,\, A(\mu) = \frac{1}{2}\mu^{2}.$$
 We found that `beta_family()` consistently yields better results. Even in the case that the p-values are generated from a normal model as `inv_gaussian_family()` specifies, `beta_family()` still has comparable performance. For this reason, we take `dist = beta_family()` as the default input in `adapt` and all its wrappers.
 
+`adaptMT` package provides a generic function to generate an 'exp_family' object based on these inputs. For instance, the following code generates `beta_family()`, 
+```{r}
+# g function
+g <- function(x){
+    tmp <- -log(x)
+    pmax(pmin(tmp, -log(10^-15)), -log(1-10^-15))
+}
+# inverse function of g
+ginv <- function(x){
+    tmp <- exp(-x)
+    pmax(pmin(tmp, 1 - 10^-15), 10^-15)
+}
+# eta function (mapping from the mean parameter to the natural parameter)
+eta <- function(mu){-1/mu}
+# mu* (the mean parameter corresponding to U([0, 1]))
+mustar <- 1
+# A function (the partition function)
+A <- log
+# Set a name; optional
+name <- "beta"
+# Set the default family as Gamma() (for glm, gam, glmnet, etc.); optional
+family <- Gamma()
+# Generate beta_family()
+beta_family <- gen_exp_family(g, ginv, eta, mustar, A, name, family)
+```
+
+
 ## `adapt_model` objects for fitting M-steps
-An `adapt_model` object is a list containing the fitting functions (and their arguments) in M-steps. It has three entries: `name`, `algo` and `args`. `name` gives the name of the model, which is optional; `algo` is a list of four functions `pifun`, `mufun`, `pifun_init` and `mufun_init`, for fitting $\pi_{1}(x)$ and $\mu(x)$ and initializing $\pi_{1}(x)$ and $\mu(x)$, respectively; `args` is a list of four lists  `piargs`, `muargs`, `piargs_init` and `muargs_init` that give the other arguments passed to `pifun`, `mufun`, `pifun_init` and `mufun_init`.
+An `adapt_model` object is a list containing the fitting functions (and their arguments) in M-steps. It has three entries: `name`, `algo` and `args`. `name` gives the name of the model, which is optional; `algo` is a list of four functions `pifun`, `mufun`, `pifun_init` and `mufun_init`, for fitting $\pi_{1}(x)$ and $\mu(x)$ and initializing $\pi_{1}(x)$ and $\mu(x)$, respectively; `args` is a list of four lists  `piargs`, `muargs`, `piargs_init` and `muargs_init` that give the other arguments passed to `pifun`, `mufun`, `pifun_init` and `mufun_init`. `adaptMT` package provides a generic function that takes the aforementioned elements as input to generate an `adapt_model` object, that can be passed into `adapt` or its variants. 
 
 Let $P^{(r-1)}[\cdot \mid D_{t}]$ denotes the posterior probability at step $t$ after $(r-1)$ iteration in the EM algorithm. Here $D_{t}$ denotes the partially-masked dataset, namely $(x_i, \tilde{p}_{t, i})_{i\in [n]}$. Let
 $$\hat{H}_{i}^{r} = P^{(r-1)} [H_{i} = 1\mid D_{t}], \quad \hat{b}_{i}^{r} = P^{(r-1)}[p_{i}\le 0.5 \mid D_{t}]$$
 To fit $\pi_{1}(x)$ in the $r$-th iteration, one can construct a pseudo-dataset with
 $$y_{\pi}^{r} = (1, \ldots, 1, 0, \ldots, 0)\in R^{2n},$$
 with weights 
-$$w_{\pi}^{r} = (\hat{H}_{1}^{r}, \ldots, \hat{H}_{n}^{r}, 1 - \hat{H}_{1}^{t}, \ldots, 1 - \hat{H}_{n}^{r}).$$
+$$w_{\pi}^{r} = \left(\hat{H}_{1}^{r}, \ldots, \hat{H}_{n}^{r}, 1 - \hat{H}_{1}^{t}, \ldots, 1 - \hat{H}_{n}^{r}\right).$$
 Let $xx$ be the covariate matrix after replicated for twice, namely `rbind(x, x)`. Then one can apply any classification algorithm on $(xx, y_{\pi}^{r})$ with weights $w_{\pi}^{r}$ and estimate $\hat{\pi}_{1}^{r}(x)$ by the fitted probability of the first $n$ units.
 
 Similarly, to fit $\mu(x)$ in the $r$-th iteration, one can construct a pseudo-dataset with outcomes $$y_{\mu}^{r} = (p_{1},\ldots, p_{n}, 1-p_{1}, \ldots, 1-p_{n}),$$
 with weights 
-$$w_{\mu}^{r}(\hat{b}_{1}^{r}\cdot \hat{H}_{1}^{r}, \ldots, \hat{b}_{n}^{r}\cdot \hat{H}_{n}^{r}, (1-\hat{b}_{1}^{r})\cdot \hat{H}_{1}^{r}, \ldots, (1-\hat{b}_{n}^{r})\cdot \hat{H}_{n}^{r}).$$ 
+$$w_{\mu}^{r} = \left(\hat{b}_{1}^{r}\cdot \hat{H}_{1}^{r}, \ldots, \hat{b}_{n}^{r}\cdot \hat{H}_{n}^{r}, (1-\hat{b}_{1}^{r})\cdot \hat{H}_{1}^{r}, \ldots, (1-\hat{b}_{n}^{r})\cdot \hat{H}_{n}^{r}\right).$$ 
 Then one can apply any algorithm on $(xx, y_{\mu}^{r})$ with weights $w_{\mu}^{r}$ and estimate $\hat{\mu}(x)$ by the fitted values of the first $n$ units. Note that this is a more general version that Algorithm 2 in our paper. It is straightforward to show that for generalized linear models, this is equivalent to Algorithm 2. Also, as mentioned in Appendix A.3 in the supplementary material, we found that it yields a more stable performance by replacing the weights to
-$$w_{\mu}^{r} = (\hat{b}_{1}^{r}, \ldots, \hat{b}_{n}^{r}, 1-\hat{b}_{1}^{r}, \ldots, 1-\hat{b}_{n}^{r}).$$
+$$w_{\mu}^{r} = \left(\hat{b}_{1}^{r}, \ldots, \hat{b}_{n}^{r}, 1-\hat{b}_{1}^{r}, \ldots, 1-\hat{b}_{n}^{r}\right).$$
 
 Note that $\hat{H}_{i}^{r}$ and $\hat{b}_{i}^{r}$ are generated within the algorithm so the user do not need to take care of them. Rather, the user only need to specifies the functions `pifun` and `mufun` as if $\hat{H}_{i}^{r}$ and $\hat{b}_{i}^{r}$ are known. More specifically, both `pifun` and `mufun` take $x$ and some output that has been calculated in the algorithm ($y_{\pi}^{r}$ or $y_{\mu}^{r}$) with some weights that also has been calculated in the algorithm ($w_{\pi}^{r}$ or $w_{\mu}^{r}$). They both output a sequence of estimates ($\pi_{1}(x)$ or $\mu(x)$) of length $n$, as well as some other information (e.g. degree of freedom, for performing model selection). 
 
-In `adaptMT` package, two types of inputs are accepted for `pifun` and `mufun`: list(formula = , data = , weights = , ...) or list(x = , y = , weights = , ...). For the former, the user only needs to provide a partial formula without a response name. For instance, if the input `x` is a data.frame that has a single column named "x" and one wants to fit $\pi_{1}(x)$ using a logistic-Gamma GLM with 8 knots, the formula should be specified as `"ns(x, df = 8)"` or `"~ ns(x, df = 8)"` or `~ ns (x, df = 8)`. Then `adapt` automatically construct a data.frame in the form of data.frame(x = xx, \*\* = ...), where \*\* is a response name that is automatically generated by the algorithm which is guaranteed not to be conflicted with any variable names in `x`, and ... is the outcome $y_{\pi}^{r}$ or $y_{\mu}^{r}$. 
+In `adaptMT` package, two types of inputs are accepted for `pifun` and `mufun`: `list(formula = , data = , weights = , ...)` or `list(x = , y = , weights = , ...)`. We refer to them as formula-data input type and x-y input type. Both of them should have ouput in the form of `list(fitv = , info = )` where `fitv` gives the fitted values and `info` is a list that gives other information, including degree-of-freedom (`info$df`), variable importance (`info$vi`), etc.. If model selection is performed, the entry `info$df` must be given.
 
-For instance, the following code gives `pifun` in logistic regression:
+### formula-data input type
+For the former, the user only needs to provide a partial formula without a response name. For instance, if the covariate `x` (in the input of `adapt`) is a data.frame that has a single column named "x" and one wants to fit $\pi_{1}(x)$ using a logistic-Gamma GLM with 8 knots, the formula should be specified as `"ns(x, df = 8)"` or `"~ ns(x, df = 8)"` or `~ ns (x, df = 8)`. Then `adapt` automatically construct a data.frame in the form of data.frame(x = xx, \*\* = ...), where \*\* is a response name that is automatically generated by the algorithm which is guaranteed not to be conflicted with any variable names in `x`, and ... is the outcome $y_{\pi}^{r}$ or $y_{\mu}^{r}$. For technical reasons (unpleasant feature of `formula` objects in `R`), the input `formula` in `pifun` or `mufun` is always **assumed to be a character**. However, this technical issue can be simply avoid by adding a line at the beginning of `pifun` or `mufun`. See the example below.
+
+For instance, in logistic-Gamma GLM, `pifun` is a logistic regression (of $y_{\pi}^{r}$ on $xx$ with weights $w_{\pi}^{r}$) and `mufun` is a Gamma GLM (or $y_{\mu}^{r}$ on $xx$ with weights $w_{\mu}^{r}$). Note that there is subtlety in fitting GLM using `glm` function in R `stats` package with `inverse` or `log` link functions (see `?glm` and `?family` for details), for which the initialization might fail. As an alternative choice, we define `safe_glm` as a function that first runs `glm` with the automatic initialization and, if it fails, runs `glm` with the manual initialization with intercept being 1 and all other entries being 0. The code is given as follows:
+
 ```{r}
+safe_glm <- function(formula, family, data, weights = NULL, ...){
+    options(warn = -1) # Turn off the warning
 
+    formula <- as.formula(formula) 
+    # transform the input 'formula' from a string to a 'formula' object
+    
+    if (family$link %in% c("inverse", "log")){
+        fit <- try(glm(formula, family, data, weights, ...),
+                   silent = TRUE)
+        if (class(fit)[1] == "try-error"){
+            mod_mat <- model.matrix(formula, data = data) 
+            # get the covariate matrix, which might be different from x when, 
+            # for instance, the formula involves ns() or s().
+            p <- ncol(mod_mat) - 1 #
+            start <- c(1, rep(0, p))
+            fit <- glm(formula, family, data, weights,
+                       start = start, ...)
+        }
+    } else {
+        fit <- glm(formula, family, data, weights, ...)
+    }
+
+    fitv <- as.numeric(predict(fit, type = "response")) # return 'fitv'
+
+    df <- fit$rank
+    info <- list(df = df) # return 'info'. Here 'df' is given by the rank of covariate matrix
+
+    options(warn = 0)
+    
+    return(list(fitv = fitv, info = info))
+}
 ```
 
+Then `pifun` and `mufun` can be defined simply as follows:
+```{r}
+pifun <- function(formula, data, weights, ...){
+  safe_glm(formula, data, weights = weights,
+           family = quasibinomial(), ...) 
+  # Here quasibinomial() family gets rid of meaningless warning messages
+}
 
+mufun <- function(formula, data, weights, ...){
+  safe_glm(formula, data, weights = weights,
+           family = Gamma(), ...)
+}
+```
 
-`pifun` take $\hat{H}$
-
-`adaptMT` package provides a generic function to generate an `adapt_model` object. `pifun`, `mufun` for the functions to fit $\pi_{1}(x)$ and $\mu(x)$; `pifun_init`, `mufun_init` for the functions to initialize $\pi_{1}(x)$ and $\mu(x)$; for other arguments 
+### x-y input type
 
 The only requirement for 
 
@@ -162,5 +248,6 @@ The only requirement for
 
 # Convenient End-to-End Wrappers
 ## Using `adapt_glm`
+
 
 

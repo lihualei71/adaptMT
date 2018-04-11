@@ -2,7 +2,7 @@
 # exp_family class
 #===============================================================
 
-#' exp_family Objects for Exponential Families
+#' Generate exp_family Objects for Exponential Families
 #'
 #' \code{exp_family} objects contain all required information in an exponential family to perform the E-step. The exponential function is encoded by
 #' \deqn{h(p; \mu) = \exp\{(\eta(\mu) - \eta(\mu^{*})) g(p) - (A(\mu) - A(\mu^{*}))\}}{h(p; \eta) = exp{(\eta(\mu) - \eta(\mu*)) g(p) - (A(\mu) - A(\mu*))}}
@@ -27,8 +27,8 @@
 #'
 #' @export
 #'
-exp_family <- function(g, ginv, eta, mustar, A,
-                       name = NULL, family = NULL){
+gen_exp_family <- function(g, ginv, eta, mustar, A,
+                           name = NULL, family = NULL){
     h <- function(p, mu){
         ifelse(mu == mustar,
                rep(1, length(p)),
@@ -52,7 +52,7 @@ exp_family <- function(g, ginv, eta, mustar, A,
     return(result)
 }
 
-#' @rdname exp_family
+#' @rdname gen_exp_family
 #'
 #' @export
 #'
@@ -72,10 +72,10 @@ beta_family <- function(){
     name <- "beta"
     family <- Gamma()
 
-    exp_family(g, ginv, eta, mustar, A, name, family)
+    gen_exp_family(g, ginv, eta, mustar, A, name, family)
 }
 
-#' @rdname exp_family
+#' @rdname gen_exp_family
 #'
 #' @export
 #'
@@ -94,5 +94,5 @@ inv_gaussian_family <- function(){
     name <- "inv_gaussian"
     family <- gaussian()
 
-    exp_family(g, ginv, eta, mustar, A, name, family)
+    gen_exp_family(g, ginv, eta, mustar, A, name, family)
 }

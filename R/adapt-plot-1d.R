@@ -1,6 +1,6 @@
 #' Plotting for 1d Covariate
 #'
-#' Plotting of the outputs of \code{adapt} when \code{x} is 1-dimensional, including threshold curves, level curves of local FDR and parameter estimates.
+#' Plotting of the outputs of \code{adapt} when \code{x} is 1-dimensional, including threshold curves and level curves of local FDR.
 #'
 #' @param obj an 'adapt' object
 #' @param alpha a positive scalar in (0, 1). Target FDR level
@@ -13,13 +13,13 @@
 #' @param rand_seed_perturb random seed if jitter is added. NA if no jittering is needed
 #' @param legend_pos a string. Position of the legend
 #' @param ... other arguments passed to \code{\link[graphics]{par}}
-#' 
+#'
 #' @name plot_1d
 #'
 NULL
 
 #' @rdname plot_1d
-#' 
+#'
 #' @export
 plot_1d_thresh <- function(obj, alpha, title,
                            data = NULL,
@@ -61,11 +61,9 @@ plot_1d_thresh <- function(obj, alpha, title,
     } else {
         xlim <- c(min(x), max(x))
     }
-    
-    par(...)
-    ## par(mfrow = c(2, 1), ...)
 
-    ## Top panel on threshold curves
+    par(...)
+
     what_type <- ifelse(pvals < s, 1, ifelse(pvals > 1 - s, 2, 3))
     plot(x, (1:n * disp_ymax) / n, type = "n", pch = ".",
          xaxs = "i", yaxs = "i", ylab = "p-values",
@@ -93,7 +91,7 @@ plot_1d_thresh <- function(obj, alpha, title,
 }
 
 #' @rdname plot_1d
-#' 
+#'
 #' @export
 plot_1d_lfdr <- function(obj, alpha, title,
                          data = NULL,
@@ -134,21 +132,20 @@ plot_1d_lfdr <- function(obj, alpha, title,
         pvals <- pvals[inds]
         pix <- pix[inds]
         mux <- mux[inds]
-        n <- length(inds)        
+        n <- length(inds)
     } else {
         xlim <- c(min(x), max(x))
     }
-    
+
     par(...)
-    
-    ## Bottom panel on local fdr level curves.
-    x_grid <- c(seq(1, n, by = 100))
+
+    x_grid <- unique(floor(seq(1, n, length.out = 100)))
     if (x_grid[length(x_grid)] < n){
         x_grid <- c(x_grid, n)
     }
     p_grid <- exp(seq(-15, log(disp_ymax), length.out=100))
     xp_grid <- expand.grid(x = x_grid, p = p_grid)
-    locfdr_vals <- 
+    locfdr_vals <-
         compute_lfdr_mix(pvals = xp_grid$p,
                          dist = dist,
                          params = list(
@@ -157,7 +154,7 @@ plot_1d_lfdr <- function(obj, alpha, title,
                          )
     locfdr_mat <- matrix(locfdr_vals, nrow = length(x_grid))
     plot(0, 0, xlim = xlim, ylim = c(0, disp_ymax),
-         type = "n", xaxs = "i", yaxs = "i", yaxt = "n", 
+         type = "n", xaxs = "i", yaxs = "i", yaxt = "n",
          main = title, ylab = "p-value", xlab = xlab)
     axis(2, at = seq(0, disp_ymax, length.out = num_yticks),
          labels = seq(0, disp_ymax, length.out = num_yticks))
@@ -169,61 +166,61 @@ plot_1d_lfdr <- function(obj, alpha, title,
     legend(legend_pos, col = "black", fill = rev(colors),
            legend = rev(c("0-0.1","0.1-0.2","0.2-0.3","0.3-0.5","0.5-1")),
            bty = "n")
-    
+
 }
 
-#' @rdname plot_1d
-#' 
-#' @export
-plot_1d_params <- function(obj, alpha, title,
-                           data = NULL,
-                           xlab = "x", xlim = NULL,
-                           num_yticks = 3,
-                           ...){
-    if (!"adapt" %in% class(obj)){
-        stop("obj is not an 'adapt' object.")
-    }
+## #' @rdname plot_1d
+## #'
+## #' @export
+## plot_1d_params <- function(obj, alpha, title,
+##                            data = NULL,
+##                            xlab = "x", xlim = NULL,
+##                            num_yticks = 3,
+##                            ...){
+##     if (!"adapt" %in% class(obj)){
+##         stop("obj is not an 'adapt' object.")
+##     }
 
-    if (is.null(data)){
-        data <- obj$data
-    }
-    x <- as.numeric(data[["x"]][,1])
-    pvals <- data[["pvals"]]
-    n <- length(pvals)
-    dist <- obj$dist
-    params_alphas <- sapply(obj$params, function(x){x$alpha})
-    if (alpha > max(params_alphas)){
-        ind <- 1
-    } else {
-        ind <- min(which(params_alphas >= alpha))
-    }
-    pix <- obj$params[[ind]]$pix
-    mux <- obj$params[[ind]]$mux
+##     if (is.null(data)){
+##         data <- obj$data
+##     }
+##     x <- as.numeric(data[["x"]][,1])
+##     pvals <- data[["pvals"]]
+##     n <- length(pvals)
+##     dist <- obj$dist
+##     params_alphas <- sapply(obj$params, function(x){x$alpha})
+##     if (alpha > max(params_alphas)){
+##         ind <- 1
+##     } else {
+##         ind <- min(which(params_alphas >= alpha))
+##     }
+##     pix <- obj$params[[ind]]$pix
+##     mux <- obj$params[[ind]]$mux
 
-    x_ord <- order(x)
-    pvals <- pvals[x_ord]
-    pix <- pix[x_ord]
-    mux <- mux[x_ord]
-    x <- x[x_ord]
+##     x_ord <- order(x)
+##     pvals <- pvals[x_ord]
+##     pix <- pix[x_ord]
+##     mux <- mux[x_ord]
+##     x <- x[x_ord]
 
-    if (!is.null(xlim)){
-        inds <- which(x >= xlim[1] & x <= xlim[2])
-        x <- x[inds]
-        pvals <- pvals[inds]
-        pix <- pix[inds]
-        mux <- mux[inds]
-        n <- length(inds)        
-    } else {
-        xlim <- c(min(x), max(x))
-    }
-    
-    oldpar <- par(mfrow = c(2, 1), ...)
-    
-    ## Bottom panel on local fdr level curves.
-    plot(x, pix, xlim = xlim, type = "l", 
-         main = title, ylab = "pi(x)", xlab = xlab)
-    plot(x, mux, xlim = xlim, type = "l", 
-         main = title, ylab = "mu(x)", xlab = xlab)
-    
-    par(oldpar)
-}
+##     if (!is.null(xlim)){
+##         inds <- which(x >= xlim[1] & x <= xlim[2])
+##         x <- x[inds]
+##         pvals <- pvals[inds]
+##         pix <- pix[inds]
+##         mux <- mux[inds]
+##         n <- length(inds)
+##     } else {
+##         xlim <- c(min(x), max(x))
+##     }
+
+##     oldpar <- par(mfrow = c(2, 1), ...)
+
+##     ## Bottom panel on local fdr level curves.
+##     plot(x, pix, xlim = xlim, type = "l",
+##          main = title, ylab = "pi(x)", xlab = xlab)
+##     plot(x, mux, xlim = xlim, type = "l",
+##          main = title, ylab = "mu(x)", xlab = xlab)
+
+##     par(oldpar)
+## }

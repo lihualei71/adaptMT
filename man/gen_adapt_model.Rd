@@ -46,21 +46,29 @@ as a vector with the same order of \code{x}, and \code{info} should at least con
 Note that \code{mufun} must take \code{weights} as an input. The outputs should be in the same form as \code{pifun} except that \code{fitv} should give the estimate of mu(x).
 
 When \code{pifun} / \code{mufun} takes the form of \code{(formula, family, ...)}, \code{piargs} / \code{muargs} should at least contain a key \code{formula}; when \code{pifun} / \code{mufun} takes the form of \code{(x, y, family, ...)}, \code{piargs} / \code{muargs} can be empty.
+
+For glm/gam/glmnet, one can use the shortcut by running \code{\link{gen_adapt_model}} with name = "glm" or "gam" or "glmnet" but without specifying \code{pifun}, \code{mufun}, \code{pifun_init} and \code{mufun_init}. See examples below.
 }
 \examples{
-# Generate 'adapt_model' for logistic-Gamma glm.
+\dontrun{
+# Exemplary code to generate 'adapt_model' for logistic-Gamma glm  with naive initialization. The real implementation in the package
+# is much more complicated.
+
 # pifun as a logistic regression
 pifun <- function(formula, data, weights, ...){
   glm(formula, data, weights = weights, family = binomial(),  ...)
 }
-# pifun_init as a linear regression
-pifun_init <- function(formula, data, weights, ...){
-  glm(formula, data, weights = weights, family = gaussian(), ...)
+# pifun_init as a constant
+pifun_init <- function(x, pvals, s, ...){
+  rep(0.1, length(pvals))
 }
-# Both mufun and mufun_init as Gamma GLMs (The real implementation in the package
-# is more complicated than the following in order to handle the corner cases)
-mufun <- mufun_init <- function(formula, data, weights, ...){
+# mufun as a Gamma GLM
+mufun <- function(formula, data, weights, ...){
   glm(formula, data, weights = weights, family = Gamma(), ...)
+}
+# mufun_init as a constant
+mufun_init <- function(x, pvals, s, ...){
+  rep(1.5, length(pvals))
 }
 
 library("splines") # for using ns() in the formula
@@ -71,5 +79,10 @@ name <- "glm"
 mod <- gen_adapt_model(pifun, mufun, pifun_init, mufun_init,
                        piargs, muargs, name = name)
 mod
+
+# Using shortcut for GLM. See the last paragraph of Details.
+mod2 <- gen_adapt_model(name = "glm", piargs = piargs, muargs = muargs)
+mod2
+}
 
 }

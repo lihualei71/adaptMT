@@ -4,6 +4,7 @@
 
 #' adapt_model Objects for M-steps
 #'
+#'
 #' \code{adapt_model} objects provide the functions and their arguments in computing the M-steps.
 #' Each object can be passed to \code{\link{adapt}} as a candidate model.
 #'
@@ -17,6 +18,7 @@
 #'
 #' When \code{pifun} / \code{mufun} takes the form of \code{(formula, family, ...)}, \code{piargs} / \code{muargs} should at least contain a key \code{formula}; when \code{pifun} / \code{mufun} takes the form of \code{(x, y, family, ...)}, \code{piargs} / \code{muargs} can be empty.
 #'
+#' For glm/gam/glmnet, one can use the shortcut by running \code{\link{gen_adapt_model}} with name = "glm" or "gam" or "glmnet" but without specifying \code{pifun}, \code{mufun}, \code{pifun_init} and \code{mufun_init}. See examples below.
 #'
 #' @param pifun a function to fit pi(x). See Details
 #' @param mufun a function to fit mu(x). See Details
@@ -34,19 +36,25 @@
 #' \item{args}{a list recording \code{piargs}, \code{muargs}, \code{piargs_init} and \code{muargs_init}}
 #'
 #' @examples
-#' # Generate 'adapt_model' for logistic-Gamma glm.
+#' \dontrun{
+#' # Exemplary code to generate 'adapt_model' for logistic-Gamma glm  with naive initialization. The real implementation in the package
+#' # is much more complicated.
+#'
 #' # pifun as a logistic regression
 #' pifun <- function(formula, data, weights, ...){
 #'   glm(formula, data, weights = weights, family = binomial(),  ...)
 #' }
-#' # pifun_init as a linear regression
-#' pifun_init <- function(formula, data, weights, ...){
-#'   glm(formula, data, weights = weights, family = gaussian(), ...)
+#' # pifun_init as a constant
+#' pifun_init <- function(x, pvals, s, ...){
+#'   rep(0.1, length(pvals))
 #' }
-#' # Both mufun and mufun_init as Gamma GLMs (The real implementation in the package
-#' # is more complicated than the following in order to handle the corner cases)
-#' mufun <- mufun_init <- function(formula, data, weights, ...){
+#' # mufun as a Gamma GLM
+#' mufun <- function(formula, data, weights, ...){
 #'   glm(formula, data, weights = weights, family = Gamma(), ...)
+#' }
+#' # mufun_init as a constant
+#' mufun_init <- function(x, pvals, s, ...){
+#'   rep(1.5, length(pvals))
 #' }
 #'
 #' library("splines") # for using ns() in the formula
@@ -57,6 +65,11 @@
 #' mod <- gen_adapt_model(pifun, mufun, pifun_init, mufun_init,
 #'                        piargs, muargs, name = name)
 #' mod
+#'
+#' # Using shortcut for GLM. See the last paragraph of Details.
+#' mod2 <- gen_adapt_model(name = "glm", piargs = piargs, muargs = muargs)
+#' mod2
+#' }
 #'
 #' @export
 gen_adapt_model <- function(pifun = NULL,
@@ -115,7 +128,7 @@ gen_adapt_model_glm <- function(dist,
         safe_glm(formula, data, weights = weights,
                  family = dist$family, ...)
     }
-    
+
     pifun_init <- function(x, pvals, s, ...){
         J <- ifelse(
             pvals < s | pvals > 1 - s, 1,
@@ -128,10 +141,10 @@ gen_adapt_model_glm <- function(dist,
         fun <- function(formula, data, ...){
             safe_glm(formula, data, family = gaussian(), ...)
         }
-        
+
         args <- list(...)
         args <- complete_args(x, J, fun, args)
-        
+
         fit_pi(fun, args, type = "init")
     }
 
@@ -147,10 +160,10 @@ gen_adapt_model_glm <- function(dist,
         fun <- function(formula, data, ...){
             safe_glm(formula, data, family = dist$family, ...)
         }
-        
+
         args <- list(...)
         args <- complete_args(x, yhat, fun, args)
-        
+
         fit_mu(fun, args, dist, type = "init")
     }
 
@@ -178,7 +191,7 @@ gen_adapt_model_gam <- function(dist,
         safe_gam(formula, data, weights = weights,
                  family = dist$family, ...)
     }
-    
+
     pifun_init <- function(x, pvals, s, ...){
         J <- ifelse(
             pvals < s | pvals > 1 - s, 1,
@@ -191,10 +204,10 @@ gen_adapt_model_gam <- function(dist,
         fun <- function(formula, data, ...){
             safe_gam(formula, data, family = gaussian(), ...)
         }
-        
+
         args <- list(...)
         args <- complete_args(x, J, fun, args)
-        
+
         fit_pi(fun, args, type = "init")
     }
 
@@ -210,13 +223,13 @@ gen_adapt_model_gam <- function(dist,
         fun <- function(formula, data, ...){
             safe_gam(formula, data, family = dist$family, ...)
         }
-        
+
         args <- list(...)
         args <- complete_args(x, yhat, fun, args)
-        
+
         fit_mu(fun, args, dist, type = "init")
     }
-    
+
     if (is.null(piargs$formula) || is.null(muargs$formula)){
         stop("Argument \"formula\" is missing from \"piargs\" or \"muargs\".")
     }
@@ -255,13 +268,13 @@ gen_adapt_model_glmnet <- function(dist,
         fun <- function(x, y, ...){
             safe_glmnet(x, y, family = "gaussian", ...)
         }
-        
+
         args <- list(...)
         args <- complete_args(x, J, fun, args)
-        
+
         fit_pi(fun, args, type = "init")
     }
-    
+
     mufun_init <- function(x, pvals, s, ...){
         phat <- ifelse(
             pvals < s | pvals > 1 - s,
@@ -274,13 +287,13 @@ gen_adapt_model_glmnet <- function(dist,
         fun <- function(x, y, ...){
             safe_glmnet(x, y, family = dist$family$family, ...)
         }
-        
+
         args <- list(...)
         args <- complete_args(x, yhat, fun, args)
-        
+
         fit_mu(fun, args, dist, type = "init")
     }
-    
+
     piargs_init <- piargs
     muargs_init <- muargs
 

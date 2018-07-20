@@ -3,6 +3,7 @@ title: "Introduction to `adaptMT` package"
 author: "Lihua Lei"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
+bibliography: demo.bib
 vignette: >
   %\VignetteIndexEntry{Vignette Title}
   %\VignetteEngine{knitr::rmarkdown}
@@ -16,10 +17,11 @@ knitr::opts_chunk$set(
 )
 ```
 
-# Introduction
-This is a demo of our `adaptMT` package. `adaptMT` has two main components: a generic interface that allows users to specify the working model and algorithms to fit them, as well as a pool of easy-to-use end-to-end wrappers. The former is captured by function `adapt`. The latter includes `adapt_glm`, `adapt_gam` and `adapt_glmnet` for using GLM, GAM and L1-regularized GLM. 
 
-In this section, we illustrate `adaptMT` package on an example.
+# Introduction
+`adaptMT` package is a `R` implementation of Adaptive P-value Thresholding [@lei2016adapt]
+`adaptMT` package has two main components: a generic interface that allows users to specify the working model and algorithms to fit them, as well as a pool of easy-to-use end-to-end wrappers. The former is captured by function `adapt`. The latter includes `adapt_glm`, `adapt_gam` and `adapt_glmnet` for using GLM, GAM and L1-regularized GLM. 
+
 
 ```{r, results='hide'}
 # install the "adaptMT" package from github.
@@ -28,9 +30,31 @@ In this section, we illustrate `adaptMT` package on an example.
 library("adaptMT")
 ```
 
+AdaPT is a flexible iterative protocol that allows almost arbitrary exploration of data while still guaranteeing the False Discovery Rate (FDR) control in finite samples under standard assumptions in literature. The pipeline of AdaPT is as follows:
+
+```{r, out.width = "75%", out.height = "250px", fig.align = "center", echo = FALSE}
+knitr::include_graphics('flowchart_AdaPT.pdf')
+```
+
+The three red components allow unlimited user-flexibility, as the theoretical results in [@lei2016adapt] guarantees the FDR control regardless of the implementation. To get rid of over-complication and minimize the user inputs, `adaptMT` package implements a slightly restrictive  , though still flexible enough, pipeline which 
+
+- exploits a conditional two-groups model as the working model (for EM pipeline), i.e.
+$$H_i \mid x_i \sim \pi(x_i), \quad  p_i \mid H_i, x_i\sim \left\{\begin{array}{ll} \mathrm{Unif}([0, 1]) & H_i = 0\\ h(p_i; \mu(x_i)) & H_i = 1\end{array}\right..$$
+See Section 4.1 of [@lei2016adapt] for details;
+
+- performs model selection via information criterion (BIC, AIC, etc.) based on the pseudo-likelihood from the EM algorithm; See Section 4.2 of [@lei2016adapt] for details;
+
+- permits arbitrary algorithm to fit $\pi(x)$ and $\mu(x)$.
+
+We refer the readers to [@lei2016adapt] for more details. 
+
+# Convenient Wrappers in `adaptMT` Package
+`adaptMT` package provides three convenient wrappers `adapt_glm`, `adapt_gam` and `adapt_glmnet`, which generate the results in Section 5 of [@lei2016adapt]. In later versions we will add `adapt_gbm` (generalized boosting machine), `adapt_rf` (random forest), etc.. We recommend reading our paper first to familiarize with the basic concepts and scanning the documentation of them; See `?adapt_glm`, `?adapt_gam`, `?adapt_glmnet`.
+
+## Using `adapt_glm`
 We illustrate one of the main function `adapt_glm`, for AdaPT with logistic-Gamma GLM as the working model, on `estrogen` dataset, a gene/drug response dataset from NCBI Gene Expression Omnibus (GEO). `estrogen` dataset consists of gene expression measurements for $n = 22283$ genes, in response to estrogen treatments in breast cancer cells for five groups of patients, with different dosage levels and 5 trials in each. The task is to identify the genes responding to a low dosage. The p-values pi for gene i is obtained by a one-sided permutation test which evaluates evidence for a change in gene expression level between the control group (placebo) and the low-dose group. $\{p_i : i \in [n]\}$ are then ordered according to permutation t-statistics comparing the control and low-dose data, pooled, against data from a higher dosage (with genes that appear to have a strong response at higher dosages placed earlier in the list). The code to compute p-values and the ordering can be found in [Rina Barber's website](http://www.stat.uchicago.edu/~rina/sabha/gene_drug_data_example.R).
 
-In this demo, we subsample the top 5000 genes for illustration.
+Here we subsample the top 5000 genes for illustration. The results for the full dataset are given in Section 5.1 of [@lei2016adapt]. 
 
 ```{r,results='hide'}
 # load the data.
@@ -57,7 +81,7 @@ summary(estrogen)
   plot(estrogen$ord, estrogen$pvals, pch = ".", xlab = "order", ylab = "p-values", xaxs = "i", yaxs = "i", main = "Scatter plot of p-values in the (sub-sampled) estrogen dataset")
 ```
 
-Now we execute `adapt_glm` on this dataset. `adapt_glm` assumes a conditional logistic-Gamma GLM as the working model. Specifically, it models the p-values as
+Now we run `adapt_glm` on this dataset. `adapt_glm` takes a conditional logistic-Gamma GLM as the working model by default. Specifically, it models the p-values as
 $$H_i \mid x_i \sim \pi(x_i), \quad \mathrm{logit}(\pi(x_i))= \phi(x_i)^{T}\beta$$
 $$-\log p_i \mid H_i, x_i\sim \left\{\begin{array}{ll} \mathrm{Exp(1)} & H_i = 0\\ \mathrm{Exp(\mu(x))} & H_i = 1\end{array}\right., \quad \frac{1}{\mu(x_i)} = \phi(x_i)^{T}\gamma$$
 where $\phi(x)$ is a featurization of $x$. In this example, we use the spline bases, given by `ns` function from `splines` package. For illustration, we choose our candidate models as the above GLMs with $\phi(x)$ being the spline bases with equal-spaced knots and the number of knots ranging from 6-10. We use BIC to select the best model at the initial stage and use the selected model for the following model fitting.
@@ -76,7 +100,7 @@ formulas
 
 ```{r, warning=FALSE}
 # run AdaPT
-res <- adapt_glm(x = x, pvals = pvals, pi_formulas = formulas, mu_formulas = formulas)
+res_glm <- adapt_glm(x = x, pvals = pvals, pi_formulas = formulas, mu_formulas = formulas)
 ```
 
 `plot_thresh_1d` gives the plot for the rejection threshold as a function of x (must be univariate without repeated value) for given $\alpha$. We display the plots for $\alpha \in \{0.3, 0.25, 0.2, 0.15, 0.1, 0.05\}$.
@@ -84,9 +108,9 @@ res <- adapt_glm(x = x, pvals = pvals, pi_formulas = formulas, mu_formulas = for
 ```{r, echo=FALSE, fig.height=5, fig.width=7}
 par(mfrow = c(2, 3))
 for (alpha in seq(0.3, 0.05, -0.05)){
-  nrejs <- res$nrejs[floor(alpha * 100)]
+  nrejs <- res_glm$nrejs[floor(alpha * 100)]
   title <- paste0("alpha = ", alpha, ", nrejs = ", nrejs)
-  plot_1d_thresh(res, alpha, title, disp_ymax = 1, xlab = "order")
+  plot_1d_thresh(res_glm, alpha, title, disp_ymax = 1, xlab = "order")
 }
 ```
 
@@ -95,35 +119,105 @@ for (alpha in seq(0.3, 0.05, -0.05)){
 ```{r, fig.height=5, fig.width=7}
 par(mfrow = c(2, 3))
 for (alpha in seq(0.3, 0.05, -0.05)){
-  nrejs <- res$nrejs[floor(alpha * 100)]
+  nrejs <- res_glm$nrejs[floor(alpha * 100)]
   title <- paste0("alpha = ", alpha, ", nrejs = ", nrejs)
-  plot_1d_lfdr(res, alpha, title, disp_ymax = 0.25, xlab = "order")
+  plot_1d_lfdr(res_glm, alpha, title, disp_ymax = 0.25, xlab = "order")
 }
 ```
 
-# Generic Interface of `adaptMT` Package
-The pipeline of AdaPT is as follows:
+## Using `adapt_gam`
+`adapt_gam` has the exactly the same setting as `adapt_glm` except that a generalized additive model (GAM) is fitted instead of a generalized linear model. We refer the readers to [@GAM] for more details on GAMs. 
 
-```{r, out.width = "100%", fig.align = "center", echo = FALSE}
-knitr::include_graphics('flowchart_AdaPT.pdf')
+We illustrate `adapt_gam` using a simulation dataset, under similar settings in Section 5.2 of [@lei2016adapt]. In this case, $x_{i}$ is a two dimensional vector generated from an equi-spaced $20\times 20$ grid in the area $[-100, 100]\times [-100, 100]$. The p-values are generated from a one-sided normal test, i.e.
+$$p_i = 1 - \Phi(z_i), \quad z_i\sim N(\mu_i, 1), \quad \mu_i = \left\{\begin{array}{cc}0 & (i\in \mathcal{H}_{0})\\
+1 & (i\not\in \mathcal{H}_{0})\end{array}\right.$$
+We set the hypotheses in a circle in the center of the grid with radius 40. The following code generates the p-values:
+```{r}
+# Generate a 2-dim x
+n <- 400
+x1 <- x2 <- seq(-100, 100, length.out = 20)
+x <- expand.grid(x1, x2)
+colnames(x) <- c("x1", "x2")
+
+# Generate p-values (one-sided z test)
+H0 <- apply(x, 1, function(coord){sum(coord^2) < 40^2})
+mu <- ifelse(H0, 2, 0)
+set.seed(0)
+zvals <- rnorm(n) + mu
+pvals <- 1 - pnorm(zvals)
 ```
+
+Now we apply `adapt_gam` on this dataset. `adapt_gam` is built on `mgcv` package which provides a more advanced version of `gam` in `stats` package. Users need to install `mgcv` package first. 
+```{r}
+# install.packages("mgcv")
+library("mgcv")
+```
+
+By default, `adapt_gam` takes a logistic-Gamma GAM as the working model and the only modelling input is the (list of) partial formula(s) as specified in `adapt_glm`. Here we take advantage of automatic knots selection of function `s`, based on generalized cross-validation criterion, in `mgcv` function to get rid of manual model selection; See `?s` for details. In particular, we consider a two-dimensional spline basis for $x_1$ and $x_2$.
+
+
+```{r}
+formula <- "s(x1, x2)"
+res_gam <- adapt_gam(x = x, pvals = pvals, pi_formulas = formula, mu_formulas = formula)
+```
+We visualize the results below. The left figure gives the truth where the darker pixels correspond to non-nulls and the right figure gives the rejection set by `adapt_gam` for $\alpha = 0.1$. 
+```{r, fig.height=3.5, fig.width=7}
+par(mfrow = c(1, 2), mar = c(4, 4, 2, 2))
+# Truth
+plot(x[, 1], x[, 2], type = "p", xlab = "", ylab = "", col = ifelse(H0, "#000000", "#A9A9A9"), cex = 2, pch = 15)
+# Rejection set
+rej <- pvals <= res_gam$s[, 10]
+plot(x[, 1], x[, 2], type = "p", xlab = "", ylab = "", col = ifelse(rej, "#800000", "#FFB6C1"), cex = 2, pch = 15)
+```
+
+## Using `adapt_glmnet`
+`adapt_glmnet` is appropriate for the cases where the covariates are high-dimensional. Instead of fitting GLMs and GAMs, `adapt_glmnet` fits a penalized GLM in each step. Unlike `adapt_glm` and `adapt_gam`, the covariate $x$ should be of class `matrix`, instead of `data.frame`, and `adapt_glmnet` always take the full matrix $x$ as the covariates. As a result, `adapt_glmnet` has a simpler interface than `adapt_glm` and `adapt_gam` in that it does not need inputs like `formula`. We refer the readers to [@glmnet] for more details on `glmnet`.
+
+We illustrate `adapt_glmnet` using a simulation dataset, under similar settings in Section 5.2 of [@lei2016adapt]. In this case, we generate 300 i.i.d. $x_{i}$'s where each of them is a $50$-dimensional vector with each entry generated from an uniform distribution on $[0, 1]$. 
+```{r}
+set.seed(0)
+m <- 50
+n <- 500
+x <- matrix(runif(n * m), n, m)
+```
+We consider the p-values from a logistic Gamma GLM model with
+$$\pi_{1}(x_i) = \frac{\exp(-3 + 2x_{i1} + 2x_{i2})}{1 + \exp(-3 + 2x_{i1} + 2x_{i2})}, \quad \mu(x_i) = \max\{1, 2x_{i1} + 2x_{i2}\}$$
+```{r}
+inv_logit <- function(x) {exp(x) / (1 + exp(x))}
+pi <- inv_logit(x[, 1] * 2 + x[, 2] * 2 - 3)
+mu <- pmax(1, x[, 1] * 2 + x[, 2] * 2)
+```
+Now we generate the null set and the p-values as follows:
+```{r}
+H0 <- as.logical(ifelse(runif(n) < pi, 1, 0))
+y <- ifelse(H0, rexp(n, 1/mu), rexp(n, 1))
+pvals <- exp(-y)
+```
+To save computation time, we start `adapt_glmnet` with $s_{0} = (0.15, 0.15, \ldots, 0.15)$, instead of the default value $s_{0} = (0.45, 0.45, \ldots, 0.45)$, and set `nfits = 5` to reduce the number of fitting in the process (see `?adapt` for more details). 
+```{r}
+res <- adapt_glmnet(x, pvals, s0 = rep(0.15, n), nfits = 5)
+```
+
+
+
+# Generic Interface of `adaptMT` Package
 
 
 The data-adaptive/human-in-the-loop part is embedded in the EM sub-pipeline:
 
-```{r, out.width = "100%", fig.align = "center", echo = FALSE}
+```{r, out.width = "450px", out.height = "250px", fig.align = "center", echo = FALSE}
 knitr::include_graphics('flowchart_EM.pdf')
 ```
 
-```{r, out.width = "100%", fig.align = "center", echo = FALSE}
+```{r, out.width = "500px", out.height = "250px", fig.align = "center", echo = FALSE}
 knitr::include_graphics('flowchart_EM_ms.pdf')
 ```
 
 There are two main user-specified options:
-- exponential family to fit E-steps;
-- functions to fit $\pi_{1}(x)$ and $\mu(x)$, including those for initialization.
+- exponential family to fit E-steps, characterized by input `dist`, of type `exp_family`;
+- functions to fit $\pi_{1}(x)$ and $\mu(x)$, including those for initialization, characterized by input `models`, of type `adapt_model`.
 
-We introduce each of them in the following subsections. In the final subsection we briefly introduce other arguments (of `adapt`)
+We introduce each of them in the following subsections. For a complete list of other inputs and outputs, see `?adapt`. 
 
 ## `exp_family` objects for fitting E-steps
 An `exp_family` object is a list containing all required information for an exponential family, with mean-parameter $\mu$ and natural parameter $\eta = \eta(\mu)$
@@ -188,72 +282,140 @@ Note that $\hat{H}_{i}^{r}$ and $\hat{b}_{i}^{r}$ are generated within the algor
 
 In `adaptMT` package, two types of inputs are accepted for `pifun` and `mufun`: `list(formula = , data = , weights = , ...)` or `list(x = , y = , weights = , ...)`. We refer to them as formula-data input type and x-y input type. Both of them should have ouput in the form of `list(fitv = , info = )` where `fitv` gives the fitted values and `info` is a list that gives other information, including degree-of-freedom (`info$df`), variable importance (`info$vi`), etc.. If model selection is performed, the entry `info$df` must be given.
 
-#### formula-data input type
-For the former, the user only needs to provide a partial formula without a response name. For instance, if the covariate `x` (in the input of `adapt`) is a data.frame that has a single column named "x" and one wants to fit $\pi_{1}(x)$ using a logistic-Gamma GLM with 8 knots, the formula should be specified as `"ns(x, df = 8)"` or `"~ ns(x, df = 8)"` or `~ ns (x, df = 8)`. Then `adapt` automatically construct a data.frame in the form of data.frame(x = xx, \*\* = ...), where \*\* is a response name that is automatically generated by the algorithm which is guaranteed not to be conflicted with any variable names in `x`, and ... is the outcome $y_{\pi}^{r}$ or $y_{\mu}^{r}$. For technical reasons (unpleasant feature of `formula` objects in `R`), the input `formula` in `pifun` or `mufun` is always **assumed to be a character**. However, this technical issue can be simply avoid by adding a line at the beginning of `pifun` or `mufun`. See the example below.
+#### formula-data input format
+This input type is adapted to a majority of fitting functions in `R` where the model is specified as a combination of a source data (`data`) and a formula (`formula`). In `pifun` and `mufun`, the user only needs to provide a partial formula without a response name. For instance, if the covariate `x` (in the input of `adapt`) is a data.frame that has a single column named "x" and one wants to fit $\pi_{1}(x)$ using a logistic-Gamma GLM with 8 knots, the formula should be specified as `"ns(x, df = 8)"` or `"~ ns(x, df = 8)"` or `~ ns (x, df = 8)`. Then `adapt` automatically construct a data.frame in the form of data.frame(x = xx, \*\* = ...), where \*\* is a response name that is automatically generated by the algorithm which is guaranteed not to be conflicted with any variable names in `x`, and ... is the outcome $y_{\pi}^{r}$ or $y_{\mu}^{r}$. For technical reasons (unpleasant feature of `formula` objects in `R`), the input `formula` in `pifun` or `mufun` is always **assumed to be a character**. However, this technical issue can be simply avoid by adding a line at the beginning of `pifun` or `mufun`. See the example below.
 
-For instance, in logistic-Gamma GLM, `pifun` is a logistic regression (of $y_{\pi}^{r}$ on $xx$ with weights $w_{\pi}^{r}$) and `mufun` is a Gamma GLM (or $y_{\mu}^{r}$ on $xx$ with weights $w_{\mu}^{r}$). Note that there is subtlety in fitting GLM using `glm` function in R `stats` package with `inverse` or `log` link functions (see `?glm` and `?family` for details), for which the initialization might fail. As an alternative choice, we define `safe_glm` as a function that first runs `glm` with the automatic initialization and, if it fails, runs `glm` with the manual initialization with intercept being 1 and all other entries being 0. The code is given as follows:
+For instance, in logistic-Gamma GLM, `pifun` is a logistic regression (of $y_{\pi}^{r}$ on $xx$ with weights $w_{\pi}^{r}$) and `mufun` is a Gamma GLM (or $y_{\mu}^{r}$ on $xx$ with weights $w_{\mu}^{r}$). The exemplary code is given as follows:
 
 ```{r}
-safe_glm <- function(formula, family, data, weights = NULL, ...){
-    options(warn = -1) # Turn off the warning
+pifun_glm <- function(formula, data, weights, ...){
+  formula <- as.formula(formula) # Transform the argument `formula` from character to formula
+  fit <- stats::glm(formula, data, weights = weights,
+                    family = quasibinomial(), ...) 
+  # Here quasibinomial() family gets rid of meaningless warning messages
+  fitv <- predict(fit, type = "response") # fitted values for pi1(x)
+  info <- list(df = fit$rank) # degree-of-freedom being the rank of the design matrix
+  return(list(fitv = fitv, info = info))
+}
 
-    formula <- as.formula(formula) 
-    # transform the input 'formula' from a string to a 'formula' object
+mufun_glm <- function(formula, data, weights, ...){
+  formula <- as.formula(formula) # Transform the argument `formula` from character to formula
+  fit <- stats::glm(formula, data, weights = weights,
+                family = Gamma(), ...)
+  fitv <- predict(fit, type = "response") # fitted values for mu(x)
+  info <- list(df = fit$rank) # degree-of-freedom being the rank of the design matrix
+  return(list(fitv = fitv, info = info))
+}
+```
+ 
+Note that the above code is a over-simplified version of the implementation in `adaptMT` package because of the subtlety in fitting GLM using `glm` function in R `stats` package with `inverse` or `log` link functions (see `?glm` and `?family` for details), for which the initialization might fail. 
+
+#### x-y input format
+This input type is adapted to a fraction of methods, especially for modern machine learning algorithms, where the model is specified by the outcome variable (`y`) and a covariate matrix (`x`). For instance, `glmnet` package falls in this category, though the `glmnetUtils` package provides a formula interface for it. 
+
+To illustrate, we consider the $L_1$-penalized logistic-Gamma GLM by fitting the same aforementioned regressions for $\pi_{1}(x)$ and $\mu(x)$ but with a $L_1$ penalty and with the penalty level selected by cross-validation. Note that `glmnet` package does not support Gamma GLM, we use `HDtweedie` package instead; See `?HDtweedie` for details. The exemplary code is given as follows:
+
+```{r}
+pifun_glmnet <- function(x, y, weights, ...){
+  fit <- glmnet::cv.glmnet(x, y, weights = weights, family = "binomial", ...) 
+  fitv <- predict(fit, newx = x, s = "lambda.min", type = "response") # fitted values for pi1(x)
+  beta <- coef(fit, s = "lambda.min")
+  info <- list(df = sum(beta != 0)) # degree-of-freedom being the number of non-zero coefficients
+  return(list(fitv = fitv, info = info))
+}
+
+mufun_glmnet <- function(x, y, weights, ...){
+  fit <- HDtweedie::cv.HDtweedie(x, y, p = 2, weights = weights, ...)
+  fitv <- predict(fit, newx = x, s = "lambda.min", type = "response") # fitted values for mu(x)
+  beta <- coef(fit, s = "lambda.min")
+  info <- list(df = sum(beta != 0)) # degree-of-freedom being the number of non-zero coefficients
+  return(list(fitv = fitv, info = info))
+}
+```
+
+Again the above code is a over-simplified for the purpose of illustration. We deal with the initialization and other numerical issues much more carefully in the real implementation.
+
+### Design principles and requirements for `pifun_init` and `mufun_init`
+`pifun_init` and `mufun_init` give the functions to initialize $\pi(x)$ and $\mu(x)$, respectively. Both of them are required to take at least three inputs: `x`, `pvals` and `s`. They are required output `fitv`, a vector of $\pi(x_i)$'s or $\mu(x_i)$'s, and `info`, a list including `df` and any other variable.
+
+As described in [@lei2016adapt], the initialization of $\pi_{1}(x)$ is done by defining
+$$J_{i} = 1 - \frac{I(s_{0}(x_{i}) \le p_{i}\le 1 - s_{0}(x_{i}))}{1 - 2s_{0}(x_i)}$$
+and regress $J_{i}$ on $x_{i}$ with the same formula as in `pifun`. For `mufun_init` we simply impute the masked pvalues ad-hocly by $\min\{p_i, 1 - p_i\}$ and run `mufun` on the imputed data. The following chunk gives the exemplary code for `adapt_glm`. Note that the code is a over-simplified version of the implementation in `adaptMT` package. 
+
+```{r}
+pifun_init_glm <- function(x, pvals, s, 
+                       formula, ...){
+    # The input `formula` is a half-formula of type character, e.g. ~ ns(x, df = 8)
+    J <- ifelse(
+        pvals < s | pvals > 1 - s, 1,
+        2 * s / (2 * s - 1)
+        )
+
+    # Complete the formula by adding the response variable J
+    complete_formula <- as.formula(paste("J", formula)) 
+    data <- data.frame(x, J = J)
+    mod <- stats::glm(complete_formula, family = gaussian(), data = data)
     
-    if (family$link %in% c("inverse", "log")){
-        fit <- try(glm(formula, family, data, weights, ...),
-                   silent = TRUE)
-        if (class(fit)[1] == "try-error"){
-            mod_mat <- model.matrix(formula, data = data) 
-            # get the covariate matrix, which might be different from x when, 
-            # for instance, the formula involves ns() or s().
-            p <- ncol(mod_mat) - 1 #
-            start <- c(1, rep(0, p))
-            fit <- glm(formula, family, data, weights,
-                       start = start, ...)
-        }
-    } else {
-        fit <- glm(formula, family, data, weights, ...)
-    }
+    fitv <- as.numeric(predict(mod, type = "response"))
+    info <- list(df = fit$rank)
+    
+    return(list(fitv = fitv, info = info))
+}
 
-    fitv <- as.numeric(predict(fit, type = "response")) # return 'fitv'
+mufun_init_glm <- function(x, pvals, s, ...){
+    phat <- ifelse(
+        pvals < s | pvals > 1 - s,
+        pmin(pvals, 1 - pvals),
+        pvals
+        )
+    yhat <- dist$g(phat)
 
-    df <- fit$rank
-    info <- list(df = df) # return 'info'. Here 'df' is given by the rank of covariate matrix
-
-    options(warn = 0)
+    # Complete the formula by adding the response variable yhat
+    complete_formula <- as.formula(paste("yhat", formula)) 
+    data <- data.frame(x, yhat = yhat)
+    mod <- stats::glm(complete_formula, family = Gamma(), data = data)
+    
+    fitv <- as.numeric(predict(mod, type = "response"))
+    info <- list(df = fit$rank)
     
     return(list(fitv = fitv, info = info))
 }
 ```
 
-Then `pifun` and `mufun` can be defined simply as follows:
+### Constructing `adapt_model` objects by `gen_adapt_model`
+`adaptMT` package provides a generic function `gen_adapt_model` to construct `adapt_model` objects. The code to generate an `adapt_model` object characterizing a Logistic-Gamma GLM on the spline bases of a univariate covariate $x$ with $5$ equi-quantile knots to fit $\pi(x)$ and $\mu(x)$.
+
 ```{r}
-pifun <- function(formula, data, weights, ...){
-  safe_glm(formula, data, weights = weights,
-           family = quasibinomial(), ...) 
-  # Here quasibinomial() family gets rid of meaningless warning messages
-}
-
-mufun <- function(formula, data, weights, ...){
-  safe_glm(formula, data, weights = weights,
-           family = Gamma(), ...)
-}
+library("splines") 
+piargs <- muargs <- list(formula = "~ ns(x, df = 5)")
+adapt_model_glm_example <- gen_adapt_model(
+  pifun = pifun_glm, mufun = mufun_glm, 
+  pifun_init = pifun_init_glm, mufun_init = mufun_init_glm,
+  piargs = piargs, muargs = muargs,
+  piargs_init = piargs, muargs_init = muargs
+)
 ```
- 
 
-#### x-y input type
+`adaptMT` package also provides convenient ways to generate `adapt_models` for GLMs, GAMs and glmnets by just specifying `piargs` and `muargs`.
+```{r}
+adapt_model_glm_example2 <- gen_adapt_model(
+  name = "glm",
+  piargs = piargs, muargs = muargs
+)
+```
+This yields the same `adapt_model` object that is implicitly used in `adapt_glm`. We show the equivalence on a toy dataset below.
+```{r}
+data(estrogen)
+pvals <- as.numeric(estrogen$pvals)
+x <- data.frame(x = as.numeric(estrogen$ord_high))
+dist <- beta_family()
+inds <- (x$x <= 1000)
+pvals <- pvals[inds]
+x <- x[inds,,drop = FALSE]
 
-### Design principles and requirements for `pifun_init` and `mufun_init`
-Finally we need to define `pifun_init` and `mufun_init` for the initialization. As described in the paper, the initialization of $\pi_{1}(x)$ is done by defining
-$$J_{i} = 1 - \frac{I(s_{0}(x_{i}) \le p_{i}\le 1 - s_{0}(x_{i}))}{1 - 2s_{0}(x_i)}$$
-and regress $J_{i}$ on $x_{i}$ with the same formula as in `pifun`. For `mufun_init` we simply impute the masked pvalues ad-hocly by $\min\{p_i, 1 - p_i\}$ and run `mufun` on the imputed data
+res1 <- adapt_glm(x = x, pvals = pvals, pi_formulas = "~ ns(x, df = 5)", mu_formulas = "~ ns(x, df = 5)")
+res2 <- adapt(x = x, pvals = pvals, models = adapt_model_glm_example2)
+identical(res1$s, res2$s)
+```
 
-
-## Other arguments
-
-# Convenient End-to-End Wrappers
-## Using `adapt_glm`
-
-
-
+# Bioliography

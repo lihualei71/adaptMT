@@ -37,8 +37,8 @@
 #'
 #' @examples
 #' \dontrun{
-#' # Exemplary code to generate 'adapt_model' for logistic-Gamma glm  with naive initialization. The real implementation in the package
-#' # is much more complicated.
+#' # Exemplary code to generate 'adapt_model' for logistic-Gamma glm  with naive initialization.
+#'   The real implementation in the package is much more complicated.
 #'
 #' # pifun as a logistic regression
 #' pifun <- function(formula, data, weights, ...){

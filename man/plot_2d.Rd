@@ -4,7 +4,7 @@
 \alias{plot_2d}
 \alias{plot_2d_thresh}
 \alias{plot_2d_lfdr}
-\title{Plotting Functions for AdaPT with 2d Covariates}
+\title{Plotting Functions for AdaPT with 2D Covariates}
 \usage{
 plot_2d_thresh(obj, alpha, title, data = NULL, xlab = NULL, ylab = NULL,
   keyaxes = list(), ...)
@@ -22,6 +22,8 @@ plot_2d_lfdr(obj, alpha, title, targetp, data = NULL, xlab = NULL,
 \item{data}{a list in the form of list(x = , pvals = ). NULL if obj$data is not NULL}
 
 \item{xlab, ylab}{a string. Label of x/y-axis}
+
+\item{keyaxes}{a list of arguments passed into axis. The graphical setting for the legend bar. An empty list by default}
 
 \item{...}{other arguments passed to \code{\link[graphics]{par}}}
 

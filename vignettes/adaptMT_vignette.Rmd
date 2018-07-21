@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 
 
 # Introduction
-`adaptMT` package is a `R` implementation of Adaptive P-value Thresholding [@lei2016adapt]
+`adaptMT` package is an `R` implementation of Adaptive P-value Thresholding [@lei2016adapt].
 `adaptMT` package has two main components: a generic interface that allows users to specify the working model and algorithms to fit them, as well as a pool of easy-to-use end-to-end wrappers. The former is captured by function `adapt`. The latter includes `adapt_glm`, `adapt_gam` and `adapt_glmnet` for using GLM, GAM and L1-regularized GLM. 
 
 
@@ -96,7 +96,7 @@ formulas <- paste0("ns(x, df = ", 6:10, ")")
 formulas
 ```
 
-`adapt_glm` function provides several user-friendly tools to monitor the progress. For model selection, a progress bar will, by default, be shown in the console that indicates how much proportion of models have been fitted. This can be turned off by setting verbose\$ms = FALSE. Similarly for model fitting, a progress bar can be shown in the console, though not by default, by setting verbose\$fit = TRUE. Also, by default, the progress of the main process will be shown in the console that indicates (1) which target FDR level has been achieved; (2) FDPhat for each target FDR level; (3) number of rejections for each target FDR level.
+`adapt_glm` function provides several user-friendly tools to monitor the progress. For model selection, a progress bar will, by default, be shown in the console that indicates how much proportion of models have been fitted. This can be turned off by setting `verbose$ms = FALSE`. Similarly for model fitting, a progress bar can be shown in the console, though not by default, by setting `verbose$fit = TRUE`. Also, by default, the progress of the main process will be shown in the console that indicates (1) which target FDR level has been achieved; (2) FDPhat for each target FDR level; (3) number of rejections for each target FDR level.
 
 ```{r, warning=FALSE}
 # run AdaPT
@@ -130,7 +130,7 @@ for (alpha in seq(0.3, 0.05, -0.05)){
 
 We illustrate `adapt_gam` using a simulation dataset, under similar settings in Section 5.2 of [@lei2016adapt]. In this case, $x_{i}$ is a two dimensional vector generated from an equi-spaced $20\times 20$ grid in the area $[-100, 100]\times [-100, 100]$. The p-values are generated from a one-sided normal test, i.e.
 $$p_i = 1 - \Phi(z_i), \quad z_i\sim N(\mu_i, 1), \quad \mu_i = \left\{\begin{array}{cc}0 & (i\in \mathcal{H}_{0})\\
-1 & (i\not\in \mathcal{H}_{0})\end{array}\right.$$
+2 & (i\not\in \mathcal{H}_{0})\end{array}\right.$$
 We set the hypotheses in a circle in the center of the grid with radius 40. The following code generates the p-values:
 ```{r}
 # Generate a 2-dim x
@@ -171,15 +171,16 @@ plot(x[, 1], x[, 2], type = "p", xlab = "", ylab = "", col = ifelse(rej, "#80000
 ```
 
 Similar to the 1d case, `plot_2d_thresh` gives the plot for the rejection threshold as a function of x (must be bivariate without repeated value) for given $\alpha$. In particular we set $\alpha = 0.1$.
-```{r}
-plot_2d_thresh(res_gam, 0.1, "P-Value Threshold", xlab = "X1", ylab = "X2")
+```{r, fig.height=4.5, fig.width=6}
+plot_2d_thresh(res_gam, 0.1, "P-Value Threshold", xlab = "", ylab = "")
 ```
+
 Unlike the 1d case, visualizing the level surfaces of local FDR estimates is not an easy task due to the extra dimension. `plot_2d_lfdr` gives the plot for the local FDR estimates when all p-values are equal to a user-specified level `targetp` for given $\alpha$. 
-```{r}
+```{r, fig.height=4.5, fig.width=6}
 par(mfrow = c(2, 2), mar = c(4, 4, 2, 2))
 for (targetp in c(0.001, 0.005, 0.01, 0.05)){
   title <- paste0("Local FDR Estimates (p = ", targetp, ")")
-  plot_2d_lfdr(res_gam, 0.1, title, targetp, xlab = "X1", ylab = "X2")
+  plot_2d_lfdr(res_gam, 0.1, title, targetp, xlab = "", ylab = "")
 }
 ```
 
@@ -349,7 +350,7 @@ mufun_glmnet <- function(x, y, weights, ...){
 Again the above code is a over-simplified for the purpose of illustration. We deal with the initialization and other numerical issues much more carefully in the real implementation.
 
 ### Design principles and requirements for `pifun_init` and `mufun_init`
-`pifun_init` and `mufun_init` give the functions to initialize $\pi(x)$ and $\mu(x)$, respectively. Both of them are required to take at least three inputs: `x`, `pvals` and `s`. They are required output `fitv`, a vector of $\pi(x_i)$'s or $\mu(x_i)$'s, and `info`, a list including `df` and any other variable.
+`pifun_init` and `mufun_init` give the functions to initialize $\pi_{1}(x)$ and $\mu(x)$, respectively. Both of them are required to take at least three inputs: `x`, `pvals` and `s`. They are required output `list(fitv = , info = )`, with the same meaning as in `pifun` and `mufun`.
 
 As described in [@lei2016adapt], the initialization of $\pi_{1}(x)$ is done by defining
 $$J_{i} = 1 - \frac{I(s_{0}(x_{i}) \le p_{i}\le 1 - s_{0}(x_{i}))}{1 - 2s_{0}(x_i)}$$
@@ -396,7 +397,7 @@ mufun_init_glm <- function(x, pvals, s, ...){
 ```
 
 ### Constructing `adapt_model` objects by `gen_adapt_model`
-`adaptMT` package provides a generic function `gen_adapt_model` to construct `adapt_model` objects. The code to generate an `adapt_model` object characterizing a Logistic-Gamma GLM on the spline bases of a univariate covariate $x$ with $5$ equi-quantile knots to fit $\pi(x)$ and $\mu(x)$.
+`adaptMT` package provides a generic function `gen_adapt_model` to construct `adapt_model` objects. The code to generate an `adapt_model` object characterizing a Logistic-Gamma GLM on the spline bases of a univariate covariate $x$ with $5$ equi-quantile knots to fit $\pi_{1}(x)$ and $\mu(x)$.
 
 ```{r}
 library("splines") 
@@ -430,5 +431,6 @@ res1 <- adapt_glm(x = x, pvals = pvals, pi_formulas = "~ ns(x, df = 5)", mu_form
 res2 <- adapt(x = x, pvals = pvals, models = adapt_model_glm_example2)
 identical(res1$s, res2$s)
 ```
+
 
 # Bioliography

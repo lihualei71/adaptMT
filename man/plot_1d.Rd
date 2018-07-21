@@ -4,7 +4,7 @@
 \alias{plot_1d}
 \alias{plot_1d_thresh}
 \alias{plot_1d_lfdr}
-\title{Plotting Functions for AdaPT with 1d Covariates}
+\title{Plotting Functions for AdaPT with 1D Covariates}
 \usage{
 plot_1d_thresh(obj, alpha, title, data = NULL, xlab = "x", xlim = NULL,
   disp_ymax = 0.2, num_yticks = 3, rand_seed_perturb = NA, ...)

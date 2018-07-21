@@ -1,4 +1,4 @@
-#' Plotting Functions for AdaPT with 1d Covariates
+#' Plotting Functions for AdaPT with 1D Covariates
 #'
 #' Plotting the outputs of \code{adapt} when \code{x} is 1-dimensional, including threshold curves and level curves of local FDR.
 #'

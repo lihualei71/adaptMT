@@ -1,4 +1,4 @@
-#### Interpolate local FDR estimates for 2-d plots
+#### Interpolate local FDR estimates for 2D plots
 interpolate <- function(x, y, z){
     x_grid <- unique(round(as.numeric(quantile(x, seq(0.01, 0.99, 0.01), na.rm = TRUE)), 4))
     x_scale <- max(x_grid) - min(x_grid)
@@ -15,20 +15,21 @@ interpolate <- function(x, y, z){
     return(list(x = x_grid, y = y_grid, z = z))
 }
 
-#' Plotting Functions for AdaPT with 2d Covariates
+#' Plotting Functions for AdaPT with 2D Covariates
 #'
 #' Plotting the outputs of \code{adapt} when \code{x} is 2-dimensional, including threshold curves and level curves of local FDR.
 #'
 #' The breaks in the legend of \code{plot_2d_thresh} correspond to the maximum, the 95% quantile, the 90% quantile, the 85% quantile, the 75% quantile and the minimum of the thresholds.
 #'
-#' \code{plot_2d_lfdr} gives the contour plot of local FDR estimates when all p-values are equal to \code{targetp}. It is recommended to run \code{plot_2d_lfdr} for multiple \code{targetp}'s ranging from {0.001, 0.005, 0.01, 0.05}. 
-#' 
+#' \code{plot_2d_lfdr} gives the contour plot of local FDR estimates when all p-values are equal to \code{targetp}. It is recommended to run \code{plot_2d_lfdr} for multiple \code{targetp}'s ranging from {0.001, 0.005, 0.01, 0.05}.
+#'
 #' @param obj an 'adapt' object
 #' @param alpha a positive scalar in (0, 1). Target FDR level
 #' @param title a string. Title of the figure
 #' @param targetp a real in (0, 1). See Details
 #' @param data a list in the form of list(x = , pvals = ). NULL if obj$data is not NULL
-#' @param xlab,ylab a string. Label of x/y-axis 
+#' @param xlab,ylab a string. Label of x/y-axis
+#' @param keyaxes a list of arguments passed into axis. The graphical setting for the legend bar. An empty list by default
 #' @param ... other arguments passed to \code{\link[graphics]{par}}
 #'
 #' @name plot_2d

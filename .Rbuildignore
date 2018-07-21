@@ -3,4 +3,4 @@
 ^TODO$
 ^exprs/*
 ^LICENSE\.md$
-.travis.yml
+^\.travis\.yml$

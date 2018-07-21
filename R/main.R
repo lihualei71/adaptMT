@@ -252,6 +252,8 @@ adapt <- function(x, pvals, models,
     model_list <- list() # all selected models
     info_list <- list() # other information (df, vi, etc.)
     reveal_order <- which((pvals > s) & (pvals < 1 - s)) # the order to be revealed
+    init_pvals <- pvals[reveal_order]
+    reveal_order <- reveal_order[order(init_pvals, decreasing = TRUE)]
     fdp_return <- rep(minfdp, length(reveal_order)) # fdphat along the whole path
 
     if (m > alphaind){
@@ -271,7 +273,9 @@ adapt <- function(x, pvals, models,
         }
 
         alpha <- alphas[alphaind]
-        mask <- (pvals <= s) | (pvals >= 1 - s)
+        # mask <- (pvals <= s) | (pvals >= 1 - s)
+        mask <- rep(TRUE, n)
+        mask[reveal_order] <- FALSE
         nmasks <- sum(mask)
         A <- sum(pvals >= 1 - s)
         R <- sum(pvals <= s)
@@ -319,6 +323,9 @@ adapt <- function(x, pvals, models,
         lfdr[!mask] <- -Inf
         inds <- order(lfdr, decreasing = TRUE)[1:nreveals]
         reveal_order <- c(reveal_order, inds)
+        if (length(unique(reveal_order)) < length(reveal_order)){
+          browser()
+        }
         ## Shortcut to calculate FDPhat after revealing the hypotheses one by one
         Adecre <- cumsum(pvals[inds] >= 1 - s[inds])
         Rdecre <- cumsum(pvals[inds] <= s[inds])
@@ -335,6 +342,14 @@ adapt <- function(x, pvals, models,
                 lfdr_lev <- lfdr[inds[breakpoint]]
                 snew <- compute_threshold_mix(dist, params, lfdr_lev, lfdr_type)
                 snew <- pmin(s, snew)
+
+                ## Sanity check to avoid rounding errors
+                tmp_pvals <- pvals[inds[1:breakpoint]]
+                tmp_inds <- which(pmin(tmp_pvals, 1 - tmp_pvals) <= snew[inds[1:breakpoint]])
+                if (length(tmp_inds) > 0){
+                    snew[inds[tmp_inds]] <- tmp_pvals[tmp_inds] - 1e-15
+                }
+
                 s_return[, alphaind] <- snew
 
                 fdpnew <- fdp[breakpoint]
@@ -364,10 +379,22 @@ adapt <- function(x, pvals, models,
         final_lfdr_lev <- lfdr[tail(inds, 1)]
         snew <- compute_threshold_mix(dist, params, final_lfdr_lev, lfdr_type)
         s <- pmin(s, snew)
+
+        ## Sanity check to avoid rounding errors
+        tmp_pvals <- pvals[inds]
+        tmp_inds <- which(pmin(tmp_pvals, 1 - tmp_pvals) <= snew[inds])
+        if (length(tmp_inds) > 0){
+          s[inds[tmp_inds]] <- tmp_pvals[tmp_inds] - 1e-15
+        }
     }
 
-    reveal_order <- c(reveal_order, mask)
-    fdp_return <- c(fdp_return, rep(minfdp, length(mask)))
+    remain_inds <- (1:n)[-reveal_order]
+    if (length(remain_inds) > 0){
+        tmp_pvals <- pvals[remain_inds]
+        remain_reveal_order <- remain_inds[order(pmin(tmp_pvals, 1 - tmp_pvals), decreasing = TRUE)]
+        reveal_order <- c(reveal_order, remain_reveal_order)
+        fdp_return <- c(fdp_return, rep(minfdp, length(remain_inds)))
+    }
 
     args <- list(nfits = nfits, nms = nms,
                  niter_fit = niter_fit, niter_ms = niter_ms,

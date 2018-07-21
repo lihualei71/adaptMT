@@ -1,6 +1,6 @@
-#' Plotting for 1d Covariate
+#' Plotting Functions for AdaPT with 1d Covariates
 #'
-#' Plotting of the outputs of \code{adapt} when \code{x} is 1-dimensional, including threshold curves and level curves of local FDR.
+#' Plotting the outputs of \code{adapt} when \code{x} is 1-dimensional, including threshold curves and level curves of local FDR.
 #'
 #' @param obj an 'adapt' object
 #' @param alpha a positive scalar in (0, 1). Target FDR level

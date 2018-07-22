@@ -99,6 +99,9 @@ check_pkgs <- function(models){
 #'
 #' \code{verbose} has three elements: \code{print}, \code{fit} and \code{ms}. If \code{print = TRUE}, the progress of the main procedure is outputed to the console, in the form of "alpha = 0.05: FDPhat 0.0333, Number of Rej. 30" (where the numbers are made up for illustration). If \code{fit = TRUE}, a progress bar for the model fitting is outputed to the console. Similarly, if \code{ms = TRUE}, a progress bar for the model selection is outputed to the console.
 #'
+#' For ultra-large scale problems (n > 10^5), it is recommended to keep \code{alphas} short because the output \code{s} is of size n x \code{length(alphas)}.
+#' is \code{length(alphas)}.
+#'
 #' @param x covariates (i.e. side-information). Should be compatible to \code{models}. See Details
 #' @param pvals a vector of values in [0, 1]. P-values
 #' @param models an object of class "\code{adapt_model}" or a list of objects of class "adapt_model". See Details
@@ -396,15 +399,18 @@ adapt <- function(x, pvals, models,
         fdp_return <- c(fdp_return, rep(minfdp, length(remain_inds)))
     }
 
+    rejs_return <- apply(s_return, 2, function(s){which(pvals <= s)})
+
     args <- list(nfits = nfits, nms = nms,
                  niter_fit = niter_fit, niter_ms = niter_ms,
                  tol = tol, cr = cr)
 
     res <- structure(
-        list(order = reveal_order,
-             nrejs = nrejs_return,
+        list(nrejs = nrejs_return,
+             rejs = rejs_return,
              s = s_return,
              params = params_return,
+             order = reveal_order,
              fdp = fdp_return,
              alphas = alphas,
              dist = dist,

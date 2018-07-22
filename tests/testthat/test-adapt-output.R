@@ -18,20 +18,23 @@ formula <- "ns(x, df = 6)"
 
 # Run adapt
 res <- adapt_glm(x = x, pvals = pvals, pi_formula = formula, mu_formula = formula, nfits = 5,
-                 verbose = list(print = FALSE, fit = FALSE, ms = FALSE))
+                 verbose = list(print = FALSE, fit = FALSE, ms = FALSE),
+                 s0 = rep(0.5, length(pvals)))
 
 ## Begin Tests
 test_that("length of 'order' and 'fdp' should match the number of hypotheses (#1)", {
-    expect_equal(length(res$order), 5000)
-    expect_equal(length(unique(res$order)), 5000)
-    expect_equal(length(res$fdp), 5000)
+    n <- length(pvals)
+    expect_equal(length(res$order), n)
+    expect_equal(length(unique(res$order)), n)
+    expect_equal(length(res$fdp), n)
 })
 
 test_that("'order' should be consistent with thresholds 's'", {
     for (i in 1:100){
         mask <- which(pvals <= res$s[, i] | pvals >= 1 - res$s[, i])
         mask2 <- sort(tail(res$order, length(mask)))
-        expect_equal(mask, mask2)
+        diffs <- setdiff(mask, mask2)
+        expect_equal(length(diffs), 0)
     }
 })
 
@@ -42,3 +45,13 @@ test_that("'nrejs' should be consistent with thresholds 's'", {
     expect_equal(res$nrejs, nrejs2)
 })
 
+test_that("'nrejs' should be consistent with 'rejs'", {
+    nrejs3 <- sapply(res$rejs, length)
+    expect_equal(res$nrejs, nrejs3)
+})
+
+test_that("'s' is decreasing", {
+    ncol <- ncol(res$s)
+    s_diff <- res$s[, 2:ncol] - res$s[, 1:(ncol - 1)] + 1e-10
+    expect_equal(all(s_diff >= 0), TRUE)
+})

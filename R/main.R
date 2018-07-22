@@ -261,10 +261,8 @@ adapt <- function(x, pvals, models,
 
     if (m > alphaind){
         nrejs_return[(alphaind + 1):m] <- R
-        fdp_return[(alphaind + 1):m] <- minfdp
         s_return[, (alphaind + 1):m] <- s0
     }
-
     ## alphas <- alphas[1:m]
 
     for (i in 1:(nrow(stamps) - 1)){
@@ -326,9 +324,6 @@ adapt <- function(x, pvals, models,
         lfdr[!mask] <- -Inf
         inds <- order(lfdr, decreasing = TRUE)[1:nreveals]
         reveal_order <- c(reveal_order, inds)
-        if (length(unique(reveal_order)) < length(reveal_order)){
-          browser()
-        }
         ## Shortcut to calculate FDPhat after revealing the hypotheses one by one
         Adecre <- cumsum(pvals[inds] >= 1 - s[inds])
         Rdecre <- cumsum(pvals[inds] <= s[inds])
@@ -348,9 +343,10 @@ adapt <- function(x, pvals, models,
 
                 ## Sanity check to avoid rounding errors
                 tmp_pvals <- pvals[inds[1:breakpoint]]
-                tmp_inds <- which(pmin(tmp_pvals, 1 - tmp_pvals) <= snew[inds[1:breakpoint]])
+                tmp_pvals <- pmin(tmp_pvals, 1 - tmp_pvals)
+                tmp_inds <- which(tmp_pvals <= snew[inds[1:breakpoint]])
                 if (length(tmp_inds) > 0){
-                    snew[inds[tmp_inds]] <- tmp_pvals[tmp_inds] - 1e-15
+                    snew[inds[tmp_inds]] <- pmin(snew[inds[tmp_inds]], tmp_pvals[tmp_inds] - 1e-15)
                 }
 
                 s_return[, alphaind] <- snew
@@ -385,16 +381,18 @@ adapt <- function(x, pvals, models,
 
         ## Sanity check to avoid rounding errors
         tmp_pvals <- pvals[inds]
-        tmp_inds <- which(pmin(tmp_pvals, 1 - tmp_pvals) <= snew[inds])
+        tmp_pvals <- pmin(tmp_pvals, 1 - tmp_pvals)
+        tmp_inds <- which(tmp_pvals <= snew[inds])
         if (length(tmp_inds) > 0){
-          s[inds[tmp_inds]] <- tmp_pvals[tmp_inds] - 1e-15
+            s[inds[tmp_inds]] <- pmin(s[inds[tmp_inds]], tmp_pvals[tmp_inds] - 1e-15)
         }
     }
 
     remain_inds <- (1:n)[-reveal_order]
     if (length(remain_inds) > 0){
         tmp_pvals <- pvals[remain_inds]
-        remain_reveal_order <- remain_inds[order(pmin(tmp_pvals, 1 - tmp_pvals), decreasing = TRUE)]
+        tmp_pvals <- pmin(tmp_pvals, 1 - tmp_pvals)
+        remain_reveal_order <- remain_inds[order(tmp_pvals, decreasing = TRUE)]
         reveal_order <- c(reveal_order, remain_reveal_order)
         fdp_return <- c(fdp_return, rep(minfdp, length(remain_inds)))
     }

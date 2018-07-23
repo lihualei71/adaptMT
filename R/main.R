@@ -102,7 +102,7 @@ check_pkgs <- function(models){
 #' For ultra-large scale problems (n > 10^5), it is recommended to keep \code{alphas} short because the output \code{s} is of size n x \code{length(alphas)}.
 #' is \code{length(alphas)}.
 #'
-#' The output \code{qvals} gives the q-values of each hypothesis. \code{qvals[i]} is defined as the minimum target FDR level such that \code{pvals[i]} is rejected.
+#' The output \code{qvals} gives the q-values of each hypothesis. \code{qvals[i]} is defined as the minimum target FDR level such that \code{pvals[i]} is rejected. For hypotheses with p-values above s0, the q-values are set to be Inf because they are never rejected by AdaPT for whatever alpha.
 #'
 #' The output \code{order} gives the order of (the indices of) p-values being revealed, i.e. being in the region (s, 1-s). The latter hypotheses appeared in \code{order} have smaller q-values (i.e. are more likely to be rejected).
 #'
@@ -405,7 +405,8 @@ adapt <- function(x, pvals, models,
     rejs_return <- apply(s_return, 2, function(s){which(pvals <= s)})
 
     qvals <- rep(1, n)
-    qvals[reveal_order] <- ifelse(pvals[reveal_order] <= 0.5, cummin(fdp_return[1:n]), rep(Inf, n))
+    qvals[reveal_order] <- ifelse(pvals[reveal_order] <= s0[reveal_order],
+                                  cummin(fdp_return[1:n]), rep(Inf, n))
 
     args <- list(nfits = nfits, nms = nms,
                  niter_fit = niter_fit, niter_ms = niter_ms,

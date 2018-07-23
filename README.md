@@ -1,6 +1,8 @@
 # adaptMT
 
 [![Build Status](https://travis-ci.org/lihualei71/adaptMT.svg?branch=master)](https://travis-ci.org/lihualei71/adaptMT)
+[![AppVeyor Build
+Status](https://ci.appveyor.com/api/projects/status/github/lihualei71/adaptMT?branch=master&svg=true)](https://ci.appveyor.com/project/lihualei71/adaptMT)
 
 ## Overview
 This package implements Adaptive P-Value Thresholding in the paper: [AdaPT: An interactive procedure for multiple testing with side information](https://arxiv.org/abs/1609.06035). It includes both a framework that allows the user to specify any algorithm to learn local FDR and a pool of convenient functions that implement specific algorithms:

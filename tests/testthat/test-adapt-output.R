@@ -22,11 +22,10 @@ res <- adapt_glm(x = x, pvals = pvals, pi_formula = formula, mu_formula = formul
                  s0 = rep(0.5, length(pvals)))
 
 ## Begin Tests
-test_that("length of 'order' and 'fdp' should match the number of hypotheses (#1)", {
+test_that("length of 'order' should match the number of hypotheses (#1)", {
     n <- length(pvals)
     expect_equal(length(res$order), n)
     expect_equal(length(unique(res$order)), n)
-    expect_equal(length(res$fdp), n)
 })
 
 test_that("'order' should be consistent with thresholds 's'", {
@@ -54,4 +53,12 @@ test_that("'s' is decreasing", {
     ncol <- ncol(res$s)
     s_diff <- res$s[, 2:ncol] - res$s[, 1:(ncol - 1)] + 1e-10
     expect_equal(all(s_diff >= 0), TRUE)
+})
+
+test_that("'qvals' is consistent with 'rejs", {
+    for (i in 1:100){
+        rejs1 <- res$rejs[[i]]
+        rejs2 <- which(res$qvals <= res$alphas[i])
+        expect_equal(rejs1, rejs2)
+    }
 })

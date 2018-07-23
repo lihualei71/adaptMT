@@ -102,6 +102,10 @@ check_pkgs <- function(models){
 #' For ultra-large scale problems (n > 10^5), it is recommended to keep \code{alphas} short because the output \code{s} is of size n x \code{length(alphas)}.
 #' is \code{length(alphas)}.
 #'
+#' The output \code{qvals} gives the q-values of each hypothesis. \code{qvals[i]} is defined as the minimum target FDR level such that \code{pvals[i]} is rejected.
+#'
+#' The output \code{order} gives the order of (the indices of) p-values being revealed, i.e. being in the region (s, 1-s). The latter hypotheses appeared in \code{order} have smaller q-values (i.e. are more likely to be rejected).
+#'
 #' @param x covariates (i.e. side-information). Should be compatible to \code{models}. See Details
 #' @param pvals a vector of values in [0, 1]. P-values
 #' @param models an object of class "\code{adapt_model}" or a list of objects of class "adapt_model". See Details
@@ -118,11 +122,12 @@ check_pkgs <- function(models){
 #' @param verbose a list of logical values in the form of list(print = , fit = , ms = ). Each element indicates whether the relevant information is outputed to the console. See Details
 #'
 #' @return
-#' \item{order}{a permutation of \code{1:length(pvals)}. Indices of hypotheses arranged in the order of reveal}
 #' \item{nrejs}{a vector of integers. Number of rejections for each alpha}
+#' \item{rejs}{a list of vector of integers. The set of indices of rejections for each alpha}
 #' \item{s}{a matrix of size \code{length(pvals) X length(alphas)}. Threshold curves for each alpha}
 #' \item{params}{a list. Each element is a list in the form of \code{list(pix = , mux = , alpha = , nmasks =)}, recording the parameter estimates, the achieved alpha and the number of masked p-values. To avoid massive storage cost, it only contains the information when a new target FDR level is achieved. As a result, it might be  shorter than \code{nfits}.}
-#' \item{fdp}{a vector of values in [0, 1]. i-th entry records the FDPhat when i-th hypothesis is rejected}
+#' \item{qvals}{a vector of values in [0, 1]U{Inf}. Q-values. See Details}
+#' \item{order}{a permutation of \code{1:length(pvals)}. Indices of hypotheses arranged in the order of reveal. See Details}
 #' \item{alphas}{same as the input \code{alphas}}
 #' \item{dist}{same as the input \code{dist}}
 #' \item{models}{a list of \code{adapt_model} objects of length \code{params}. The model used in each fitting step. As in \code{params}, it only contains the model when a new target FDR level is achieved and each element corresponds to an element of \code{params}.}
@@ -253,9 +258,11 @@ adapt <- function(x, pvals, models,
     model_list <- list() # all selected models
     info_list <- list() # other information (df, vi, etc.)
     reveal_order <- which((pvals > s) & (pvals < 1 - s)) # the order to be revealed
-    init_pvals <- pvals[reveal_order]
-    reveal_order <- reveal_order[order(init_pvals, decreasing = TRUE)]
-    fdp_return <- rep(minfdp, length(reveal_order)) # fdphat along the whole path
+    if (length(reveal_order) > 0){
+        init_pvals <- pvals[reveal_order]
+        reveal_order <- reveal_order[order(init_pvals, decreasing = TRUE)]
+    }
+    fdp_return <- c(rep(Inf, length(reveal_order)), minfdp) # fdphat along the whole path
 
     if (m > alphaind){
         nrejs_return[(alphaind + 1):m] <- R
@@ -397,6 +404,9 @@ adapt <- function(x, pvals, models,
 
     rejs_return <- apply(s_return, 2, function(s){which(pvals <= s)})
 
+    qvals <- rep(1, n)
+    qvals[reveal_order] <- ifelse(pvals[reveal_order] <= 0.5, cummin(fdp_return[1:n]), rep(Inf, n))
+
     args <- list(nfits = nfits, nms = nms,
                  niter_fit = niter_fit, niter_ms = niter_ms,
                  tol = tol, cr = cr)
@@ -406,8 +416,8 @@ adapt <- function(x, pvals, models,
              rejs = rejs_return,
              s = s_return,
              params = params_return,
+             qvals = qvals,
              order = reveal_order,
-             fdp = fdp_return,
              alphas = alphas,
              dist = dist,
              models = model_list,

@@ -4,3 +4,4 @@
 ^exprs/*
 ^LICENSE\.md$
 ^\.travis\.yml$
+^appveyor\.yml$

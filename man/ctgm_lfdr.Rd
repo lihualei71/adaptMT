@@ -26,8 +26,6 @@ ctgm_lfdr(x, pvals, models, dist = beta_family(), type = c("over", "raw"),
 \item{cr}{a string. The criterion for model selection with BIC as default. Also support AIC, AICC and HIC}
 
 \item{verbose}{a logical values in the form of list(fit = , ms = ). Indicate whether the progress of model fitting and model selection is displayed}
-
-\item{tol}{a positive scalar. EM algorithm stops when pi(x) and mu(x) in consecutive steps differ by at most 'tol' elementwisely}
 }
 \value{
 \itemize{

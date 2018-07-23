@@ -110,7 +110,7 @@ par(mfrow = c(2, 3))
 for (alpha in seq(0.3, 0.05, -0.05)){
   nrejs <- res_glm$nrejs[floor(alpha * 100)]
   title <- paste0("alpha = ", alpha, ", nrejs = ", nrejs)
-  plot_1d_thresh(res_glm, alpha, title, disp_ymax = 1, xlab = "order")
+  plot_1d_thresh(res_glm, x, pvals, alpha, title, disp_ymax = 1, xlab = "order")
 }
 ```
 
@@ -121,7 +121,7 @@ par(mfrow = c(2, 3))
 for (alpha in seq(0.3, 0.05, -0.05)){
   nrejs <- res_glm$nrejs[floor(alpha * 100)]
   title <- paste0("alpha = ", alpha, ", nrejs = ", nrejs)
-  plot_1d_lfdr(res_glm, alpha, title, disp_ymax = 0.25, xlab = "order")
+  plot_1d_lfdr(res_glm, x, pvals, alpha, title, disp_ymax = 0.25, xlab = "order")
 }
 ```
 
@@ -172,7 +172,7 @@ plot(x[, 1], x[, 2], type = "p", xlab = "", ylab = "", col = ifelse(rej, "#80000
 
 Similar to the 1d case, `plot_2d_thresh` gives the plot for the rejection threshold as a function of x (must be bivariate without repeated value) for given $\alpha$. In particular we set $\alpha = 0.1$.
 ```{r, fig.height=4.5, fig.width=6}
-plot_2d_thresh(res_gam, 0.1, "P-Value Threshold", xlab = "", ylab = "")
+plot_2d_thresh(res_gam, x, pvals, 0.1, "P-Value Threshold", xlab = "", ylab = "")
 ```
 
 Unlike the 1d case, visualizing the level surfaces of local FDR estimates is not an easy task due to the extra dimension. `plot_2d_lfdr` gives the plot for the local FDR estimates when all p-values are equal to a user-specified level `targetp` for given $\alpha$. 
@@ -180,7 +180,7 @@ Unlike the 1d case, visualizing the level surfaces of local FDR estimates is not
 par(mfrow = c(2, 2), mar = c(4, 4, 2, 2))
 for (targetp in c(0.001, 0.005, 0.01, 0.05)){
   title <- paste0("Local FDR Estimates (p = ", targetp, ")")
-  plot_2d_lfdr(res_gam, 0.1, title, targetp, xlab = "", ylab = "")
+  plot_2d_lfdr(res_gam, x, pvals, 0.1, title, targetp, xlab = "", ylab = "")
 }
 ```
 

@@ -115,7 +115,6 @@ check_pkgs <- function(models){
 #' @param tol a positive scalar. EM algorithm stops when pi(x) and mu(x) in consecutive steps differ by at most 'tol' elementwisely
 #' @param niter_ms a positive integer. Number of EM iterations in model selection
 #' @param cr a string. The criterion for model selection with BIC as default. Also support AIC, AICC and HIC
-#' @param return_data a logical value. The original data will be returned in the form of list(x = x, pvals = pvals). Not recommended for large dataset
 #' @param verbose a list of logical values in the form of list(print = , fit = , ms = ). Each element indicates whether the relevant information is outputed to the console. See Details
 #'
 #' @return
@@ -165,7 +164,6 @@ adapt <- function(x, pvals, models,
                   nfits = 20, nms = 1,
                   niter_fit = 10, tol = 1e-4,
                   niter_ms = 20, cr = "BIC",
-                  return_data = TRUE,
                   verbose = list(print = TRUE, fit = FALSE, ms = TRUE)
                   ){
 
@@ -416,8 +414,5 @@ adapt <- function(x, pvals, models,
              info = info_list,
              args = args),
         class = "adapt")
-    if (return_data){
-        res$data <- list(x = x, pvals = pvals)
-    }
     return(res)
 }

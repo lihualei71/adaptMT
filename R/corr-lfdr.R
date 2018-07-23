@@ -6,10 +6,11 @@
 
 #' Quantifying Information Loss of Adaptive P-Value Thresholding
 #'
-#' \code{corr_lfdr} computes the oracle local FDR estimate, by using revealing all p-values, and computes the Pearson correlation between it and the estimate within each step of \code{adapt}. 
+#' \code{corr_lfdr} computes the oracle local FDR estimate, by using revealing all p-values, and computes the Pearson correlation between it and the estimate within each step of \code{adapt}.
 #'
 #' @param obj an 'adapt' object. Output of \code{\link{adapt}} function
-#' @param data an optional argument. If \code{data = NULL} then \code{obj$data} is used. Otherwise it should be a list in the form of \code{list(x = , pvals = )}
+#' @param x covariates (i.e. side-information). Should be compatible to \code{models}.
+#' @param pvals a vector of values in [0, 1]. P-values
 #' @param model an optional argument. If \code{model = NULL} then the last model in \code{obj$models} is used for fitting the oracle model (i.e. with all p-values revealed). Otherwise it should be an 'adapt_model' object
 #' @param niter_oracle an positive integer. Number of iterations in EM algorithm
 #'
@@ -34,7 +35,7 @@
 #' inds <- (x$x <= 5000)
 #' pvals <- pvals[inds]
 #' x <- x[inds,,drop = FALSE]
-#' 
+#'
 #' # Run adapt_glm
 #' library("splines")
 #' formulas <- paste0("ns(x, df = ", 6:10, ")")
@@ -42,23 +43,18 @@
 #'                  mu_formulas = formulas, dist = dist, nfits = 10)
 #'
 #' # Run corr_lfdr
-#' obj <- corr_lfdr(res)
+#' obj <- corr_lfdr(res, x, pvals)
 #' obj$corr
 #' }
-#' 
+#'
 #' @export
-corr_lfdr <- function(obj, data = NULL, model = NULL,
+corr_lfdr <- function(obj, x, pvals, model = NULL,
                       niter_oracle = 100){
     if (class(obj)[1] != "adapt"){
         stop("\'obj\' is not of class \'adapt\"")
     }
-    if (is.null(data)){
-        data <- obj$data
-    }
-    x <- data[["x"]]
-    pvals <- data[["pvals"]]
     n <- length(pvals)
-    
+
     params_list <- obj$params
     dist <- obj$dist
     m <- length(params_list)

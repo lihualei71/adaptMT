@@ -3,9 +3,10 @@
 #' Plotting the outputs of \code{adapt} when \code{x} is 1-dimensional, including threshold curves and level curves of local FDR.
 #'
 #' @param obj an 'adapt' object
+#' @param x covariates (i.e. side-information). Should be compatible to \code{models} and 1-dimensional.
+#' @param pvals a vector of values in [0, 1]. P-values
 #' @param alpha a positive scalar in (0, 1). Target FDR level
 #' @param title a string. Title of the figure
-#' @param data a list in the form of list(x = , pvals = ). NULL if obj$data is not NULL
 #' @param xlab a string. Label of the x-axis
 #' @param xlim a vector of length 2. Limits of x-axis
 #' @param disp_ymax a positive scalar in (0, 1]. Maximum value displayed in the y-axis
@@ -16,13 +17,39 @@
 #'
 #' @name plot_1d
 #'
+#' @examples
+#' \dontrun{
+#' # Load estrogen data
+#' data(estrogen)
+#' pvals <- as.numeric(estrogen$pvals)
+#' x <- data.frame(x = as.numeric(estrogen$ord_high))
+#' dist <- beta_family()
+#'
+#' # Subsample the data for convenience
+#' inds <- (x$x <= 5000)
+#' pvals <- pvals[inds]
+#' x <- x[inds,,drop = FALSE]
+#'
+#' # Run adapt_glm
+#' library("splines")
+#' formulas <- paste0("ns(x, df = ", 6:10, ")")
+#' res <- adapt_glm(x = x, pvals = pvals, pi_formulas = formulas,
+#'                  mu_formulas = formulas, dist = dist, nfits = 10)
+#'
+#' # Plots
+#' par(mfrow = c(2, 1))
+#' plot_1d_thresh(res, x, pvals, 0.1, "P-value Thresholds (alpha = 0.1)",
+#'                disp_ymax = 0.5)
+#' plot_1d_lfdr(res, x, pvals, 0.1, "Level Curves of lfdr (alpha = 0.1)",
+#'              disp_ymax = 0.5)
+#' }
 NULL
 
 #' @rdname plot_1d
 #'
 #' @export
-plot_1d_thresh <- function(obj, alpha, title,
-                           data = NULL,
+plot_1d_thresh <- function(obj, x, pvals,
+                           alpha, title,
                            xlab = "x", xlim = NULL,
                            disp_ymax = 0.2,
                            num_yticks = 3,
@@ -32,11 +59,12 @@ plot_1d_thresh <- function(obj, alpha, title,
         stop("obj is not an 'adapt' object.")
     }
 
-    if (is.null(data)){
-        data <- obj$data
+    if (class(x) != "numeric"){
+        x <- as.numeric(x[, 1])
     }
-    x <- as.numeric(data[["x"]][,1])
-    pvals <- data[["pvals"]]
+    if (length(x) != length(pvals)){
+        stop("x must be 1-dimensional.")
+    }
     n <- length(pvals)
     dist <- obj$dist
     alphas <- obj$alphas
@@ -93,8 +121,8 @@ plot_1d_thresh <- function(obj, alpha, title,
 #' @rdname plot_1d
 #'
 #' @export
-plot_1d_lfdr <- function(obj, alpha, title,
-                         data = NULL,
+plot_1d_lfdr <- function(obj, x, pvals,
+                         alpha, title,
                          xlab = "x", xlim = NULL,
                          disp_ymax = 0.2,
                          num_yticks = 3,
@@ -104,11 +132,12 @@ plot_1d_lfdr <- function(obj, alpha, title,
         stop("\'obj\' is not an \'adapt\' object.")
     }
 
-    if (is.null(data)){
-        data <- obj$data
+    if (class(x) != "numeric"){
+        x <- as.numeric(x[, 1])
     }
-    x <- as.numeric(data[["x"]][,1])
-    pvals <- data[["pvals"]]
+    if (length(x) != length(pvals)){
+        stop("x must be 1-dimensional.")
+    }
     n <- length(pvals)
     dist <- obj$dist
     params_alphas <- sapply(obj$params, function(x){x$alpha})

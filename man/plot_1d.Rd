@@ -6,20 +6,22 @@
 \alias{plot_1d_lfdr}
 \title{Plotting Functions for AdaPT with 1D Covariates}
 \usage{
-plot_1d_thresh(obj, alpha, title, data = NULL, xlab = "x", xlim = NULL,
+plot_1d_thresh(obj, x, pvals, alpha, title, xlab = "x", xlim = NULL,
   disp_ymax = 0.2, num_yticks = 3, rand_seed_perturb = NA, ...)
 
-plot_1d_lfdr(obj, alpha, title, data = NULL, xlab = "x", xlim = NULL,
+plot_1d_lfdr(obj, x, pvals, alpha, title, xlab = "x", xlim = NULL,
   disp_ymax = 0.2, num_yticks = 3, legend_pos = "topright", ...)
 }
 \arguments{
 \item{obj}{an 'adapt' object}
 
+\item{x}{covariates (i.e. side-information). Should be compatible to \code{models} and 1-dimensional.}
+
+\item{pvals}{a vector of values in [0, 1]. P-values}
+
 \item{alpha}{a positive scalar in (0, 1). Target FDR level}
 
 \item{title}{a string. Title of the figure}
-
-\item{data}{a list in the form of list(x = , pvals = ). NULL if obj$data is not NULL}
 
 \item{xlab}{a string. Label of the x-axis}
 
@@ -37,4 +39,31 @@ plot_1d_lfdr(obj, alpha, title, data = NULL, xlab = "x", xlim = NULL,
 }
 \description{
 Plotting the outputs of \code{adapt} when \code{x} is 1-dimensional, including threshold curves and level curves of local FDR.
+}
+\examples{
+\dontrun{
+# Load estrogen data
+data(estrogen)
+pvals <- as.numeric(estrogen$pvals)
+x <- data.frame(x = as.numeric(estrogen$ord_high))
+dist <- beta_family()
+
+# Subsample the data for convenience
+inds <- (x$x <= 5000)
+pvals <- pvals[inds]
+x <- x[inds,,drop = FALSE]
+
+# Run adapt_glm
+library("splines")
+formulas <- paste0("ns(x, df = ", 6:10, ")")
+res <- adapt_glm(x = x, pvals = pvals, pi_formulas = formulas,
+                 mu_formulas = formulas, dist = dist, nfits = 10)
+
+# Plots
+par(mfrow = c(2, 1))
+plot_1d_thresh(res, x, pvals, 0.1, "P-value Thresholds (alpha = 0.1)",
+               disp_ymax = 0.5)
+plot_1d_lfdr(res, x, pvals, 0.1, "Level Curves of lfdr (alpha = 0.1)",
+             disp_ymax = 0.5)
+}
 }

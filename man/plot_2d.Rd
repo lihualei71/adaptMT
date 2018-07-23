@@ -6,20 +6,22 @@
 \alias{plot_2d_lfdr}
 \title{Plotting Functions for AdaPT with 2D Covariates}
 \usage{
-plot_2d_thresh(obj, alpha, title, data = NULL, xlab = NULL, ylab = NULL,
+plot_2d_thresh(obj, x, pvals, alpha, title, xlab = NULL, ylab = NULL,
   keyaxes = list(), ...)
 
-plot_2d_lfdr(obj, alpha, title, targetp, data = NULL, xlab = NULL,
-  ylab = NULL, keyaxes = list(), ...)
+plot_2d_lfdr(obj, x, pvals, alpha, title, targetp, xlab = NULL, ylab = NULL,
+  keyaxes = list(), ...)
 }
 \arguments{
 \item{obj}{an 'adapt' object}
 
+\item{x}{covariates (i.e. side-information). Should be compatible to \code{models} and 2-dimensional.}
+
+\item{pvals}{a vector of values in [0, 1]. P-values}
+
 \item{alpha}{a positive scalar in (0, 1). Target FDR level}
 
 \item{title}{a string. Title of the figure}
-
-\item{data}{a list in the form of list(x = , pvals = ). NULL if obj$data is not NULL}
 
 \item{xlab, ylab}{a string. Label of x/y-axis}
 
@@ -36,4 +38,33 @@ Plotting the outputs of \code{adapt} when \code{x} is 2-dimensional, including t
 The breaks in the legend of \code{plot_2d_thresh} correspond to the maximum, the 95% quantile, the 90% quantile, the 85% quantile, the 75% quantile and the minimum of the thresholds.
 
 \code{plot_2d_lfdr} gives the contour plot of local FDR estimates when all p-values are equal to \code{targetp}. It is recommended to run \code{plot_2d_lfdr} for multiple \code{targetp}'s ranging from {0.001, 0.005, 0.01, 0.05}.
+}
+\examples{
+\dontrun{
+# Generate a 2-dim x
+n <- 400
+x1 <- x2 <- seq(-100, 100, length.out = 20)
+x <- expand.grid(x1, x2)
+colnames(x) <- c("x1", "x2")
+
+# Generate p-values (one-sided z test)
+# Set all hypotheses in the central circle with radius 30 to be
+# non-nulls. For non-nulls, z~N(2,1) and for nulls, z~N(0,1).
+H0 <- apply(x, 1, function(coord){sum(coord^2) < 900})
+mu <- ifelse(H0, 2, 0)
+set.seed(0)
+zvals <- rnorm(n) + mu
+pvals <- 1 - pnorm(zvals)
+
+# Run adapt_gam with a 2d spline basis
+library("mgcv")
+formula <- "s(x1, x2)"
+dist <- beta_family()
+res <- adapt_gam(x = x, pvals = pvals, pi_formulas = formula,
+                 mu_formulas = formula, dist = dist, nfits = 5)
+
+# Plots
+plot_2d_thresh(res, x, pvals, 0.3, "P-value Thresholds (alpha = 0.3)")
+plot_2d_lfdr(res, x, pvals, 0.3, "Local FDR Estimates (alpha = 0.3, p = 0.01)", 0.01)
+}
 }

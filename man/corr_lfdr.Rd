@@ -4,12 +4,14 @@
 \alias{corr_lfdr}
 \title{Quantifying Information Loss of Adaptive P-Value Thresholding}
 \usage{
-corr_lfdr(obj, data = NULL, model = NULL, niter_oracle = 100)
+corr_lfdr(obj, x, pvals, model = NULL, niter_oracle = 100)
 }
 \arguments{
 \item{obj}{an 'adapt' object. Output of \code{\link{adapt}} function}
 
-\item{data}{an optional argument. If \code{data = NULL} then \code{obj$data} is used. Otherwise it should be a list in the form of \code{list(x = , pvals = )}}
+\item{x}{covariates (i.e. side-information). Should be compatible to \code{models}.}
+
+\item{pvals}{a vector of values in [0, 1]. P-values}
 
 \item{model}{an optional argument. If \code{model = NULL} then the last model in \code{obj$models} is used for fitting the oracle model (i.e. with all p-values revealed). Otherwise it should be an 'adapt_model' object}
 
@@ -47,7 +49,7 @@ res <- adapt_glm(x = x, pvals = pvals, pi_formulas = formulas,
                  mu_formulas = formulas, dist = dist, nfits = 10)
 
 # Run corr_lfdr
-obj <- corr_lfdr(res)
+obj <- corr_lfdr(res, x, pvals)
 obj$corr
 }
 

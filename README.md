@@ -12,6 +12,12 @@ Install the adaptMT package then read vignette("adapt_demo", package = "adaptMT"
 # install.packages("devtools")
 devtools::install_github("lihualei71/adaptMT")
 ```
+If one wants to access the vignette, run the following code to build the vignette. This might update other related packages and please be patient if so.
+
+```
+devtools::install_github("lihualei71/adaptMT", build_vignettes = TRUE)
+```
+
 ### An Example
 We illustrate the usage of adaptMT package using the example discussed in Section 5.1 of the paper [AdaPT: An interactive procedure for multiple testing with side information](https://arxiv.org/abs/1609.06035).
 

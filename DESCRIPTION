@@ -11,7 +11,7 @@ Description: Adaptive p-value thresholding (AdaPT) for multiple hypothesis testi
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-URL: https://arxiv.org/abs/1609.06035
+URL: https://github.com/lihualei71/adaptMT
 BugReports: https://github.com/lihualei71/adaptMT/issues
 Suggests: 
     glmnet,

@@ -97,7 +97,7 @@ check_pkgs <- function(models){
 #'
 #' \code{nfits} is the number of model fitting steps plus \code{nms}, the model selection steps, if \code{models} contains multiple \code{adapt_model} objects. Suppose M is the number of masked p-values at the initial step, then the model is updated at the initial step and at every time when [M/\code{nfits}] more p-values are revealed. If \code{nms > 0}, model selection is performed at the initial step an at every time when [M/\code{nms}] more p-values are revealed. Between two consecutive model selection steps, the model selected from the last step is used for model fitting. For example, when M = 10000, nfits = 10 and nms = 2, model selection will be performed at the initial step and when 5000 p-values are revealed, while the model fitting will be performed when 1000, 2000, 3000, 4000, 6000, 7000, 8000, 9000 p-values are revealed.
 #'
-#' \code{verbose} has three elements: \code{print}, \code{fit} and \code{ms}. If \code{print = TRUE}, the progress of the main procedure is outputed to the console, in the form of "alpha = 0.05: FDPhat 0.0333, Number of Rej. 30" (where the numbers are made up for illustration). If \code{fit = TRUE}, a progress bar for the model fitting is outputed to the console. Similarly, if \code{ms = TRUE}, a progress bar for the model selection is outputed to the console.
+#' \code{verbose} has three elements: \code{print}, \code{fit} and \code{ms}. If \code{print = TRUE}, the progress of the main procedure is output to the console, in the form of "alpha = 0.05: FDPhat 0.0333, Number of Rej. 30" (where the numbers are made up for illustration). If \code{fit = TRUE}, a progress bar for the model fitting is outputed to the console. Similarly, if \code{ms = TRUE}, a progress bar for the model selection is outputed to the console.
 #'
 #' For ultra-large scale problems (n > 10^5), it is recommended to keep \code{alphas} short because the output \code{s} is of size n x \code{length(alphas)}.
 #' is \code{length(alphas)}.
@@ -116,7 +116,7 @@ check_pkgs <- function(models){
 #' @param nfits a positive integer. Number of model-fitting steps. See Details
 #' @param nms a non-negative integer. Number of model selection steps. See Details
 #' @param niter_fit a positive integer. Number of EM iterations in model fitting
-#' @param tol a positive scalar. EM algorithm stops when pi(x) and mu(x) in consecutive steps differ by at most 'tol' elementwisely
+#' @param tol a positive scalar. EM algorithm stops when pi(x) and mu(x) in consecutive steps differ by at most 'tol' for each element
 #' @param niter_ms a positive integer. Number of EM iterations in model selection
 #' @param cr a string. The criterion for model selection with BIC as default. Also support AIC, AICC and HIC
 #' @param verbose a list of logical values in the form of list(print = , fit = , ms = ). Each element indicates whether the relevant information is outputed to the console. See Details

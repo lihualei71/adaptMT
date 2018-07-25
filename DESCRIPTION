@@ -1,6 +1,6 @@
 Package: adaptMT
 Type: Package
-Title: Adaptive P-value Thresholding (AdaPT) for multiple hypothesis testing with side information
+Title: Adaptive P-Value Thresholding (AdaPT) for Multiple Hypothesis Testing with Side Information
 Version: 1.0.0
 Authors@R: person("Lihua", "Lei", email = "lihua.lei@berkeley.edu", role = c("aut", "cre"))
 Maintainer: Lihua Lei <lihua.lei@berkeley.edu>

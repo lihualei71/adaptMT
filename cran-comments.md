@@ -1,6 +1,14 @@
 ## Resubmission
 This is a resubmission. In this version I have:
 
+* Remove the abbreviation in the DESCRIPTION title
+* Change the last sentence of Description by adding the reference in the DESCRIPTION
+
+---
+
+## Resubmission
+This is a resubmission. In this version I have:
+
 * Converted the DESCRIPTION title to title case.
 
 ---

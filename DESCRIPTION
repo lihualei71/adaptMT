@@ -1,13 +1,12 @@
 Package: adaptMT
 Type: Package
-Title: Adaptive P-Value Thresholding (AdaPT) for Multiple Hypothesis Testing with Side Information
+Title: Adaptive P-Value Thresholding for Multiple Hypothesis Testing with Side Information
 Version: 1.0.0
 Authors@R: person("Lihua", "Lei", email = "lihua.lei@berkeley.edu", role = c("aut", "cre"))
 Maintainer: Lihua Lei <lihua.lei@berkeley.edu>
-Description: Adaptive p-value thresholding (AdaPT) for multiple hypothesis testing with side 
-  information. This package includes both a framework that allows the user to specify any 
+Description: This package implements Adaptive p-value thresholding (AdaPT), including both a framework that allows the user to specify any 
   algorithm to learn local FDR and a pool of convenient functions that implement specific 
-  algorithms. The details of AdaPT are described in our paper linked to via the URL below.
+  algorithms. See Lei, Lihua and Fithian, William (2016) <arXiv:1609.06035>.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true

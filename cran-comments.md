@@ -1,6 +1,15 @@
 ## Resubmission
 This is a resubmission. In this version I have:
 
+* Decapitalize "Adaptive" in DESCRIPTION
+* Replace the acronym (FDR) by false discovery rate
+* Replace all \dontrun() into \donttest() in .Rd files
+* Comment out comments in the examples of "gen_adapt_model"
+
+---
+## Resubmission
+This is a resubmission. In this version I have:
+
 * Remove the abbreviation in the DESCRIPTION title
 * Change the last sentence of Description by adding the reference in the DESCRIPTION
 

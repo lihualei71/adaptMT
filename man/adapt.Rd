@@ -71,7 +71,7 @@ The output \code{qvals} gives the q-values of each hypothesis. \code{qvals[i]} i
 The output \code{order} gives the order of (the indices of) p-values being revealed, i.e. being in the region (s, 1-s). The latter hypotheses appeared in \code{order} have smaller q-values (i.e. are more likely to be rejected).
 }
 \examples{
-\dontrun{
+\donttest{
 # Load estrogen data
 data(estrogen)
 pvals <- as.numeric(estrogen$pvals)

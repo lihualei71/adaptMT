@@ -36,7 +36,7 @@ interpolate <- function(x, y, z){
 #' @name plot_2d
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Generate a 2-dim x
 #' n <- 400
 #' x1 <- x2 <- seq(-100, 100, length.out = 20)

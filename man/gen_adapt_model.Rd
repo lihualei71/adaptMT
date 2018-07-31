@@ -50,9 +50,9 @@ When \code{pifun} / \code{mufun} takes the form of \code{(formula, family, ...)}
 For glm/gam/glmnet, one can use the shortcut by running \code{\link{gen_adapt_model}} with name = "glm" or "gam" or "glmnet" but without specifying \code{pifun}, \code{mufun}, \code{pifun_init} and \code{mufun_init}. See examples below.
 }
 \examples{
-\dontrun{
+\donttest{
 # Exemplary code to generate 'adapt_model' for logistic-Gamma glm  with naive initialization.
-  The real implementation in the package is much more complicated.
+# The real implementation in the package is much more complicated.
 
 # pifun as a logistic regression
 pifun <- function(formula, data, weights, ...){

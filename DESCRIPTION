@@ -4,8 +4,8 @@ Title: Adaptive P-Value Thresholding for Multiple Hypothesis Testing with Side I
 Version: 1.0.0
 Authors@R: person("Lihua", "Lei", email = "lihua.lei@berkeley.edu", role = c("aut", "cre"))
 Maintainer: Lihua Lei <lihua.lei@berkeley.edu>
-Description: Implementation of Adaptive p-value thresholding (AdaPT), including both a framework that allows the user to specify any 
-  algorithm to learn local FDR and a pool of convenient functions that implement specific 
+Description: Implementation of adaptive p-value thresholding (AdaPT), including both a framework that allows the user to specify any 
+  algorithm to learn local false discovery rate (FDR) and a pool of convenient functions that implement specific 
   algorithms. See Lei, Lihua and Fithian, William (2016) <arXiv:1609.06035>.
 License: MIT + file LICENSE
 Encoding: UTF-8

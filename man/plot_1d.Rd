@@ -41,7 +41,7 @@ plot_1d_lfdr(obj, x, pvals, alpha, title, xlab = "x", xlim = NULL,
 Plotting the outputs of \code{adapt} when \code{x} is 1-dimensional, including threshold curves and level curves of local FDR.
 }
 \examples{
-\dontrun{
+\donttest{
 # Load estrogen data
 data(estrogen)
 pvals <- as.numeric(estrogen$pvals)

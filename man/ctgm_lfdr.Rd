@@ -53,7 +53,7 @@ When \code{type = "raw"}, it yields the original local FDR.
 The former is shown to be more stable and reliable because the weak identifiability in conditional mixture models.
 }
 \examples{
-\dontrun{
+\donttest{
 # Load estrogen data
 data(estrogen)
 pvals <- as.numeric(estrogen$pvals)

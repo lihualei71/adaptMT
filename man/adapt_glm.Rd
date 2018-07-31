@@ -46,7 +46,7 @@ There is no need to specify the name of the response variable, as this is handle
 When \code{x} has a few variables, it is common to use non-parametric GLM by replacing \code{x} by a spline basis of \code{x}. In this case, \code{\link[splines]{ns}} from \code{library(splines)} package is suggested.
 }
 \examples{
-\dontrun{
+\donttest{
 # Load estrogen data
 data(estrogen)
 pvals <- as.numeric(estrogen$pvals)

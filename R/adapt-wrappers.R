@@ -43,7 +43,7 @@ check_formulas <- function(formulas){
 #' @inheritParams adapt
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Load estrogen data
 #' data(estrogen)
 #' pvals <- as.numeric(estrogen$pvals)
@@ -127,7 +127,7 @@ adapt_glm <- function(x, pvals, pi_formulas, mu_formulas,
 #' \code{\link{adapt}}, \code{\link{adapt_glm}}, \code{\link{adapt_glmnet}}, \code{\link[mgcv]{gam}}, \code{\link[splines]{ns}}, \code{\link[mgcv]{s}}
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Generate a 2-dim x
 #' n <- 400
 #' x1 <- x2 <- seq(-100, 100, length.out = 20)
@@ -196,7 +196,7 @@ adapt_gam <- function(x, pvals, pi_formulas, mu_formulas,
 #' \code{\link{adapt}}, \code{\link{adapt_glm}}, \code{\link{adapt_gam}}, \code{\link[glmnet]{glmnet}}
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Generate a 100-dim covariate x
 #' set.seed(0)
 #' m <- 100

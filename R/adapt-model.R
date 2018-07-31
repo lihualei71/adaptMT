@@ -36,9 +36,9 @@
 #' \item{args}{a list recording \code{piargs}, \code{muargs}, \code{piargs_init} and \code{muargs_init}}
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Exemplary code to generate 'adapt_model' for logistic-Gamma glm  with naive initialization.
-#'   The real implementation in the package is much more complicated.
+#' # The real implementation in the package is much more complicated.
 #'
 #' # pifun as a logistic regression
 #' pifun <- function(formula, data, weights, ...){

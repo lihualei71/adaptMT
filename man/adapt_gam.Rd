@@ -46,7 +46,7 @@ There is no need to specify the name of the response variable, as this is handle
 When \code{x} has a few variables, it is common to use non-parametric GLM by replacing \code{x} by a spline basis of \code{x}. In this case, \code{\link[splines]{ns}} from \code{library(splines)} package or \code{\link[mgcv]{s}} from \code{mgcv} package are suggested. When \code{\link[mgcv]{s}} (from \code{mgcv} package) is used, it is treated as a single model because the knots will be selected automatically.
 }
 \examples{
-\dontrun{
+\donttest{
 # Generate a 2-dim x
 n <- 400
 x1 <- x2 <- seq(-100, 100, length.out = 20)

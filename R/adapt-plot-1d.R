@@ -18,7 +18,7 @@
 #' @name plot_1d
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Load estrogen data
 #' data(estrogen)
 #' pvals <- as.numeric(estrogen$pvals)

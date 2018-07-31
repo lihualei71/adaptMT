@@ -30,7 +30,7 @@ corr_lfdr(obj, x, pvals, model = NULL, niter_oracle = 100)
 \code{corr_lfdr} computes the oracle local FDR estimate, by using revealing all p-values, and computes the Pearson correlation between it and the estimate within each step of \code{adapt}.
 }
 \examples{
-\dontrun{
+\donttest{
 # Load estrogen data
 data(estrogen)
 pvals <- as.numeric(estrogen$pvals)

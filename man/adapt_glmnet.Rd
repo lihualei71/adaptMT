@@ -32,7 +32,7 @@ adapt_glmnet(x, pvals, piargs = list(), muargs = list(),
 \code{adapt_glmnet} by default implements LASSO on \code{x} with lambda selected by cross-validation. Specify in \code{piargs} and \code{muargs} if ridge or elastic-net penalty is needed.
 }
 \examples{
-\dontrun{
+\donttest{
 # Generate a 100-dim covariate x
 set.seed(0)
 m <- 100

@@ -135,7 +135,7 @@ check_pkgs <- function(models){
 #' \item{args}{a list including the other inputs \code{nfits}, \code{nms}, \code{niter_fit}, \code{niter_ms}, \code{tol}, \code{cr}}.
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Load estrogen data
 #' data(estrogen)
 #' pvals <- as.numeric(estrogen$pvals)

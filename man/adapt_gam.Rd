@@ -5,8 +5,8 @@
 \title{Adaptive P-value Thresholding with Generalized Additive Models}
 \usage{
 adapt_gam(x, pvals, pi_formulas, mu_formulas, piargs = list(),
-  muargs = list(), dist = beta_family(), s0 = rep(0.45, length(pvals)),
-  alphas = seq(0.01, 1, 0.01), ...)
+  muargs = list(), dist = beta_family(), s0 = rep(0.45,
+  length(pvals)), alphas = seq(0.01, 1, 0.01), ...)
 }
 \arguments{
 \item{x}{covariates (i.e. side-information). Should be compatible to \code{models}. See Details}

@@ -4,10 +4,11 @@
 \alias{adapt}
 \title{Adaptive P-value Thresholding}
 \usage{
-adapt(x, pvals, models, dist = beta_family(), s0 = rep(0.45, length(pvals)),
-  alphas = seq(0.01, 1, 0.01), params0 = list(pix = NULL, mux = NULL),
-  nfits = 20, nms = 1, niter_fit = 10, tol = 1e-04, niter_ms = 20,
-  cr = "BIC", verbose = list(print = TRUE, fit = FALSE, ms = TRUE))
+adapt(x, pvals, models, dist = beta_family(), s0 = rep(0.45,
+  length(pvals)), alphas = seq(0.01, 1, 0.01), params0 = list(pix =
+  NULL, mux = NULL), nfits = 20, nms = 1, niter_fit = 10,
+  tol = 1e-04, niter_ms = 20, cr = "BIC", fs = TRUE,
+  verbose = list(print = TRUE, fit = FALSE, ms = TRUE))
 }
 \arguments{
 \item{x}{covariates (i.e. side-information). Should be compatible to \code{models}. See Details}
@@ -35,6 +36,8 @@ adapt(x, pvals, models, dist = beta_family(), s0 = rep(0.45, length(pvals)),
 \item{niter_ms}{a positive integer. Number of EM iterations in model selection}
 
 \item{cr}{a string. The criterion for model selection with BIC as default. Also support AIC, AICC and HIC}
+
+\item{fs}{logical. Indicate whether the +1 correction is needed in FDPhat}
 
 \item{verbose}{a list of logical values in the form of list(print = , fit = , ms = ). Each element indicates whether the relevant information is outputted to the console. See Details}
 }

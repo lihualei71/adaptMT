@@ -5,8 +5,8 @@
 # Available from http://arxiv.org/abs/1609.06035
 #---------------------------------------------------------------
 
-fdp_hat <- function(A, R){
-    (1 + A) / pmax(1, R)
+fdp_hat <- function(A, R, fs = TRUE){
+    (as.numeric(fs) + A) / pmax(1, R)
 }
 
 
@@ -119,6 +119,7 @@ check_pkgs <- function(models){
 #' @param tol a positive scalar. EM algorithm stops when pi(x) and mu(x) in consecutive steps differ by at most 'tol' for each element
 #' @param niter_ms a positive integer. Number of EM iterations in model selection
 #' @param cr a string. The criterion for model selection with BIC as default. Also support AIC, AICC and HIC
+#' @param fs logical. Indicate whether the +1 correction is needed in FDPhat
 #' @param verbose a list of logical values in the form of list(print = , fit = , ms = ). Each element indicates whether the relevant information is outputted to the console. See Details
 #'
 #' @return
@@ -169,6 +170,7 @@ adapt <- function(x, pvals, models,
                   nfits = 20, nms = 1,
                   niter_fit = 10, tol = 1e-4,
                   niter_ms = 20, cr = "BIC",
+                  fs = TRUE,
                   verbose = list(print = TRUE, fit = FALSE, ms = TRUE)
                   ){
 
@@ -238,7 +240,7 @@ adapt <- function(x, pvals, models,
     s <- s0
     A <- sum(pvals >= 1 - s)
     R <- sum(pvals <= s)
-    minfdp <- fdp_hat(A, R) # initial FDPhat
+    minfdp <- fdp_hat(A, R, fs) # initial FDPhat
 
     ## Remove the alphas greater than the initial FDPhat, except the smallest one among them
     alphas <- sort(alphas)
@@ -332,7 +334,7 @@ adapt <- function(x, pvals, models,
         ## Shortcut to calculate FDPhat after revealing the hypotheses one by one
         Adecre <- cumsum(pvals[inds] >= 1 - s[inds])
         Rdecre <- cumsum(pvals[inds] <= s[inds])
-        fdp <- fdp_hat(A - Adecre, R - Rdecre)
+        fdp <- fdp_hat(A - Adecre, R - Rdecre, fs)
         fdp_return <- c(fdp_return, fdp)
         fdp <- pmin(fdp, minfdp)
         ## Calculate the current minimum FDPhat

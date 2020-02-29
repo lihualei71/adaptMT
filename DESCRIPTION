@@ -21,7 +21,7 @@ Suggests:
     knitr,
     rmarkdown,
     dplyr
-RoxygenNote: 6.1.0
+RoxygenNote: 7.0.2
 Imports: 
     methods
 VignetteBuilder: knitr

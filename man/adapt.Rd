@@ -4,11 +4,25 @@
 \alias{adapt}
 \title{Adaptive P-value Thresholding}
 \usage{
-adapt(x, pvals, models, dist = beta_family(), s0 = rep(0.45,
-  length(pvals)), alphas = seq(0.01, 1, 0.01), params0 = list(pix =
-  NULL, mux = NULL), nfits = 20, nms = 1, niter_fit = 10,
-  tol = 1e-04, niter_ms = 20, cr = "BIC", fs = TRUE,
-  verbose = list(print = TRUE, fit = FALSE, ms = TRUE))
+adapt(
+  x,
+  pvals,
+  models,
+  dist = beta_family(),
+  s0 = rep(0.45, length(pvals)),
+  alphas = seq(0.01, 1, 0.01),
+  params0 = list(pix = NULL, mux = NULL),
+  nfits = 20,
+  nms = 1,
+  niter_fit = 10,
+  tol = 1e-04,
+  niter_ms = 20,
+  cr = "BIC",
+  fs = TRUE,
+  verbose = list(print = TRUE, fit = FALSE, ms = TRUE),
+  Mstep_type = "unweighted",
+  lfdr_type = "over"
+)
 }
 \arguments{
 \item{x}{covariates (i.e. side-information). Should be compatible to \code{models}. See Details}
@@ -40,6 +54,10 @@ adapt(x, pvals, models, dist = beta_family(), s0 = rep(0.45,
 \item{fs}{logical. Indicate whether the +1 correction is needed in FDPhat}
 
 \item{verbose}{a list of logical values in the form of list(print = , fit = , ms = ). Each element indicates whether the relevant information is outputted to the console. See Details}
+
+\item{Mstep_type}{"unweighted" or "weighted". Indicate whether to use weighted training in M-steps. Please keep the default value "unweighted" unless there is a need to change it. See Appendix A.3 of the paper for details.}
+
+\item{lfdr_type}{"over" or "raw". Indicate whether to use over-estimate or raw estimate of local FDR. Please keep the default value "over" unless there is a need to change it. See Section 4.3 of the paper for details.}
 }
 \value{
 \item{nrejs}{a vector of integers. Number of rejections for each alpha}

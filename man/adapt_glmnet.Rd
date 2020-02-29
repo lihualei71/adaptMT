@@ -4,9 +4,16 @@
 \alias{adapt_glmnet}
 \title{Adaptive P-value Thresholding with L1/L2 Penalized Generalized Linear Models}
 \usage{
-adapt_glmnet(x, pvals, piargs = list(), muargs = list(),
-  dist = beta_family(), s0 = rep(0.45, length(pvals)),
-  alphas = seq(0.01, 1, 0.01), ...)
+adapt_glmnet(
+  x,
+  pvals,
+  piargs = list(),
+  muargs = list(),
+  dist = beta_family(),
+  s0 = rep(0.45, length(pvals)),
+  alphas = seq(0.01, 1, 0.01),
+  ...
+)
 }
 \arguments{
 \item{x}{covariates (i.e. side-information). Should be compatible to \code{models}. See Details}

@@ -4,9 +4,17 @@
 \alias{ctgm_lfdr}
 \title{Fitting Conditional Two-Groups Models on Unmasked P-Values}
 \usage{
-ctgm_lfdr(x, pvals, models, dist = beta_family(), type = c("over",
-  "raw"), params0 = list(pix = NULL, mux = NULL), niter = 50,
-  cr = "BIC", verbose = TRUE)
+ctgm_lfdr(
+  x,
+  pvals,
+  models,
+  dist = beta_family(),
+  type = c("over", "raw"),
+  params0 = list(pix = NULL, mux = NULL),
+  niter = 50,
+  cr = "BIC",
+  verbose = TRUE
+)
 }
 \arguments{
 \item{x}{covariates (i.e. side-information). Should be compatible to \code{models}. See Details}

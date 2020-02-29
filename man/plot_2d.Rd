@@ -6,11 +6,30 @@
 \alias{plot_2d_lfdr}
 \title{Plotting Functions for AdaPT with 2D Covariates}
 \usage{
-plot_2d_thresh(obj, x, pvals, alpha, title, xlab = NULL, ylab = NULL,
-  keyaxes = list(), ...)
+plot_2d_thresh(
+  obj,
+  x,
+  pvals,
+  alpha,
+  title,
+  xlab = NULL,
+  ylab = NULL,
+  keyaxes = list(),
+  ...
+)
 
-plot_2d_lfdr(obj, x, pvals, alpha, title, targetp, xlab = NULL,
-  ylab = NULL, keyaxes = list(), ...)
+plot_2d_lfdr(
+  obj,
+  x,
+  pvals,
+  alpha,
+  title,
+  targetp,
+  xlab = NULL,
+  ylab = NULL,
+  keyaxes = list(),
+  ...
+)
 }
 \arguments{
 \item{obj}{an 'adapt' object}

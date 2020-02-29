@@ -121,6 +121,8 @@ check_pkgs <- function(models){
 #' @param cr a string. The criterion for model selection with BIC as default. Also support AIC, AICC and HIC
 #' @param fs logical. Indicate whether the +1 correction is needed in FDPhat
 #' @param verbose a list of logical values in the form of list(print = , fit = , ms = ). Each element indicates whether the relevant information is outputted to the console. See Details
+#' @param Mstep_type "unweighted" or "weighted". Indicate whether to use weighted training in M-steps. Please keep the default value "unweighted" unless there is a need to change it. See Appendix A.3 of the paper for details.
+#' @param lfdr_type "over" or "raw". Indicate whether to use over-estimate or raw estimate of local FDR. Please keep the default value "over" unless there is a need to change it. See Section 4.3 of the paper for details. 
 #'
 #' @return
 #' \item{nrejs}{a vector of integers. Number of rejections for each alpha}
@@ -171,12 +173,10 @@ adapt <- function(x, pvals, models,
                   niter_fit = 10, tol = 1e-4,
                   niter_ms = 20, cr = "BIC",
                   fs = TRUE,
-                  verbose = list(print = TRUE, fit = FALSE, ms = TRUE)
+                  verbose = list(print = TRUE, fit = FALSE, ms = TRUE),
+                  Mstep_type = "unweighted",
+                  lfdr_type = "over"
                   ){
-
-    Mstep_type <- "unweighted"
-    lfdr_type <- "over"
-
     ## Check if 'pvals' is a vector of values in [0, 1]
     if (!is.numeric(pvals) || min(pvals) < 0 || max(pvals) > 1){
         stop("Invalid p-values")

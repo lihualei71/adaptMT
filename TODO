@@ -13,3 +13,6 @@ DEL 12) qvals is not compatible with s
 DEL 13) stamps may change when repeated lfdr values appear
 YES 14) document "estrogen"
 YES 15) check documentation
+
+16) output of ctgm_lfdr
+17) models cannot be a singleton in ctgm_lfdr

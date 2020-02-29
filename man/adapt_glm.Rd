@@ -4,9 +4,18 @@
 \alias{adapt_glm}
 \title{Adaptive P-value Thresholding with Generalized Linear Models}
 \usage{
-adapt_glm(x, pvals, pi_formulas, mu_formulas, dist = beta_family(),
-  s0 = rep(0.45, length(pvals)), alphas = seq(0.01, 1, 0.01),
-  piargs = list(), muargs = list(), ...)
+adapt_glm(
+  x,
+  pvals,
+  pi_formulas,
+  mu_formulas,
+  dist = beta_family(),
+  s0 = rep(0.45, length(pvals)),
+  alphas = seq(0.01, 1, 0.01),
+  piargs = list(),
+  muargs = list(),
+  ...
+)
 }
 \arguments{
 \item{x}{covariates (i.e. side-information). Should be compatible to \code{models}. See Details}

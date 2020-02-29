@@ -6,11 +6,33 @@
 \alias{plot_1d_lfdr}
 \title{Plotting Functions for AdaPT with 1D Covariates}
 \usage{
-plot_1d_thresh(obj, x, pvals, alpha, title, xlab = "x", xlim = NULL,
-  disp_ymax = 0.2, num_yticks = 3, rand_seed_perturb = NA, ...)
+plot_1d_thresh(
+  obj,
+  x,
+  pvals,
+  alpha,
+  title,
+  xlab = "x",
+  xlim = NULL,
+  disp_ymax = 0.2,
+  num_yticks = 3,
+  rand_seed_perturb = NA,
+  ...
+)
 
-plot_1d_lfdr(obj, x, pvals, alpha, title, xlab = "x", xlim = NULL,
-  disp_ymax = 0.2, num_yticks = 3, legend_pos = "topright", ...)
+plot_1d_lfdr(
+  obj,
+  x,
+  pvals,
+  alpha,
+  title,
+  xlab = "x",
+  xlim = NULL,
+  disp_ymax = 0.2,
+  num_yticks = 3,
+  legend_pos = "topright",
+  ...
+)
 }
 \arguments{
 \item{obj}{an 'adapt' object}

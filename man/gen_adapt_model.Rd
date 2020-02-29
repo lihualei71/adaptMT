@@ -4,9 +4,17 @@
 \alias{gen_adapt_model}
 \title{adapt_model Objects for M-steps}
 \usage{
-gen_adapt_model(pifun = NULL, mufun = NULL, pifun_init = NULL,
-  mufun_init = NULL, piargs = list(), muargs = list(),
-  piargs_init = list(), muargs_init = list(), name = "")
+gen_adapt_model(
+  pifun = NULL,
+  mufun = NULL,
+  pifun_init = NULL,
+  mufun_init = NULL,
+  piargs = list(),
+  muargs = list(),
+  piargs_init = list(),
+  muargs_init = list(),
+  name = ""
+)
 }
 \arguments{
 \item{pifun}{a function to fit pi(x). See Details}

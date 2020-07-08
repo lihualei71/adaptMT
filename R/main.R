@@ -100,7 +100,6 @@ check_pkgs <- function(models){
 #' \code{verbose} has three elements: \code{print}, \code{fit} and \code{ms}. If \code{print = TRUE}, the progress of the main procedure is outputted to the console, in the form of "alpha = 0.05: FDPhat 0.0333, Number of Rej. 30" (where the numbers are made up for illustration). If \code{fit = TRUE}, a progress bar for the model fitting is outputted to the console. Similarly, if \code{ms = TRUE}, a progress bar for the model selection is outputted to the console.
 #'
 #' For ultra-large scale problems (n > 10^5), it is recommended to keep \code{alphas} short because the output \code{s} is of size n x \code{length(alphas)}.
-#' is \code{length(alphas)}.
 #'
 #' The output \code{qvals} gives the q-values of each hypothesis. \code{qvals[i]} is defined as the minimum target FDR level such that \code{pvals[i]} is rejected. For hypotheses with p-values above s0, the q-values are set to be Inf because they are never rejected by AdaPT for whatever alpha.
 #'

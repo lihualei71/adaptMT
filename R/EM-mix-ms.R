@@ -17,7 +17,7 @@ EM_mix_ms <- function(x, pvals, s, dist, models,
                       verbose = TRUE,
                       type = "unweighted"){
     n <- length(pvals)
-    info_cr_val <- -Inf
+    info_cr_val <- Inf
     
     m <- length(models)
     if (verbose){
@@ -41,7 +41,7 @@ EM_mix_ms <- function(x, pvals, s, dist, models,
         loglik <- fit$loglik
         df <- fit$info$pi$df + fit$info$mu$df
         val <- info_cr(loglik, cr, df, n)
-        if (val > info_cr_val){
+        if (val < info_cr_val){
             params <- fit$params
             info_cr_val <- val
             best_model <- models[[i]]
@@ -55,7 +55,7 @@ EM_mix_ms <- function(x, pvals, s, dist, models,
     if (verbose){    
         cat("\n")
     }
-    if (info_cr_val == -Inf){
+    if (info_cr_val == Inf){
         stop("All models fail.")
     }
     return(list(model = best_model,

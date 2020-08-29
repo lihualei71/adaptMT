@@ -6,7 +6,7 @@
 #---------------------------------------------------------------
 
 fdp_hat <- function(A, R, fs = TRUE, zeta){
-    (as.numeric(fs) + A)/zeta / pmax(1, R)
+    (as.numeric(fs) + A) / zeta / pmax(1, R)
 }
 
 

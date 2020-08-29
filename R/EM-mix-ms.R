@@ -15,10 +15,11 @@ EM_mix_ms <- function(x, pvals, s, dist, models,
                       params0 = list(pix = NULL, mux = NULL),
                       niter = 20, tol = 1e-4,
                       verbose = TRUE,
-                      type = "unweighted"){
+                      type = "unweighted",
+                      alpha_m, lambda, zeta){
     n <- length(pvals)
     info_cr_val <- Inf
-    
+    masking_fun <- masking_function(alpha_m, lambda, zeta)
     m <- length(models)
     if (verbose){
         cat("Model selection starts!\n")
@@ -30,14 +31,14 @@ EM_mix_ms <- function(x, pvals, s, dist, models,
         model <- complete_model(models[[i]], dist)
         fit <- try(
             EM_mix(x, pvals, s, dist, model, params0, niter, tol,
-                   type = type),
+                   type = type, zeta = zeta, masking_fun = masking_fun),
             silent = TRUE
             )
         if (class(fit)[1] == "try-error"){
             warning(paste0("Model ", i, " fails."))
             next
         }
-        
+
         loglik <- fit$loglik
         df <- fit$info$pi$df + fit$info$mu$df
         val <- info_cr(loglik, cr, df, n)
@@ -52,7 +53,7 @@ EM_mix_ms <- function(x, pvals, s, dist, models,
             setTxtProgressBar(pb, i)
         }
     }
-    if (verbose){    
+    if (verbose){
         cat("\n")
     }
     if (info_cr_val == Inf){

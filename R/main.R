@@ -5,8 +5,8 @@
 # Available from http://arxiv.org/abs/1609.06035
 #---------------------------------------------------------------
 
-fdp_hat <- function(A, R, fs = TRUE){
-    (as.numeric(fs) + A) / pmax(1, R)
+fdp_hat <- function(A, R, fs = TRUE, zeta){
+    (as.numeric(fs) + A)/zeta / pmax(1, R)
 }
 
 
@@ -121,8 +121,8 @@ check_pkgs <- function(models){
 #' @param fs logical. Indicate whether the +1 correction is needed in FDPhat
 #' @param verbose a list of logical values in the form of list(print = , fit = , ms = ). Each element indicates whether the relevant information is outputted to the console. See Details
 #' @param Mstep_type "unweighted" or "weighted". Indicate whether to use weighted training in M-steps. Please keep the default value "unweighted" unless there is a need to change it. See Appendix A.3 of the paper for details.
-#' @param lfdr_type "over" or "raw". Indicate whether to use over-estimate or raw estimate of local FDR. Please keep the default value "over" unless there is a need to change it. See Section 4.3 of the paper for details. 
-#'
+#' @param lfdr_type "over" or "raw". Indicate whether to use over-estimate or raw estimate of local FDR. Please keep the default value "over" unless there is a need to change it. See Section 4.3 of the paper for details.
+#' TODO FILL IN DETAILS FOR MASKING PARAMETERS
 #' @return
 #' \item{nrejs}{a vector of integers. Number of rejections for each alpha}
 #' \item{rejs}{a list of vector of integers. The set of indices of rejections for each alpha}
@@ -174,7 +174,10 @@ adapt <- function(x, pvals, models,
                   fs = TRUE,
                   verbose = list(print = TRUE, fit = FALSE, ms = TRUE),
                   Mstep_type = "unweighted",
-                  lfdr_type = "over"
+                  lfdr_type = "over",
+                  alpha_m = 0.5,
+                  lambda = 0.5,
+                  zeta = 1
                   ){
     ## Check if 'pvals' is a vector of values in [0, 1]
     if (!is.numeric(pvals) || min(pvals) < 0 || max(pvals) > 1){
@@ -191,6 +194,14 @@ adapt <- function(x, pvals, models,
         stop("\'dist\' must be of class \'exp_family\'.")
     }
 
+    if (any(s0>alpha_m)){
+        warning("Initial \'s0\' is greater than alpha_m. Defaulting to 90% of alpha_m.")
+        s0 <- rep(0.9 * alpha_m, length(pvals))
+    }
+
+    #TODO CHECK FOR VALIDITY OF MASKING PARAMETERS
+    masking_fun <- masking_function(alpha_m, lambda, zeta)
+    mask_thres <- alpha_m * zeta + lambda
     ## Check if necessary packages are installed.
     check_pkgs(models)
 
@@ -216,7 +227,7 @@ adapt <- function(x, pvals, models,
     }
 
     ## Create time stamps when model is fitted or model selection is performed
-    nmasks <- sum(pvals <= s0) + sum(pvals >= 1 - s0)
+    nmasks <- sum(pvals <= s0) + sum(pvals >= masking_fun(s0) & pvals <= mask_thres)
     stamps <- create_stamps(nmasks, nfits, nms)
 
     ## Create root arguments to simplify fitting and model selection
@@ -237,9 +248,9 @@ adapt <- function(x, pvals, models,
     n <- length(pvals)
     params <- params0
     s <- s0
-    A <- sum(pvals >= 1 - s)
+    A <- sum(pvals >= masking_fun(s) & pvals <= mask_thres)
     R <- sum(pvals <= s)
-    minfdp <- fdp_hat(A, R, fs) # initial FDPhat
+    minfdp <- fdp_hat(A, R, fs, zeta) # initial FDPhat
 
     ## Remove the alphas greater than the initial FDPhat, except the smallest one among them
     alphas <- sort(alphas)
@@ -258,7 +269,7 @@ adapt <- function(x, pvals, models,
     params_return <- list() # parameters (including pix and mux)
     model_list <- list() # all selected models
     info_list <- list() # other information (df, vi, etc.)
-    reveal_order <- which((pvals > s) & (pvals < 1 - s)) # the order to be revealed
+    reveal_order <- which((pvals > s) & (pvals <= masking_fun(s))) # the order to be revealed
     if (length(reveal_order) > 0){
         init_pvals <- pvals[reveal_order]
         reveal_order <- reveal_order[order(init_pvals, decreasing = TRUE)]
@@ -284,7 +295,7 @@ adapt <- function(x, pvals, models,
         mask <- rep(TRUE, n)
         mask[reveal_order] <- FALSE
         nmasks <- sum(mask)
-        A <- sum(pvals >= 1 - s)
+        A <- sum(pvals >= masking_fun(s) & pvals <= mask_thres)
         R <- sum(pvals <= s)
         start <- stamps[i, 1]
         end <- stamps[i + 1, 1]
@@ -294,7 +305,8 @@ adapt <- function(x, pvals, models,
         ## Model selection or model fitting
         if (type == "ms"){
             ms_args <- c(
-                list(s = s, params0 = params),
+                list(s = s, params0 = params,
+                     alpha_m = alpha_m, lambda = lambda, zeta = zeta),
                 ms_args_root
                 )
             ## Use "EM_mix_ms" from "EM-mix-ms.R"
@@ -304,7 +316,7 @@ adapt <- function(x, pvals, models,
             modinfo <- ms_res$info
         } else if (type == "fit"){
             fit_args <- c(
-                list(s = s, params0 = params, model = model),
+                list(s = s, params0 = params, model = model, zeta = zeta, masking_fun = masking_fun),
                 fit_args_root
                 )
             ## Use "EM_mix" from "EM-mix.R"
@@ -323,17 +335,19 @@ adapt <- function(x, pvals, models,
         }
 
         ## Estimate local FDR
+
         lfdr <- compute_lfdr_mix(
-            pmin(pvals, 1 - pvals),
+            pmin(pvals, masking_fun(pvals)),
             dist, params, lfdr_type)
         ## Find the top "nreveals" hypotheses with highest lfdr
         lfdr[!mask] <- -Inf
         inds <- order(lfdr, decreasing = TRUE)[1:nreveals]
         reveal_order <- c(reveal_order, inds)
         ## Shortcut to calculate FDPhat after revealing the hypotheses one by one
-        Adecre <- cumsum(pvals[inds] >= 1 - s[inds])
+
+        Adecre <- cumsum(pvals[inds] >= masking_fun(s[inds]) & pvals[inds] <= mask_thres)
         Rdecre <- cumsum(pvals[inds] <= s[inds])
-        fdp <- fdp_hat(A - Adecre, R - Rdecre, fs)
+        fdp <- fdp_hat(A - Adecre, R - Rdecre, fs, zeta)
         fdp_return <- c(fdp_return, fdp)
         fdp <- pmin(fdp, minfdp)
         ## Calculate the current minimum FDPhat
@@ -349,7 +363,8 @@ adapt <- function(x, pvals, models,
 
                 ## Sanity check to avoid rounding errors
                 tmp_pvals <- pvals[inds[1:breakpoint]]
-                tmp_pvals <- pmin(tmp_pvals, 1 - tmp_pvals)
+
+                tmp_pvals <- pmin(tmp_pvals, masking_fun(tmp_pvals))
                 tmp_inds <- which(tmp_pvals <= snew[inds[1:breakpoint]])
                 if (length(tmp_inds) > 0){
                     snew[inds[tmp_inds]] <- pmin(snew[inds[tmp_inds]], tmp_pvals[tmp_inds] - 1e-15)
@@ -383,11 +398,14 @@ adapt <- function(x, pvals, models,
         ## Update s(x)
         final_lfdr_lev <- lfdr[tail(inds, 1)]
         snew <- compute_threshold_mix(dist, params, final_lfdr_lev, lfdr_type)
+        if(any(is.na(snew))){
+            browser()
+        }
         s <- pmin(s, snew)
 
         ## Sanity check to avoid rounding errors
         tmp_pvals <- pvals[inds]
-        tmp_pvals <- pmin(tmp_pvals, 1 - tmp_pvals)
+        tmp_pvals <- pmin(tmp_pvals, masking_fun(tmp_pvals))
         tmp_inds <- which(tmp_pvals <= snew[inds])
         if (length(tmp_inds) > 0){
             s[inds[tmp_inds]] <- pmin(s[inds[tmp_inds]], tmp_pvals[tmp_inds] - 1e-15)
@@ -397,7 +415,7 @@ adapt <- function(x, pvals, models,
     remain_inds <- (1:n)[-reveal_order]
     if (length(remain_inds) > 0){
         tmp_pvals <- pvals[remain_inds]
-        tmp_pvals <- pmin(tmp_pvals, 1 - tmp_pvals)
+        tmp_pvals <- pmin(tmp_pvals, masking_fun(tmp_pvals))
         remain_reveal_order <- remain_inds[order(tmp_pvals, decreasing = TRUE)]
         reveal_order <- c(reveal_order, remain_reveal_order)
         fdp_return <- c(fdp_return, rep(minfdp, length(remain_inds)))

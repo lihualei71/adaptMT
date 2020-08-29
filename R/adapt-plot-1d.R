@@ -91,7 +91,7 @@ plot_1d_thresh <- function(obj, x, pvals,
     }
 
     par(...)
-
+    #TODO CHANGE THIS
     what_type <- ifelse(pvals < s, 1, ifelse(pvals > 1 - s, 2, 3))
     plot(x, (1:n * disp_ymax) / n, type = "n", pch = ".",
          xaxs = "i", yaxs = "i", ylab = "p-values",
@@ -105,6 +105,7 @@ plot_1d_thresh <- function(obj, x, pvals,
     vhi <- 1.01
     polygon(x = c(x, rev(x)), y = c(s, rep(vlo, n)),
             col = "#FFDDDD", border = "red")
+    #TODO CHANGE THIS
     polygon(x = c(x, rev(x)), y = c(1 - s, rep(vhi, n)),
             col = "light blue", border = "blue")
     if(!is.na(rand_seed_perturb)) {

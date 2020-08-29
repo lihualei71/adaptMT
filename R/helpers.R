@@ -36,8 +36,8 @@ find_newname <- function(names_vec){
 complete_pkg <- function(formula){
     formula <- as.character(formula)
     formula <- tail(formula, 1)
-    formula <- tail(strsplit(formula, "~")[[1]], 1)    
-    formula <- paste0(" ", formula)    
+    formula <- tail(strsplit(formula, "~")[[1]], 1)
+    formula <- paste0(" ", formula)
     if (grepl("ns\\(", formula)){
         if (!requireNamespace("splines", quietly = TRUE)){
             stop("package \'splines\' not found. Please install.")
@@ -52,7 +52,7 @@ complete_pkg <- function(formula){
     }
     return(formula)
 }
-    
+
 
 complete_formula <- function(formula, response_name){
     if (is.null(formula)){
@@ -78,14 +78,14 @@ complete_args <- function(x, response, fun,
     if (!input_type %in% c("formula", "xy", "Xy")){
         stop("Wrong input type.")
     }
-    
+
     response_name <- find_newname(colnames(x))
 
     if (input_type == "formula"){
         if (is.null(args) || !"formula" %in% names(args)){
             stop("Formula is not found. Please specify a formula for the fitting function.")
         }
-        data <- cbind(data.frame(response), x)        
+        data <- cbind(data.frame(response), x)
         colnames(data)[1] <- response_name
         args$formula <-  complete_formula(args$formula, response_name)
         data_args <- c(list(data = data), args)
@@ -97,7 +97,7 @@ complete_args <- function(x, response, fun,
         data_args <- c(
             list(X = x, y = response),
             args)
-    } 
+    }
 
     data_args <- c(data_args, list(weights = weights))
 
@@ -121,4 +121,17 @@ complete_model <- function(model, dist){
     } else {
         model
     }
+}
+
+# assume values < alpha_m
+masking_function <- function(alpha_m, lambda, zeta){
+    masking_fun <- function(values){
+        output <- values
+        small_ind <- values <= alpha_m
+        big_ind <- values <= alpha_m * zeta + lambda & values >= lambda
+        output[small_ind] <- (alpha_m - values[small_ind]) * zeta + lambda
+        output[big_ind] <- ((lambda + alpha_m * zeta) - values[big_ind]) / zeta
+        return(output)
+    }
+    return(masking_fun)
 }

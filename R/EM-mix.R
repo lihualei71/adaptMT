@@ -3,7 +3,9 @@
 #---------------------------------------------------------------
 
 EM_loglik <- function(pvals, dist, pix, mux, Hhat, bhat){
+    #TODO CHECK IF NEED TO CHANGE THIS
     loglik1 <- sum(Hhat * log(pix) + (1 - Hhat) * log(1 - pix))
+    #TODO CHECK IF NEED TO CHANGE THIS
     loglik2 <- sum(Hhat * bhat * log(dist$h(pvals, mux)) +
                    Hhat * (1 - bhat) * log(dist$h(1 - pvals, mux)))
     return(loglik1 + loglik2)
@@ -13,7 +15,7 @@ EM_mix <- function(x, pvals, s, dist, model,
                    params0 = list(pix = NULL, mux = NULL),
                    niter = 10, tol = 1e-4,
                    verbose = FALSE,
-                   type = "unweighted"){
+                   type = "unweighted", zeta, masking_fun){
     model <- complete_model(model, dist)
     if (verbose){
         cat("Model fitting starts!\n")
@@ -22,10 +24,13 @@ EM_mix <- function(x, pvals, s, dist, model,
     }
 
     if (is.null(params0$pix) || is.null(params0$mux)){
-        piargs_init <- c(list(x = x, pvals = pvals, s = s),
+        piargs_init <- c(list(x = x, pvals = pvals, s = s,
+                              zeta = zeta, masking_fun = masking_fun),
                          model$args$piargs_init)
+
         pix <- do.call(model$algo$pifun_init, piargs_init)$fitv
-        muargs_init <- c(list(x = x, pvals = pvals, s = s),
+        muargs_init <- c(list(x = x, pvals = pvals, s = s,
+                              zeta = zeta, masking_fun = masking_fun),
                          model$args$muargs_init)
         mux <- do.call(model$algo$mufun_init, muargs_init)$fitv
 
@@ -43,10 +48,10 @@ EM_mix <- function(x, pvals, s, dist, model,
 
     for (step in 1:niter){
         Estep_res <-
-            Estep_mix(pvals, s, dist, pix, mux)
+            Estep_mix(pvals, s, dist, pix, mux, masking_fun)
         Mstep_res <-
             Mstep_mix(x, pvals, dist,
-                      Estep_res$Hhat, Estep_res$bhat, 
+                      Estep_res$Hhat, Estep_res$bhat,
                       model$algo$pifun, model$algo$mufun,
                       model$args$piargs, model$args$muargs,
                       type = type[1])
@@ -60,15 +65,15 @@ EM_mix <- function(x, pvals, s, dist, model,
         old_mux <- mux
         if (verbose){
             utils::setTxtProgressBar(pb, step)
-        }        
+        }
     }
-    if (verbose){    
+    if (verbose){
         cat("\n")
     }
     params <- list(pix = pix, mux = mux)
     loglik <- EM_loglik(pvals, dist, params$pix, params$mux,
                         Estep_res$Hhat, Estep_res$bhat)
     info <- list(pi = Mstep_res$pi_info, mu = Mstep_res$mu_info)
-    
+
     return(list(params = params, loglik = loglik, info = info))
 }

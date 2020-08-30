@@ -9,6 +9,24 @@ fdp_hat <- function(A, R, fs = TRUE, zeta){
     (as.numeric(fs) + A) / zeta / pmax(1, R)
 }
 
+select_masking_params <- function(n,alpha_m,zeta,lambda){
+    if(is.null(alpha_m) | is.null(zeta) | is.null(lambda)){
+        warning("Masking parameter alpha_m, zeta, or lambda found to be NULL. Automatically selecting masking function. See documentation for details.")
+        if(is.null(zeta)){
+            zeta <- min(20,max(6000/n,2))
+        }
+        if(zeta>8){
+            alpha_m <- 0.8 / zeta
+        }else{
+            alpha_m <- 0.9 / (zeta + 1)
+        }
+        lambda <- max(alpha_m,0.1)
+    }
+
+    masking_params <- list(alpha_m=alpha_m, lambda=lambda,zeta=zeta)
+    return(masking_params)
+}
+
 
 compute_lfdr_mix <- function(pvals, dist, params,
                              type = "over"){
@@ -175,9 +193,9 @@ adapt <- function(x, pvals, models,
                   verbose = list(print = TRUE, fit = FALSE, ms = TRUE),
                   Mstep_type = "unweighted",
                   lfdr_type = "over",
-                  alpha_m = 0.5,
-                  lambda = 0.5,
-                  zeta = 1
+                  alpha_m = NULL,
+                  lambda = NULL,
+                  zeta = NULL
                   ){
     ## Check if 'pvals' is a vector of values in [0, 1]
     if (!is.numeric(pvals) || min(pvals) < 0 || max(pvals) > 1){
@@ -194,10 +212,20 @@ adapt <- function(x, pvals, models,
         stop("\'dist\' must be of class \'exp_family\'.")
     }
 
+    masking_params <- select_masking_params(length(pvals), alpha_m, lambda, zeta)
+    print(masking_params)
+    alpha_m <- masking_params$alpha_m
+    lambda <- masking_params$lambda
+    zeta <- masking_params$zeta
+
+    print(paste(alpha_m, lambda, zeta))
     if (any(s0>alpha_m)){
         warning("Initial \'s0\' is greater than alpha_m. Defaulting to 90% of alpha_m.")
         s0 <- rep(0.9 * alpha_m, length(pvals))
     }
+
+
+
 
     #TODO CHECK FOR VALIDITY OF MASKING PARAMETERS
     masking_fun <- masking_function(alpha_m, lambda, zeta)
@@ -398,9 +426,6 @@ adapt <- function(x, pvals, models,
         ## Update s(x)
         final_lfdr_lev <- lfdr[tail(inds, 1)]
         snew <- compute_threshold_mix(dist, params, final_lfdr_lev, lfdr_type)
-        if(any(is.na(snew))){
-            browser()
-        }
         s <- pmin(s, snew)
 
         ## Sanity check to avoid rounding errors

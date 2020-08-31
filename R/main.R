@@ -9,7 +9,7 @@ fdp_hat <- function(A, R, fs = TRUE, zeta){
     (as.numeric(fs) + A) / zeta / pmax(1, R)
 }
 
-select_masking_params <- function(n,alpha_m,zeta,lambda){
+select_masking_params <- function(n,alpha_m,lambda,zeta){
     if(is.null(alpha_m) | is.null(zeta) | is.null(lambda)){
         warning("Masking parameter alpha_m, zeta, or lambda found to be NULL. Automatically selecting masking function. See documentation for details.")
         if(is.null(zeta)){
@@ -213,17 +213,15 @@ adapt <- function(x, pvals, models,
     }
 
     masking_params <- select_masking_params(length(pvals), alpha_m, lambda, zeta)
-    print(masking_params)
+
     alpha_m <- masking_params$alpha_m
     lambda <- masking_params$lambda
     zeta <- masking_params$zeta
 
-    print(paste(alpha_m, lambda, zeta))
     if (any(s0>alpha_m)){
         warning("Initial \'s0\' is greater than alpha_m. Defaulting to 90% of alpha_m.")
         s0 <- rep(0.9 * alpha_m, length(pvals))
     }
-
 
 
 

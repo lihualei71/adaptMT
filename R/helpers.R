@@ -128,7 +128,7 @@ masking_function <- function(alpha_m, lambda, zeta){
     masking_fun <- function(values){
         output <- values
         small_ind <- values <= alpha_m
-        big_ind <- values <= alpha_m * zeta + lambda & values >= lambda
+        big_ind <- (values <= alpha_m * zeta + lambda) & values >= lambda
         output[small_ind] <- (alpha_m - values[small_ind]) * zeta + lambda
         output[big_ind] <- ((lambda + alpha_m * zeta) - values[big_ind]) / zeta
         return(output)

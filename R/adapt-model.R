@@ -129,9 +129,11 @@ gen_adapt_model_glm <- function(dist,
                  family = dist$family, ...)
     }
 
-    pifun_init <- function(x, pvals, s, zeta, masking_fun, ...){
+    pifun_init <- function(x, pvals, s,  masking_fun, ...){
+        zeta <- masking_fun("zeta")
+        thres <- masking_fun("thres")
         J <- ifelse(
-            pvals < s | pvals > masking_fun(s), 1,
+            pvals < s | (pvals > masking_fun(s) & pvals <= thres), 1,
             (1 + zeta) * s / ((1 + zeta) * s - 1)
             )
         if (any(s >= 0.49)){
@@ -148,9 +150,10 @@ gen_adapt_model_glm <- function(dist,
         fit_pi(fun, args, type = "init")
     }
 
-    mufun_init <- function(x, pvals, s, zeta, masking_fun, ...){
+    mufun_init <- function(x, pvals, s, masking_fun, ...){
+        thres <- masking_fun("thres")
         phat <- ifelse(
-            pvals < s | pvals > masking_fun(s),
+            pvals < s | (pvals > masking_fun(s) & pvals <= thres),
             pmin(pvals, masking_fun(pvals)),
             pvals
             )
@@ -192,9 +195,12 @@ gen_adapt_model_gam <- function(dist,
                  family = dist$family, ...)
     }
 
-    pifun_init <- function(x, pvals, s, zeta, masking_fun,...){
+    pifun_init <- function(x, pvals, s, masking_fun,...){
+        zeta <- masking_fun("zeta")
+        thres <- masking_fun("thres")
+
         J <- ifelse(
-            pvals < s | pvals > masking_fun(s), 1,
+            pvals < s | (pvals > masking_fun(s) & pvals <= thres), 1,
             (1 + zeta) * s / ((1 + zeta) * s - 1)
             )
         if (any(s >= 0.49)){
@@ -211,9 +217,11 @@ gen_adapt_model_gam <- function(dist,
         fit_pi(fun, args, type = "init")
     }
 
-    mufun_init <- function(x, pvals, s, zeta, masking_fun, ...){
+    mufun_init <- function(x, pvals, s, masking_fun, ...){
+        thres <- masking_fun("thres")
+
         phat <- ifelse(
-            pvals < s | pvals > masking_fun(s),
+            pvals < s | (pvals > masking_fun(s) & pvals <= thres),
             pmin(pvals, masking_fun(pvals)),
             pvals
             )
@@ -256,9 +264,12 @@ gen_adapt_model_glmnet <- function(dist,
                     family = dist$family, ...)
     }
 
-    pifun_init <- function(x, pvals, s, zeta, masking_fun, ...){
+    pifun_init <- function(x, pvals, s, masking_fun, ...){
+        zeta <- masking_fun("zeta")
+        thres <- masking_fun("thres")
+
         J <- ifelse(
-            pvals < s | pvals > masking_fun(s), 1,
+            pvals < s | (pvals > masking_fun(s) & pvals <= thres), 1,
             (1 + zeta) * s / ((1 + zeta) * s - 1)
             )
         if (any(s >= 0.49)){
@@ -275,9 +286,10 @@ gen_adapt_model_glmnet <- function(dist,
         fit_pi(fun, args, type = "init")
     }
 
-    mufun_init <- function(x, pvals, s, zeta, masking_fun, ...){
+    mufun_init <- function(x, pvals, s, masking_fun, ...){
+        thres <- masking_fun("thres")
         phat <- ifelse(
-            pvals < s | pvals > masking_fun(s),
+            pvals < s | (pvals > masking_fun(s) & pvals <= thres),
             pmin(pvals, masking_fun(pvals)),
             pvals
             )

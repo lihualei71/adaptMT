@@ -126,6 +126,13 @@ complete_model <- function(model, dist){
 # assume values < alpha_m
 masking_function <- function(alpha_m, lambda, zeta){
     masking_fun <- function(values){
+        if(length(values) == 1 & typeof(values) == "character"){
+            if(values == "zeta"){
+                return(zeta)
+            }else if(values == "thres"){
+                return(alpha_m * zeta + lambda)
+            }
+        }
         output <- values
         small_ind <- values <= alpha_m
         big_ind <- (values <= alpha_m * zeta + lambda) & values >= lambda

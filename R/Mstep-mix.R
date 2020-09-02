@@ -6,7 +6,7 @@ Mstep_mix <- function(x, pvals, dist,
                       Hhat, bhat,
                       pifun, mufun,
                       piargs = NULL, muargs = NULL,
-                      type = "unweighted"){
+                      type = "unweighted", masking_fun){
     if (!"weights" %in% formalArgs(mufun)){
         stop("'mufun' does not have input 'weights'")
     }
@@ -14,19 +14,16 @@ Mstep_mix <- function(x, pvals, dist,
     n <- length(Hhat)
     x_aug <- rbind(x, x)
     H_aug <- c(rep(1, n), rep(0, n))
-    #TODO CHECK IF NEED TO CHANGE THIS
     weights <- c(Hhat, 1 - Hhat)
     piargs <- complete_args(x_aug, H_aug, pifun, piargs, weights)
     pi_res <- fit_pi(pifun, piargs, type = "Mstep")
     pi_res$fitv <- pi_res$fitv[1:n]
-    #TODO CHECK IF NEED TO CHANGE THIS
-    y_aug <- c(dist$g(pvals), dist$g(1 - pvals))
+
+    y_aug <- c(dist$g(pvals), dist$g(masking_fun(pvals)))
 
     if (type == "weighted"){
-        #TODO CHECK IF NEED TO CHANGE THIS
         weights <- c(Hhat * bhat, Hhat * (1 - bhat))
     } else if (type == "unweighted"){
-        #TODO CHECK IF NEED TO CHANGE THIS
         weights <- c(bhat, 1 - bhat)
     }
     muargs <- complete_args(x_aug, y_aug, mufun, muargs, weights)

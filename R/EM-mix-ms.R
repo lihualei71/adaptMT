@@ -16,10 +16,9 @@ EM_mix_ms <- function(x, pvals, s, dist, models,
                       niter = 20, tol = 1e-4,
                       verbose = TRUE,
                       type = "unweighted",
-                      alpha_m, lambda, zeta){
+                      masking_fun){
     n <- length(pvals)
     info_cr_val <- Inf
-    masking_fun <- masking_function(alpha_m, lambda, zeta)
     m <- length(models)
     if (verbose){
         cat("Model selection starts!\n")
@@ -29,11 +28,11 @@ EM_mix_ms <- function(x, pvals, s, dist, models,
     }
     for (i in 1:m){
         model <- complete_model(models[[i]], dist)
-        fit <- try(
+        fit <- #try(
             EM_mix(x, pvals, s, dist, model, params0, niter, tol,
-                   type = type, zeta = zeta, masking_fun = masking_fun),
-            silent = TRUE
-            )
+                   type = type, masking_fun = masking_fun)#,
+           # silent = TRUE
+            #)
         if (class(fit)[1] == "try-error"){
             warning(paste0("Model ", i, " fails."))
             next

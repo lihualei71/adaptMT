@@ -226,8 +226,9 @@ adapt <- function(x, pvals, models,
 
 
     #TODO CHECK FOR VALIDITY OF MASKING PARAMETERS
+
     masking_fun <- masking_function(alpha_m, lambda, zeta)
-    mask_thres <- alpha_m * zeta + lambda
+    mask_thres <- masking_fun("thres")
     ## Check if necessary packages are installed.
     check_pkgs(models)
 
@@ -332,7 +333,7 @@ adapt <- function(x, pvals, models,
         if (type == "ms"){
             ms_args <- c(
                 list(s = s, params0 = params,
-                     alpha_m = alpha_m, lambda = lambda, zeta = zeta),
+                     masking_fun = masking_fun),
                 ms_args_root
                 )
             ## Use "EM_mix_ms" from "EM-mix-ms.R"
@@ -342,7 +343,7 @@ adapt <- function(x, pvals, models,
             modinfo <- ms_res$info
         } else if (type == "fit"){
             fit_args <- c(
-                list(s = s, params0 = params, model = model, zeta = zeta, masking_fun = masking_fun),
+                list(s = s, params0 = params, model = model, masking_fun = masking_fun),
                 fit_args_root
                 )
             ## Use "EM_mix" from "EM-mix.R"

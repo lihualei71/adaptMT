@@ -226,7 +226,6 @@ adapt <- function(x, pvals, models,
 
 
     #TODO CHECK FOR VALIDITY OF MASKING PARAMETERS
-
     masking_fun <- masking_function(alpha_m, lambda, zeta)
     mask_thres <- masking_fun("thres")
     ## Check if necessary packages are installed.
@@ -296,7 +295,9 @@ adapt <- function(x, pvals, models,
     params_return <- list() # parameters (including pix and mux)
     model_list <- list() # all selected models
     info_list <- list() # other information (df, vi, etc.)
-    reveal_order <- which((pvals > s) & (pvals <= masking_fun(s))) # the order to be revealed
+    reveal_order <- which((pvals > s & pvals < alpha_m) |
+                              (pvals < masking_fun(s) & pvals > lambda) |
+                              pvals > mask_thres) # the order to be revealed
     if (length(reveal_order) > 0){
         init_pvals <- pvals[reveal_order]
         reveal_order <- reveal_order[order(init_pvals, decreasing = TRUE)]
@@ -318,7 +319,6 @@ adapt <- function(x, pvals, models,
         }
 
         alpha <- alphas[alphaind]
-        # mask <- (pvals <= s) | (pvals >= 1 - s)
         mask <- rep(TRUE, n)
         mask[reveal_order] <- FALSE
         nmasks <- sum(mask)
@@ -371,7 +371,6 @@ adapt <- function(x, pvals, models,
         inds <- order(lfdr, decreasing = TRUE)[1:nreveals]
         reveal_order <- c(reveal_order, inds)
         ## Shortcut to calculate FDPhat after revealing the hypotheses one by one
-
         Adecre <- cumsum(pvals[inds] >= masking_fun(s[inds]) & pvals[inds] <= mask_thres)
         Rdecre <- cumsum(pvals[inds] <= s[inds])
         fdp <- fdp_hat(A - Adecre, R - Rdecre, fs, zeta)
@@ -408,7 +407,6 @@ adapt <- function(x, pvals, models,
                         round(fdpnew, 4), ", Number of Rej. ",
                         Rnew, "\n"))
                 }
-
                 alphaind <- alphaind - 1
             } else {
                 break
@@ -426,7 +424,6 @@ adapt <- function(x, pvals, models,
         final_lfdr_lev <- lfdr[tail(inds, 1)]
         snew <- compute_threshold_mix(dist, params, final_lfdr_lev, lfdr_type)
         s <- pmin(s, snew)
-
         ## Sanity check to avoid rounding errors
         tmp_pvals <- pvals[inds]
         tmp_pvals <- pmin(tmp_pvals, masking_fun(tmp_pvals))

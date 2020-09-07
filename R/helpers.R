@@ -123,7 +123,15 @@ complete_model <- function(model, dist){
     }
 }
 
-# assume values < alpha_m
+# Returns function for computed corresponding masked values
+# Two possible unmasked values map to a given a masked value \tilde p_i, denoted as
+# p_big and p_small.
+# This function 'masking_fun' maps between p_big and p_small
+# masking_fun(p_big) = p_small
+# masking_fun(p_small) = p_big
+# For convenience, if the input is "zeta", masking_fun outputs zeta
+# For convenience, if the input is "thres", masking_fun outputs the upper bound for masking
+# equivalently alpha_m * zeta + lambda.
 masking_function <- function(alpha_m, lambda, zeta){
     masking_fun <- function(values){
         if(length(values) == 1 & typeof(values) == "character"){

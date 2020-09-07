@@ -24,14 +24,16 @@ Estep_mix <- function(pvals, s, dist, pix, mux, masking_fun){
     hp <- dist$h(pvals, mux)
     hp_mir <- dist$h(masking_fun(pvals), mux)
     Hhat <- ifelse(
-        pvals < s | (pvals > masking_fun(s) & pvals <= thres),
+        pvals < s,
         1 / (1 + (1 + zeta) * (1 - pix) / pix / (hp + zeta * hp_mir)),
-        1 / (1 + (1 - pix) / pix / hp)
+        ifelse( (pvals > masking_fun(s) & pvals <= thres),
+                1 / (1 + (1 + zeta) * (1 - pix) / pix / (zeta * hp +  hp_mir)),
+            1 / (1 + (1 - pix) / pix / hp))
         )
     Hhat <- pminmax(Hhat, 1e-5, 1-1e-5)
     bhat <- ifelse(
         pvals < s | (pvals > masking_fun(s) & pvals <= thres),
-        hp / (hp + zeta * hp_mir),
+        hp / (hp + hp_mir),
         1
         )
 

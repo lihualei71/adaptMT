@@ -2,12 +2,11 @@
 # EM algorithm to fit a mixture model.
 #---------------------------------------------------------------
 
-EM_loglik <- function(pvals, dist, pix, mux, Hhat, bhat){
+EM_loglik <- function(pvals, dist, pix, mux, Hhat, bhat, masking_fun){
     #TODO CHECK IF NEED TO CHANGE THIS
     loglik1 <- sum(Hhat * log(pix) + (1 - Hhat) * log(1 - pix))
-    #TODO CHECK IF NEED TO CHANGE THIS
     loglik2 <- sum(Hhat * bhat * log(dist$h(pvals, mux)) +
-                   Hhat * (1 - bhat) * log(dist$h(1 - pvals, mux)))
+                   Hhat * (1 - bhat) * log(dist$h(masking_fun(pvals), mux)))
     return(loglik1 + loglik2)
 }
 
@@ -72,7 +71,7 @@ EM_mix <- function(x, pvals, s, dist, model,
     }
     params <- list(pix = pix, mux = mux)
     loglik <- EM_loglik(pvals, dist, params$pix, params$mux,
-                        Estep_res$Hhat, Estep_res$bhat)
+                        Estep_res$Hhat, Estep_res$bhat, masking_fun)
     info <- list(pi = Mstep_res$pi_info, mu = Mstep_res$mu_info)
 
     return(list(params = params, loglik = loglik, info = info))

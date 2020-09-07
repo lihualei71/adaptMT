@@ -9,22 +9,17 @@ fdp_hat <- function(A, R, fs = TRUE, zeta){
     (as.numeric(fs) + A) / zeta / pmax(1, R)
 }
 
-select_masking_params <- function(n,alpha_m,lambda,zeta){
-    if(is.null(alpha_m) | is.null(zeta) | is.null(lambda)){
-        warning("Masking parameter alpha_m, zeta, or lambda found to be NULL. Automatically selecting masking function. See documentation for details.")
-        if(is.null(zeta)){
-            zeta <- min(20,max(6000/n,2))
-        }
-        if(zeta>8){
-            alpha_m <- 0.8 / zeta
-        }else{
-            alpha_m <- 0.9 / (zeta + 1)
-        }
-        lambda <- max(alpha_m,0.1)
+select_masking_params <- function(n,alpha_m,zeta,lambda){
+  if(is.null(alpha_m) | is.null(zeta) | is.null(lambda)){
+    warning("Masking parameter alpha_m, zeta, or lambda found to be NULL. Automatically selecting masking function. See documentation for details.")
+    if(is.null(zeta)){
+      zeta <- min(20,max(6000/n,2))
     }
-
-    masking_params <- list(alpha_m=alpha_m, lambda=lambda,zeta=zeta)
-    return(masking_params)
+    alpha_m <- 0.9 / (zeta + 1)
+    lambda <- alpha_m
+  }
+  masking_params <- list(alpha_m=alpha_m, zeta=zeta, lambda=lambda)
+  return(masking_params)
 }
 
 

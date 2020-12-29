@@ -207,7 +207,8 @@ adapt <- function(x, pvals, models,
         stop("\'dist\' must be of class \'exp_family\'.")
     }
 
-    masking_params <- select_masking_params(length(pvals), alpha_m, lambda, zeta)
+    masking_params <- select_masking_params(n=length(pvals),
+                                            alpha_m = alpha_m, lambda = lambda, zeta = zeta)
 
     alpha_m <- masking_params$alpha_m
     lambda <- masking_params$lambda
@@ -221,7 +222,7 @@ adapt <- function(x, pvals, models,
 
 
     #TODO CHECK FOR VALIDITY OF MASKING PARAMETERS
-    masking_fun <- masking_function(alpha_m, lambda, zeta)
+    masking_fun <- masking_function(alpha_m=alpha_m, zeta=zeta, lambda=lambda)
     mask_thres <- masking_fun("thres")
     ## Check if necessary packages are installed.
     check_pkgs(models)
@@ -276,6 +277,7 @@ adapt <- function(x, pvals, models,
     ## Remove the alphas greater than the initial FDPhat, except the smallest one among them
     alphas <- sort(alphas)
     if (min(alphas) >= minfdp){
+        browser()
         warning("Task completed! Initial \'s0\' has guaranteed FDR control for all alpha's in \'alphas\'.")
         alphaind <- 0
     } else if (max(alphas) < minfdp){
@@ -375,6 +377,7 @@ adapt <- function(x, pvals, models,
         minfdp <- min(fdp)
 
         while (alphaind > 0){# check if lower FDR level is achieved
+
             alpha <- alphas[alphaind]
             if (any(fdp <= alpha)){
                 breakpoint <- which(fdp <= alpha)[1]

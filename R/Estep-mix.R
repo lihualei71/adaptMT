@@ -20,19 +20,19 @@
 ## ' \item{phat}{a vector of values in [0, 1]. Imputed values for \eqn{p_{i}}{pi}'s}
 Estep_mix <- function(pvals, s, dist, pix, mux, masking_fun){
     zeta <- masking_fun("zeta")
-    thres <- masking_fun("thres")
+
     hp <- dist$h(pvals, mux)
     hp_mir <- dist$h(masking_fun(pvals), mux)
     Hhat <- ifelse(
         pvals < s,
         1 / (1 + (1 + zeta) * (1 - pix) / pix / (hp + zeta * hp_mir)),
-        ifelse( (pvals > masking_fun(s) & pvals <= thres),
+        ifelse( (check_if_masked(pvals,s,masking_fun)),
                 1 / (1 + (1 + zeta) * (1 - pix) / pix / (zeta * hp +  hp_mir)),
             1 / (1 + (1 - pix) / pix / hp))
         )
     Hhat <- pminmax(Hhat, 1e-5, 1-1e-5)
     bhat <- ifelse(
-        pvals < s | (pvals > masking_fun(s) & pvals <= thres),
+        pvals < s | (check_if_masked(pvals,s,masking_fun)),
         hp / (hp + hp_mir),
         1
         )

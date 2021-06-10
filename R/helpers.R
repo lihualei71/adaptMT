@@ -130,23 +130,60 @@ complete_model <- function(model, dist){
 # masking_fun(p_big) = p_small
 # masking_fun(p_small) = p_big
 # For convenience, if the input is "zeta", masking_fun outputs zeta
+# For convenience, if the input is "lambda", masking_fun outputs lambda
 # For convenience, if the input is "thres", masking_fun outputs the upper bound for masking
 # equivalently alpha_m * zeta + lambda.
-masking_function <- function(alpha_m, lambda, zeta){
+# Masking shape is tent or comb
+# For tent, masking_function(0)=alpha_m*zeta + lambda
+# For comb, masking_function(0)= lambda
+masking_function <- function(alpha_m, lambda, zeta, masking_shape){
     masking_fun <- function(values){
         if(length(values) == 1 & typeof(values) == "character"){
             if(values == "zeta"){
                 return(zeta)
             }else if(values == "thres"){
                 return(alpha_m * zeta + lambda)
+            }else if(values == "lambda"){
+                return(lambda)
+            }else if(values == "shape"){
+                return(masking_shape)
             }
         }
         output <- values
         small_ind <- values <= alpha_m
         big_ind <- (values <= alpha_m * zeta + lambda) & values >= lambda
-        output[small_ind] <- (alpha_m - values[small_ind]) * zeta + lambda
-        output[big_ind] <- ((lambda + alpha_m * zeta) - values[big_ind]) / zeta
+        if(masking_shape == "tent"){
+            output[small_ind] <- (alpha_m - values[small_ind]) * zeta + lambda
+            output[big_ind] <- ((lambda + alpha_m * zeta) - values[big_ind]) / zeta
+        }else if(masking_shape == "comb"){
+            output[small_ind] <-  values[small_ind] * zeta + lambda
+            output[big_ind] <- (values[big_ind]-lambda) / zeta
+        }else{
+            stop("Invalid masking shape, must be `tent` or `comb`.")
+        }
+
         return(output)
     }
     return(masking_fun)
+}
+
+# Returns whether the value is masked in the blue region given threshold s
+check_if_masked <- function(values,s,masking_fun,masking_shape=NULL,mask_thres=NULL,lambda=NULL){
+    if(is.null(masking_shape)){
+        masking_shape <- masking_fun("shape")
+    }
+    if(masking_shape == "tent"){
+        if(is.null(mask_thres)){
+            mask_thres <- masking_fun("thres")
+        }
+        return(values  >= masking_fun(s) & values <= mask_thres)
+    }else if(masking_shape == "comb"){
+        if(is.null(lambda)){
+            lambda <- masking_fun("lambda")
+        }
+        return(values <= masking_fun(s) & values >= lambda)
+    }else{
+        stop("Invalid masking shape, must be `tent` or `comb`.")
+    }
+
 }

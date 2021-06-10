@@ -15,15 +15,15 @@ x <- x[inds,,drop = FALSE]
 # Generate models for function adapt
 library("splines")
 formula <- "ns(x, df = 6)"
-alpha_m = 0.5
-lambda = 0.5
-zeta = 1
+alpha_m = 0.2
+lambda = 0.3
+zeta = 3
 
 # Run adapt
 res <- adapt_glm(x = x, pvals = pvals, pi_formula = formula, mu_formula = formula, nfits = 5,
                  verbose = list(print = FALSE, fit = FALSE, ms = FALSE),
                  s0 = rep(0.5, length(pvals)),
-                 alpha_m=alpha_m, lambda = lambda, zeta = zeta)
+                 alpha_m=alpha_m, lambda = lambda, zeta = zeta,masking_shape="tent")
 
 ## Begin Tests
 test_that("length of 'order' should match the number of hypotheses (#1)", {
@@ -34,7 +34,7 @@ test_that("length of 'order' should match the number of hypotheses (#1)", {
 
 test_that("'order' should be consistent with thresholds 's'", {
     for (i in 1:100){
-        mask <- which(pvals <= res$s[, i] | (pvals >= zeta * res$s[, i] + lambda & pvals <= zeta * alpha_m+lambda ))
+        mask <- which(pvals <= res$s[, i] | (pvals >= (lambda+alpha_m*zeta - zeta * res$s[, i] ) & pvals <= (zeta * alpha_m + lambda) ))
         mask2 <- sort(tail(res$order, length(mask)))
         diffs <- setdiff(mask, mask2)
         expect_equal(length(diffs), 0)

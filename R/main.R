@@ -190,7 +190,8 @@ adapt <- function(x, pvals, models,
                   lfdr_type = "over",
                   alpha_m = NULL,
                   lambda = NULL,
-                  zeta = NULL
+                  zeta = NULL,
+                  masking_shape = "tent"
                   ){
     ## Check if 'pvals' is a vector of values in [0, 1]
     if (!is.numeric(pvals) || min(pvals) < 0 || max(pvals) > 1){
@@ -222,7 +223,8 @@ adapt <- function(x, pvals, models,
 
 
     #TODO CHECK FOR VALIDITY OF MASKING PARAMETERS
-    masking_fun <- masking_function(alpha_m=alpha_m, zeta=zeta, lambda=lambda)
+    masking_fun <- masking_function(alpha_m=alpha_m, zeta=zeta,
+                                    lambda=lambda,masking_shape=masking_shape)
     mask_thres <- masking_fun("thres")
     ## Check if necessary packages are installed.
     check_pkgs(models)
@@ -249,7 +251,9 @@ adapt <- function(x, pvals, models,
     }
 
     ## Create time stamps when model is fitted or model selection is performed
-    nmasks <- sum(pvals <= s0) + sum(pvals >= masking_fun(s0) & pvals <= mask_thres)
+    nmasks <- sum(pvals <= s0) +
+      sum(check_if_masked(pvals,s0,masking_fun,masking_shape,mask_thres,lambda))
+
     stamps <- create_stamps(nmasks, nfits, nms)
 
     ## Create root arguments to simplify fitting and model selection
@@ -270,14 +274,15 @@ adapt <- function(x, pvals, models,
     n <- length(pvals)
     params <- params0
     s <- s0
-    A <- sum(pvals >= masking_fun(s) & pvals <= mask_thres)
+
+    A <- sum(check_if_masked(pvals,s,masking_fun,masking_shape,mask_thres,lambda))
     R <- sum(pvals <= s)
     minfdp <- fdp_hat(A, R, fs, zeta) # initial FDPhat
 
     ## Remove the alphas greater than the initial FDPhat, except the smallest one among them
     alphas <- sort(alphas)
     if (min(alphas) >= minfdp){
-        browser()
+
         warning("Task completed! Initial \'s0\' has guaranteed FDR control for all alpha's in \'alphas\'.")
         alphaind <- 0
     } else if (max(alphas) < minfdp){
@@ -292,9 +297,14 @@ adapt <- function(x, pvals, models,
     params_return <- list() # parameters (including pix and mux)
     model_list <- list() # all selected models
     info_list <- list() # other information (df, vi, etc.)
-    reveal_order <- which((pvals > s & pvals < alpha_m) |
-                              (pvals < masking_fun(s) & pvals > lambda) |
-                              pvals > mask_thres) # the order to be revealed
+    if(masking_shape == "tent"){
+      reveal_order <- which((pvals > s & pvals < masking_fun(s)) |
+                              pvals > mask_thres)
+    }else{
+      reveal_order <- which((pvals > s & pvals < lambda) |
+                              pvals > masking_fun(s))
+    }
+     # the order to be revealed
     if (length(reveal_order) > 0){
         init_pvals <- pvals[reveal_order]
         reveal_order <- reveal_order[order(init_pvals, decreasing = TRUE)]
@@ -319,7 +329,9 @@ adapt <- function(x, pvals, models,
         mask <- rep(TRUE, n)
         mask[reveal_order] <- FALSE
         nmasks <- sum(mask)
-        A <- sum(pvals >= masking_fun(s) & pvals <= mask_thres)
+
+        A <- sum(check_if_masked(pvals,s,masking_fun,masking_shape,mask_thres,lambda))
+
         R <- sum(pvals <= s)
         start <- stamps[i, 1]
         end <- stamps[i + 1, 1]
@@ -368,7 +380,7 @@ adapt <- function(x, pvals, models,
         inds <- order(lfdr, decreasing = TRUE)[1:nreveals]
         reveal_order <- c(reveal_order, inds)
         ## Shortcut to calculate FDPhat after revealing the hypotheses one by one
-        Adecre <- cumsum(pvals[inds] >= masking_fun(s[inds]) & pvals[inds] <= mask_thres)
+        Adecre <- cumsum(check_if_masked(pvals[inds],s[inds],masking_fun,masking_shape,mask_thres,lambda))
         Rdecre <- cumsum(pvals[inds] <= s[inds])
         fdp <- fdp_hat(A - Adecre, R - Rdecre, fs, zeta)
         fdp_return <- c(fdp_return, fdp)
@@ -461,7 +473,8 @@ adapt <- function(x, pvals, models,
              dist = dist,
              models = model_list,
              info = info_list,
-             args = args),
+             args = args,
+             masking_params = masking_params),
         class = "adapt")
     return(res)
 }

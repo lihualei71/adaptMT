@@ -21,7 +21,11 @@ adapt(
   fs = TRUE,
   verbose = list(print = TRUE, fit = FALSE, ms = TRUE),
   Mstep_type = "unweighted",
-  lfdr_type = "over"
+  lfdr_type = "over",
+  alpha_m = NULL,
+  lambda = NULL,
+  zeta = NULL,
+  masking_shape = "tent"
 )
 }
 \arguments{
@@ -58,6 +62,14 @@ adapt(
 \item{Mstep_type}{"unweighted" or "weighted". Indicate whether to use weighted training in M-steps. Please keep the default value "unweighted" unless there is a need to change it. See Appendix A.3 of the paper for details.}
 
 \item{lfdr_type}{"over" or "raw". Indicate whether to use over-estimate or raw estimate of local FDR. Please keep the default value "over" unless there is a need to change it. See Section 4.3 of the paper for details.}
+
+\item{alpha_m}{a positive scalar. Upper bound for red region.}
+
+\item{lambda}{a positive scalar. Lower bound for blue region.}
+
+\item{zeta}{a positive scalar. Ratio of length of blue to red region.}
+
+\item{masking_shape}{a string. Options include "\code{tent}" or "\code{comb}" with "\code{tent}" as default.}
 }
 \value{
 \item{nrejs}{a vector of integers. Number of rejections for each alpha}
@@ -71,6 +83,7 @@ adapt(
 \item{models}{a list of \code{adapt_model} objects of length \code{params}. The model used in each fitting step. As in \code{params}, it only contains the model when a new target FDR level is achieved and each element corresponds to an element of \code{params}.}
 \item{info}{a list of length \code{nfits}. Each element is a list recording extra information in each fitting step, e.g. degree of freedom (df) and variable importance (vi). As in \code{params}, it only contains the model information when a new target FDR level is achieved and each element corresponds to an element of \code{params}.}
 \item{args}{a list including the other inputs \code{nfits}, \code{nms}, \code{niter_fit}, \code{niter_ms}, \code{tol}, \code{cr}}.
+\item{masking_params}{a list containing the masking parameters used and shape.}
 }
 \description{
 \code{adapt} is a framework allowing for arbitrary exponential families for computing E-steps and arbitrary algorithms for fitting M-steps.
@@ -85,11 +98,14 @@ adapt(
 \code{verbose} has three elements: \code{print}, \code{fit} and \code{ms}. If \code{print = TRUE}, the progress of the main procedure is outputted to the console, in the form of "alpha = 0.05: FDPhat 0.0333, Number of Rej. 30" (where the numbers are made up for illustration). If \code{fit = TRUE}, a progress bar for the model fitting is outputted to the console. Similarly, if \code{ms = TRUE}, a progress bar for the model selection is outputted to the console.
 
 For ultra-large scale problems (n > 10^5), it is recommended to keep \code{alphas} short because the output \code{s} is of size n x \code{length(alphas)}.
-is \code{length(alphas)}.
 
 The output \code{qvals} gives the q-values of each hypothesis. \code{qvals[i]} is defined as the minimum target FDR level such that \code{pvals[i]} is rejected. For hypotheses with p-values above s0, the q-values are set to be Inf because they are never rejected by AdaPT for whatever alpha.
 
 The output \code{order} gives the order of (the indices of) p-values being revealed, i.e. being in the region (s, 1-s). The latter hypotheses appeared in \code{order} have smaller q-values (i.e. are more likely to be rejected).
+
+The constraint on these masking function parameters is
+\deqn{0< \alpha_m \le \lambda <\lambda+ \alpha_m\zeta\le 1.}
+Setting \code{alpha_m} to 0.5, \code{lambda} to 0.5, \code{zeta} to 1, and \code{masking_shape} to "\code{tent}" results in the usual AdaPT masking function.
 }
 \examples{
 \donttest{

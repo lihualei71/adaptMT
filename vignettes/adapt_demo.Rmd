@@ -100,7 +100,7 @@ formulas
 
 ```{r, warning=FALSE}
 # run AdaPT
-res_glm <- adapt_glm(x = x, pvals = pvals, pi_formulas = formulas, mu_formulas = formulas)
+res_glm <- adapt_glm(x = x, pvals = pvals, pi_formulas = formulas, mu_formulas = formulas,masking_shape="comb")
 ```
 
 `plot_1d_thresh` gives the plot for the rejection threshold as a function of x (must be univariate without repeated value) for given $\alpha$. We display the plots for $\alpha \in \{0.3, 0.25, 0.2, 0.15, 0.1, 0.05\}$.
@@ -433,4 +433,4 @@ identical(res1$s, res2$s)
 ```
 
 
-# Bioliography
+# Bibliography

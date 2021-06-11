@@ -10,6 +10,7 @@ ctgm_lfdr(
   models,
   dist = beta_family(),
   type = c("over", "raw"),
+  masking_params,
   params0 = list(pix = NULL, mux = NULL),
   niter = 50,
   cr = "BIC",
@@ -26,6 +27,8 @@ ctgm_lfdr(
 \item{dist}{an object of class "\code{\link{gen_exp_family}}". \code{\link{beta_family}()} as default}
 
 \item{type}{a character. Either "over" or "raw" indicating the type of local FDR estimates. See Details}
+
+\item{masking_params}{a list in the form list(alpha_m = , lambda = , zeta = , shape = ). Masking parameters for model.}
 
 \item{params0}{a list in the form of list(pix = , mux = ). Initial values of pi(x) and mu(x). Both can be set as NULL}
 
@@ -81,9 +84,11 @@ models <- lapply(formulas, function(formula){
     gen_adapt_model(name = "glm", piargs = piargs, muargs = muargs)
 })
 
+masking_params <- list(alpha_m=0.2, lambda = 0.3, zeta = 3, shape = "tent")
+
 # Run ctgm_lfdr with two types of lfdr estimates
-res_over <- ctgm_lfdr(x, pvals, models, type = "over")
-res_raw <- ctgm_lfdr(x, pvals, models, type = "raw")
+res_over <- ctgm_lfdr(x, pvals, models, type = "over", masking_params=masking_params)
+res_raw <- ctgm_lfdr(x, pvals, models, type = "raw", masking_params=masking_params)
 
 # Compare two estimates
 par(mfrow = c(2, 1))

@@ -80,6 +80,13 @@ plot_1d_thresh <- function(obj, x, pvals,
     s <- s[x_ord]
     x <- x[x_ord]
 
+    masking_params <- obj$masking_params
+    alpha_m <- masking_params$alpha_m
+    lambda <- masking_params$lambda
+    zeta <- masking_params$zeta
+    nu <- alpha_m * zeta + lambda
+    masking_shape <- masking_params$shape
+    masking_fun <- masking_function(alpha_m,lambda,zeta,masking_shape)
     if (!is.null(xlim)){
         inds <- which(x >= xlim[1] & x <= xlim[2])
         x <- x[inds]
@@ -91,8 +98,14 @@ plot_1d_thresh <- function(obj, x, pvals,
     }
 
     par(...)
-    #TODO CHANGE THIS
-    what_type <- ifelse(pvals < s, 1, ifelse(pvals > 1 - s, 2, 3))
+    if (masking_shape == "tent"){
+        what_type <- ifelse(pvals < s, 1, ifelse( ( pvals >masking_fun(s) ) & pvals <= nu, 2, 3))
+        thresh <- nu
+    }else{
+        what_type <- ifelse(pvals < s, 1, ifelse( ( pvals <  masking_fun(s) ) & pvals >= lambda, 2, 3))
+        thresh <- lambda
+    }
+
     plot(x, (1:n * disp_ymax) / n, type = "n", pch = ".",
          xaxs = "i", yaxs = "i", ylab = "p-values",
          xlab = xlab, xlim = xlim,
@@ -102,11 +115,11 @@ plot_1d_thresh <- function(obj, x, pvals,
          labels = seq(0, disp_ymax, length.out = num_yticks))
     hhi <- hlo <- .5
     vlo <- -.01
-    vhi <- 1.01
+    vhi <- thresh * 1.01
     polygon(x = c(x, rev(x)), y = c(s, rep(vlo, n)),
             col = "#FFDDDD", border = "red")
-    #TODO CHANGE THIS
-    polygon(x = c(x, rev(x)), y = c(1 - s, rep(vhi, n)),
+
+    polygon(x = c(x, rev(x)), y = c(masking_fun(s), rep(vhi, n)),
             col = "light blue", border = "blue")
     if(!is.na(rand_seed_perturb)) {
         set.seed(rand_seed_perturb)

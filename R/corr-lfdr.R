@@ -73,9 +73,12 @@ corr_lfdr <- function(obj, x, pvals, model = NULL,
     if (is.null(model)){
         model <- obj$models[[length(obj$models)]]
     }
+    mask_params <- obj$masking_params
+    masking_fun <- masking_function(alpha_m=mask_params$alpha_m, zeta=mask_params$zeta,
+                                    lambda=mask_params$lambda,masking_shape=mask_params$shape)
     oracle_params <- EM_mix(x, pvals, rep(0, n), dist, model,
                             params0 = params,
-                            niter = niter_oracle)$params
+                            niter = niter_oracle, masking_fun = masking_fun)$params
     oracle_lfdr <- compute_lfdr_mix(pvals, dist, oracle_params)
 
     ## Correlation

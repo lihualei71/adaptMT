@@ -4,7 +4,9 @@
 \name{estrogen}
 \alias{estrogen}
 \title{Gene/Drug response dataset}
-\format{An object of class \code{data.frame} with 22283 rows and 3 columns.}
+\format{
+An object of class \code{data.frame} with 22283 rows and 3 columns.
+}
 \usage{
 estrogen
 }

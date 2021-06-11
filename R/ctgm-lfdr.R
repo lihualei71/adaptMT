@@ -26,6 +26,7 @@
 #' @param models an object of class "\code{adapt_model}" or a list of objects of class "adapt_model". See Details
 #' @param dist an object of class "\code{\link{gen_exp_family}}". \code{\link{beta_family}()} as default
 #' @param type a character. Either "over" or "raw" indicating the type of local FDR estimates. See Details
+#' @param masking_params a list in the form list(alpha_m = , lambda = , zeta = , shape = ). Masking parameters for model.
 #' @param params0 a list in the form of list(pix = , mux = ). Initial values of pi(x) and mu(x). Both can be set as NULL
 #' @param niter a positive integer. Number of EM iterations.
 #' @param cr a string. The criterion for model selection with BIC as default. Also support AIC, AICC and HIC
@@ -58,9 +59,11 @@
 #'     gen_adapt_model(name = "glm", piargs = piargs, muargs = muargs)
 #' })
 #'
+#' masking_params <- list(alpha_m=0.2, lambda = 0.3, zeta = 3, shape = "tent")
+#'
 #' # Run ctgm_lfdr with two types of lfdr estimates
-#' res_over <- ctgm_lfdr(x, pvals, models, type = "over")
-#' res_raw <- ctgm_lfdr(x, pvals, models, type = "raw")
+#' res_over <- ctgm_lfdr(x, pvals, models, type = "over", masking_params=masking_params)
+#' res_raw <- ctgm_lfdr(x, pvals, models, type = "raw", masking_params=masking_params)
 #'
 #' # Compare two estimates
 #' par(mfrow = c(2, 1))
@@ -72,6 +75,7 @@
 ctgm_lfdr <- function(x, pvals, models,
                       dist = beta_family(),
                       type = c("over", "raw"),
+                      masking_params,
                       params0 = list(pix = NULL, mux = NULL),
                       niter = 50,
                       cr = "BIC",
@@ -80,9 +84,10 @@ ctgm_lfdr <- function(x, pvals, models,
     Mstep_type <- "weighted"
     lfdr_type <- type[1]
     tol <- 0
-
+    masking_fun <- masking_function(masking_params$alpha_m,masking_params$lambda,
+                                    masking_params$zeta,masking_params$shape)
     res <- EM_mix_ms(x, pvals, rep(0, length(pvals)), dist, models, cr,
-                     params0, niter, tol, verbose, Mstep_type)
+                     params0, niter, tol, verbose, Mstep_type,masking_fun=masking_fun)
     lfdr <- compute_lfdr_mix(pvals, dist, res$params, lfdr_type)
     return(list(lfdr = lfdr, model = res$model))
 }

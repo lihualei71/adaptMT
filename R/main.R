@@ -118,6 +118,10 @@ check_pkgs <- function(models){
 #'
 #' The output \code{order} gives the order of (the indices of) p-values being revealed, i.e. being in the region (s, 1-s). The latter hypotheses appeared in \code{order} have smaller q-values (i.e. are more likely to be rejected).
 #'
+#' The constraint on these masking function parameters is
+#' \deqn{0< \alpha_m \le \lambda <\lambda+ \alpha_m\zeta\le 1.}
+#' Setting \code{alpha_m} to 0.5, \code{lambda} to 0.5, \code{zeta} to 1, and \code{masking_shape} to "\code{tent}" results in the usual AdaPT masking function.
+#'
 #' @param x covariates (i.e. side-information). Should be compatible to \code{models}. See Details
 #' @param pvals a vector of values in [0, 1]. P-values
 #' @param models an object of class "\code{adapt_model}" or a list of objects of class "adapt_model". See Details
@@ -135,7 +139,10 @@ check_pkgs <- function(models){
 #' @param verbose a list of logical values in the form of list(print = , fit = , ms = ). Each element indicates whether the relevant information is outputted to the console. See Details
 #' @param Mstep_type "unweighted" or "weighted". Indicate whether to use weighted training in M-steps. Please keep the default value "unweighted" unless there is a need to change it. See Appendix A.3 of the paper for details.
 #' @param lfdr_type "over" or "raw". Indicate whether to use over-estimate or raw estimate of local FDR. Please keep the default value "over" unless there is a need to change it. See Section 4.3 of the paper for details.
-#' TODO FILL IN DETAILS FOR MASKING PARAMETERS
+#' @param alpha_m a positive scalar. Upper bound for red region.
+#' @param lambda a positive scalar. Lower bound for blue region.
+#' @param zeta a positive scalar. Ratio of length of blue to red region.
+#' @param masking_shape a string. Options include "\code{tent}" or "\code{comb}" with "\code{tent}" as default.
 #' @return
 #' \item{nrejs}{a vector of integers. Number of rejections for each alpha}
 #' \item{rejs}{a list of vector of integers. The set of indices of rejections for each alpha}
@@ -148,6 +155,7 @@ check_pkgs <- function(models){
 #' \item{models}{a list of \code{adapt_model} objects of length \code{params}. The model used in each fitting step. As in \code{params}, it only contains the model when a new target FDR level is achieved and each element corresponds to an element of \code{params}.}
 #' \item{info}{a list of length \code{nfits}. Each element is a list recording extra information in each fitting step, e.g. degree of freedom (df) and variable importance (vi). As in \code{params}, it only contains the model information when a new target FDR level is achieved and each element corresponds to an element of \code{params}.}
 #' \item{args}{a list including the other inputs \code{nfits}, \code{nms}, \code{niter_fit}, \code{niter_ms}, \code{tol}, \code{cr}}.
+#' \item{masking_params}{a list containing the masking parameters used and shape.}
 #'
 #' @examples
 #' \donttest{
@@ -210,7 +218,7 @@ adapt <- function(x, pvals, models,
 
     masking_params <- select_masking_params(n=length(pvals),
                                             alpha_m = alpha_m, lambda = lambda, zeta = zeta)
-
+    masking_params$shape <- masking_shape
     alpha_m <- masking_params$alpha_m
     lambda <- masking_params$lambda
     zeta <- masking_params$zeta

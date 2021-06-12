@@ -3,7 +3,6 @@
 #---------------------------------------------------------------
 
 EM_loglik <- function(pvals, dist, pix, mux, Hhat, bhat, masking_fun){
-    #TODO CHECK IF NEED TO CHANGE THIS
     loglik1 <- sum(Hhat * log(pix) + (1 - Hhat) * log(1 - pix))
     loglik2 <- sum(Hhat * bhat * log(dist$h(pvals, mux)) +
                    Hhat * (1 - bhat) * log(dist$h(masking_fun(pvals), mux)))

@@ -17,6 +17,11 @@ select_masking_params <- function(n,alpha_m,zeta,lambda){
     }
     alpha_m <- 0.9 / (zeta + 1)
     lambda <- alpha_m
+  }else{
+    if(alpha_m < 0 | lambda < alpha_m | alpha_m * zeta + lambda < lambda | alpha_m * zeta + lambda > 1){
+      stop("Invalid alpha_m, lambda, or zeta parameter.
+           Must satisfy 0 < alpha_m <= lambda < alpha_m * zeta + lambda <= 1")
+    }
   }
   masking_params <- list(alpha_m=alpha_m, zeta=zeta, lambda=lambda)
   return(masking_params)
@@ -229,8 +234,6 @@ adapt <- function(x, pvals, models,
     }
 
 
-
-    #TODO CHECK FOR VALIDITY OF MASKING PARAMETERS
     masking_fun <- masking_function(alpha_m=alpha_m, zeta=zeta,
                                     lambda=lambda,masking_shape=masking_shape)
     mask_thres <- masking_fun("thres")
